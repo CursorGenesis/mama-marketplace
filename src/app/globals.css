@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #1e3a5f;
+  --primary-light: #2d5a8e;
+  --primary-dark: #0f2744;
+  --accent-color: #22c55e;
+  --bg-color: #f8f9fb;
+  --card-color: #ffffff;
+  --text-color: #1a1a2e;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+/* Скрыть полосу прокрутки */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  @apply antialiased;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
