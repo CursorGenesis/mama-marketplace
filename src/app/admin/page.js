@@ -109,6 +109,27 @@ export default function AdminPage() {
           </div>
           <p className="text-gray-500">Продажи, статистика, графики и отчёты</p>
         </Link>
+        <Link href="/admin/agents" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-1">
+            <Users size={22} className="text-blue-600" />
+            <h3 className="font-bold text-lg">Агенты</h3>
+          </div>
+          <p className="text-gray-500">Статусы, магазины, заработок, автоматизация</p>
+        </Link>
+        <Link href="/admin/subscriptions" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-1">
+            <ShoppingCart size={22} className="text-purple-600" />
+            <h3 className="font-bold text-lg">Подписки</h3>
+          </div>
+          <p className="text-gray-500">Тарифы поставщиков, оплата, блокировка</p>
+        </Link>
+        <Link href="/admin/logistics" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-1">
+            <TrendingUp size={22} className="text-cyan-600" />
+            <h3 className="font-bold text-lg">Логистика</h3>
+          </div>
+          <p className="text-gray-500">Доставки, экспедиторы, статусы, отказы</p>
+        </Link>
         <Link href="/admin/commissions" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-1">
             <DollarSign size={22} className="text-green-600" />
