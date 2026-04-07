@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useLang } from '@/context/LangContext';
-import { ShoppingCart, Menu, X, User, MapPin, Shield, Bell, BarChart3, UserCircle, HeadphonesIcon, Search, Building2, Package, ClipboardList, DollarSign, LogOut, ChevronDown, Award } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, MapPin, Shield, Bell, BarChart3, UserCircle, HeadphonesIcon, Search, Building2, Package, ClipboardList, DollarSign, LogOut, ChevronDown, Award, Truck, Users } from 'lucide-react';
 
 export default function Header() {
   const { user, profile, isAdmin, isSupplier, logout } = useAuth();
+  const isAgent = profile?.role === 'agent';
+  const isDriver = profile?.role === 'driver';
   const { totalItems } = useCart();
   const { lang, switchLang, t } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -117,7 +119,7 @@ export default function Header() {
                         <div className="px-4 py-3 border-b border-gray-100">
                           <p className="font-bold text-gray-800 text-sm">{profile?.name || user?.email || (lang === 'kg' ? 'Демо колдонуучу' : 'Демо пользователь')}</p>
                           <p className="text-xs text-gray-400">
-                            {isAdmin ? (lang === 'kg' ? 'Администратор' : 'Администратор') : isSupplier ? (lang === 'kg' ? 'Жеткирүүчү' : 'Поставщик') : (lang === 'kg' ? 'Сатып алуучу' : 'Покупатель')}
+                            {isAdmin ? (lang === 'kg' ? 'Администратор' : 'Администратор') : isSupplier ? (lang === 'kg' ? 'Жеткирүүчү' : 'Поставщик') : isAgent ? (lang === 'kg' ? 'Агент' : 'Агент') : isDriver ? (lang === 'kg' ? 'Экспедитор' : 'Экспедитор') : (lang === 'kg' ? 'Сатып алуучу' : 'Покупатель')}
                           </p>
                         </div>
 
@@ -147,6 +149,30 @@ export default function Header() {
                             </Link>
                             <Link href="/dashboard/orders" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                               <ClipboardList size={18} className="text-gray-400" /> {lang === 'kg' ? 'Буйрутмалар' : 'Заказы'}
+                            </Link>
+                          </>
+                        )}
+
+                        {/* Ссылки для агента */}
+                        {(isAgent || !user) && (
+                          <>
+                            <Link href="/agent/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                              <Users size={18} className="text-green-400" /> {lang === 'kg' ? 'Агент кабинети' : 'Кабинет агента'}
+                            </Link>
+                            <Link href="/agent/order" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                              <ClipboardList size={18} className="text-green-400" /> {lang === 'kg' ? 'Заказ түзүү' : 'Создать заказ'}
+                            </Link>
+                            <Link href="/agent/shops" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                              <Building2 size={18} className="text-green-400" /> {lang === 'kg' ? 'Менин дүкөндөрүм' : 'Мои магазины'}
+                            </Link>
+                          </>
+                        )}
+
+                        {/* Ссылки для экспедитора */}
+                        {(isDriver || !user) && (
+                          <>
+                            <Link href="/driver/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                              <Truck size={18} className="text-cyan-400" /> {lang === 'kg' ? 'Менин жеткирүүлөрүм' : 'Мои доставки'}
                             </Link>
                           </>
                         )}
