@@ -1,6 +1,7 @@
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import { FavoritesProvider } from '@/context/FavoritesContext';
 import { LangProvider } from '@/context/LangContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -21,13 +22,15 @@ export default function RootLayout({ children }) {
         <LangProvider>
           <AuthProvider>
             <CartProvider>
-              <Toaster position="top-right" />
-              <Header />
-              <main className="flex-1">{children}</main>
-              <FloatingCart />
-              <SupportButton />
-              <Footer />
-              <BottomNav />
+              <FavoritesProvider>
+                <Toaster position="top-right" />
+                <Header />
+                <main className="flex-1">{children}</main>
+                <FloatingCart />
+                <SupportButton />
+                <Footer />
+                <BottomNav />
+              </FavoritesProvider>
             </CartProvider>
           </AuthProvider>
         </LangProvider>

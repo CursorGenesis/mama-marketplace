@@ -1,10 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { MessageSquare } from 'lucide-react';
 import { useLang } from '@/context/LangContext';
+import { Share2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Footer() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const isRu = lang === 'ru';
+
   return (
     <footer className="bg-gray-900 text-gray-400 mt-20">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -12,44 +15,61 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-3">MarketKG</h3>
             <p className="text-sm leading-relaxed">
-              B2B маркетплейс поставщиков продуктов питания в Кыргызстане.
-              Находите поставщиков, сравнивайте цены, заказывайте оптом.
+              {t('footerDesc')}
             </p>
             <div className="mt-4 space-y-2 text-sm">
-              <p>Бишкек, Кыргызстан</p>
+              <p>{isRu ? 'Бишкек, Кыргызстан' : 'Бишкек, Кыргызстан'}</p>
               <p>info@marketkg.com</p>
-              <p>+996 XXX XXX XXX</p>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-3">Покупателям</h4>
+            <h4 className="text-white font-semibold mb-3">{isRu ? 'Покупателям' : 'Сатып алуучуларга'}</h4>
             <div className="space-y-2 text-sm">
-              <Link href="/catalog" className="block hover:text-white transition-colors">Каталог</Link>
-              <Link href="/map" className="block hover:text-white transition-colors">Карта поставщиков</Link>
-              <Link href="/orders" className="block hover:text-white transition-colors">Мои заказы</Link>
-              <Link href="/support" className="block hover:text-white transition-colors">Поддержка</Link>
+              <Link href="/catalog" className="block hover:text-white transition-colors">{t('catalog')}</Link>
+              <Link href="/map" className="block hover:text-white transition-colors">{t('suppliersMap')}</Link>
+              <Link href="/orders" className="block hover:text-white transition-colors">{t('my_orders')}</Link>
+              <Link href="/support" className="block hover:text-white transition-colors">{isRu ? 'Поддержка' : 'Колдоо'}</Link>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-3">Поставщикам</h4>
+            <h4 className="text-white font-semibold mb-3">{isRu ? 'Поставщикам' : 'Жеткирүүчүлөргө'}</h4>
             <div className="space-y-2 text-sm">
-              <Link href="/auth" className="block hover:text-white transition-colors">Стать поставщиком</Link>
-              <Link href="/dashboard" className="block hover:text-white transition-colors">Панель управления</Link>
-              <Link href="/dashboard/products" className="block hover:text-white transition-colors">Мои товары</Link>
-              <Link href="/dashboard/orders" className="block hover:text-white transition-colors">Заказы</Link>
+              <Link href="/pricing" className="block hover:text-white transition-colors">{isRu ? 'Тарифы' : 'Тарифтер'}</Link>
+              <Link href="/auth" className="block hover:text-white transition-colors">{t('becomeSupplier')}</Link>
+              <Link href="/dashboard" className="block hover:text-white transition-colors">{isRu ? 'Панель управления' : 'Башкаруу панели'}</Link>
+              <Link href="/dashboard/products" className="block hover:text-white transition-colors">{isRu ? 'Мои товары' : 'Менин товарларым'}</Link>
+              <Link href="/dashboard/orders" className="block hover:text-white transition-colors">{isRu ? 'Заказы' : 'Буйрутмалар'}</Link>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-3">Компания</h4>
+            <h4 className="text-white font-semibold mb-3">{isRu ? 'Компания' : 'Компания'}</h4>
             <div className="space-y-2 text-sm">
-              <Link href="/about" className="block hover:text-white transition-colors">О платформе</Link>
-              <Link href="/terms" className="block hover:text-white transition-colors">Условия использования</Link>
-              <Link href="/auth" className="block hover:text-white transition-colors">Вход / Регистрация</Link>
+              <Link href="/about" className="block hover:text-white transition-colors">{isRu ? 'О платформе' : 'Платформа жөнүндө'}</Link>
+              <Link href="/terms" className="block hover:text-white transition-colors">{isRu ? 'Условия использования' : 'Колдонуу шарттары'}</Link>
+              <Link href="/support" className="block hover:text-white transition-colors">{isRu ? 'Поддержка' : 'Колдоо'}</Link>
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          &copy; {new Date().getFullYear()} MarketKG. Все права защищены.
+        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <span>&copy; {new Date().getFullYear()} MarketKG. {t('allRights')}</span>
+          <button
+            onClick={() => {
+              const url = typeof window !== 'undefined' ? window.location.origin : '';
+              const text = isRu
+                ? 'MarketKG — B2B маркетплейс поставщиков Кыргызстана. Находите поставщиков, сравнивайте цены, заказывайте оптом!'
+                : 'MarketKG — Кыргызстандын B2B жеткирүүчүлөр маркетплейси. Жеткирүүчүлөрдү табыңыз, бааларды салыштырыңыз!';
+              if (navigator.share) {
+                navigator.share({ title: 'MarketKG', text, url });
+              } else {
+                navigator.clipboard.writeText(`${text}\n${url}`);
+                toast.success(isRu ? 'Ссылка скопирована!' : 'Шилтеме көчүрүлдү!');
+              }
+            }}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors"
+          >
+            <Share2 size={14} />
+            {isRu ? 'Поделиться платформой' : 'Платформаны бөлүшүү'}
+          </button>
         </div>
       </div>
     </footer>

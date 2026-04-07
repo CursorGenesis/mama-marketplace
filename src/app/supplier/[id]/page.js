@@ -72,7 +72,14 @@ export default function SupplierPage() {
         {/* Основная информация */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h1 className="text-2xl font-bold mb-3">{supplier.name}</h1>
+            <h1 className="text-2xl font-bold mb-3 flex items-center gap-2 flex-wrap">
+              {supplier.name}
+              {supplier.verified && (
+                <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
+                  ✅ {lang === 'kg' ? 'Текшерилген жеткирүүчү' : 'Проверенный поставщик'}
+                </span>
+              )}
+            </h1>
 
             <div className="flex items-center gap-4 mb-4 flex-wrap">
               <div className="flex items-center gap-1 text-gray-500">

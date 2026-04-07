@@ -1,0 +1,334 @@
+'use client';
+import { useLang } from '@/context/LangContext';
+import { Check, X, Crown, Building2, Package, Rocket, Star, BarChart3, Shield, HeadphonesIcon, ArrowRight, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+
+const plans = [
+  {
+    id: 'start',
+    icon: '🌱',
+    nameRu: 'Старт', nameKg: 'Старт',
+    descRu: 'Для небольших поставщиков и новичков', descKg: 'Кичинекей жеткирүүчүлөр жана жаңы баштагандар үчүн',
+    price: 1000,
+    color: 'slate',
+    features: [
+      { textRu: 'До 30 карточек товаров', textKg: '30 товар карточкасына чейин', included: true },
+      { textRu: 'Страница поставщика', textKg: 'Жеткирүүчүнүн баракчасы', included: true },
+      { textRu: 'Приём заказов', textKg: 'Буйрутмаларды кабыл алуу', included: true },
+      { textRu: 'WhatsApp / Telegram связь', textKg: 'WhatsApp / Telegram байланыш', included: true },
+      { textRu: 'Комиссия 5%', textKg: '5% комиссия', included: true },
+      { textRu: 'Бейдж «Проверенный»', textKg: '«Текшерилген» бейджи', included: false },
+      { textRu: 'Расширенная аналитика', textKg: 'Кеңейтилген аналитика', included: false },
+      { textRu: 'Сниженная комиссия', textKg: 'Төмөндөтүлгөн комиссия', included: false },
+    ],
+  },
+  {
+    id: 'basic',
+    icon: '📦',
+    nameRu: 'Базовый', nameKg: 'Базалык',
+    descRu: 'Для активных поставщиков с широким ассортиментом', descKg: 'Кең ассортименттүү активдүү жеткирүүчүлөр үчүн',
+    price: 2000,
+    color: 'blue',
+    features: [
+      { textRu: 'До 100 карточек товаров', textKg: '100 товар карточкасына чейин', included: true },
+      { textRu: 'Страница поставщика', textKg: 'Жеткирүүчүнүн баракчасы', included: true },
+      { textRu: 'Приём заказов', textKg: 'Буйрутмаларды кабыл алуу', included: true },
+      { textRu: 'WhatsApp / Telegram связь', textKg: 'WhatsApp / Telegram байланыш', included: true },
+      { textRu: 'Комиссия 5%', textKg: '5% комиссия', included: true },
+      { textRu: 'Бейдж «Проверенный»', textKg: '«Текшерилген» бейджи', included: false },
+      { textRu: 'Расширенная аналитика', textKg: 'Кеңейтилген аналитика', included: false },
+      { textRu: 'Сниженная комиссия', textKg: 'Төмөндөтүлгөн комиссия', included: false },
+    ],
+  },
+  {
+    id: 'business',
+    icon: '🏢',
+    nameRu: 'Бизнес', nameKg: 'Бизнес',
+    descRu: 'Для серьёзных поставщиков — доверие и аналитика', descKg: 'Олуттуу жеткирүүчүлөр үчүн — ишеним жана аналитика',
+    price: 5000,
+    color: 'green',
+    popular: true,
+    features: [
+      { textRu: 'До 300 карточек товаров', textKg: '300 товар карточкасына чейин', included: true },
+      { textRu: 'Страница поставщика', textKg: 'Жеткирүүчүнүн баракчасы', included: true },
+      { textRu: 'Приём заказов', textKg: 'Буйрутмаларды кабыл алуу', included: true },
+      { textRu: 'WhatsApp / Telegram связь', textKg: 'WhatsApp / Telegram байланыш', included: true },
+      { textRu: 'Комиссия 5%', textKg: '5% комиссия', included: true },
+      { textRu: 'Бейдж «Проверенный» ✅', textKg: '«Текшерилген» бейджи ✅', included: true, bold: true },
+      { textRu: 'Расширенная аналитика', textKg: 'Кеңейтилген аналитика', included: true, bold: true },
+      { textRu: 'Сниженная комиссия', textKg: 'Төмөндөтүлгөн комиссия', included: false },
+    ],
+  },
+  {
+    id: 'premium',
+    icon: '👑',
+    nameRu: 'Премиум', nameKg: 'Премиум',
+    descRu: 'Для крупных компаний — всё включено', descKg: 'Ири компаниялар үчүн — баары камтылган',
+    price: 12000,
+    color: 'amber',
+    features: [
+      { textRu: 'Безлимит карточек товаров', textKg: 'Чексиз товар карточкалары', included: true, bold: true },
+      { textRu: 'Страница поставщика', textKg: 'Жеткирүүчүнүн баракчасы', included: true },
+      { textRu: 'Приём заказов', textKg: 'Буйрутмаларды кабыл алуу', included: true },
+      { textRu: 'WhatsApp / Telegram связь', textKg: 'WhatsApp / Telegram байланыш', included: true },
+      { textRu: 'Комиссия 3% (вместо 5%)', textKg: '3% комиссия (5% ордуна)', included: true, bold: true },
+      { textRu: 'Бейдж «Проверенный» ✅', textKg: '«Текшерилген» бейджи ✅', included: true, bold: true },
+      { textRu: 'Расширенная аналитика', textKg: 'Кеңейтилген аналитика', included: true, bold: true },
+      { textRu: 'Приоритетная поддержка', textKg: 'Приоритеттүү колдоо', included: true, bold: true },
+    ],
+  },
+];
+
+const addons = [
+  {
+    icon: Crown,
+    iconBg: 'bg-amber-100', iconColor: 'text-amber-600',
+    nameRu: 'ТОП-размещение', nameKg: 'ТОП-жайгашуу',
+    descRu: 'Ваша компания в разделе «Топ поставщики» на главной странице',
+    descKg: 'Компанияңыз башкы беттеги «Топ жеткирүүчүлөр» бөлүмүндө',
+    priceRu: '6 000 сом/мес', priceKg: '6 000 сом/ай',
+  },
+  {
+    icon: Star,
+    iconBg: 'bg-pink-100', iconColor: 'text-pink-600',
+    nameRu: 'Рекомендуем (1 товар)', nameKg: 'Сунуштайбыз (1 товар)',
+    descRu: 'Товар в секции «Рекомендуем» на главной. Ротация до 8 мест',
+    descKg: 'Башкы беттеги «Сунуштайбыз» бөлүмүндө. 8 орунга чейин ротация',
+    priceRu: '500 сом/мес за товар', priceKg: '500 сом/ай товар үчүн',
+  },
+  {
+    icon: Package,
+    iconBg: 'bg-blue-100', iconColor: 'text-blue-600',
+    nameRu: 'Доп. карточки', nameKg: 'Кошумча карточкалар',
+    descRu: 'Превысили лимит тарифа? Добавляйте ещё',
+    descKg: 'Тариф лимитинен аштыңызбы? Дагы кошуңуз',
+    priceRu: '10 сом/шт сверх лимита', priceKg: '10 сом/даана лимиттен ашык',
+  },
+];
+
+export default function PricingPage() {
+  const { lang } = useLang();
+  const isRu = lang === 'ru';
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+            {isRu ? 'Тарифы для поставщиков' : 'Жеткирүүчүлөр үчүн тарифтер'}
+          </h1>
+          <p className="text-slate-300 text-lg max-w-xl mx-auto">
+            {isRu
+              ? 'Первый месяц бесплатно на любом тарифе. Выберите план под ваш бизнес'
+              : 'Каалаган тарифте биринчи ай акысыз. Бизнесиңизге план тандаңыз'}
+          </p>
+        </div>
+      </div>
+
+      {/* Тарифные карточки */}
+      <div className="max-w-6xl mx-auto px-4 -mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {plans.map(plan => (
+            <div key={plan.id} className={`bg-white rounded-2xl p-6 shadow-lg relative flex flex-col border-2 ${
+              plan.popular ? 'border-green-500' : plan.color === 'amber' ? 'border-amber-400' : 'border-transparent'
+            }`}>
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                  {isRu ? 'Популярный' : 'Популярдуу'}
+                </div>
+              )}
+              {plan.color === 'amber' && !plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                  {isRu ? 'Максимум' : 'Максимум'}
+                </div>
+              )}
+
+              <div className="text-3xl mb-3">{plan.icon}</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-1">{isRu ? plan.nameRu : plan.nameKg}</h3>
+              <p className="text-sm text-gray-500 mb-4">{isRu ? plan.descRu : plan.descKg}</p>
+
+              <div className="mb-4">
+                <span className="text-3xl font-extrabold text-gray-900">{plan.price.toLocaleString('ru-RU')}</span>
+                <span className="text-gray-400 text-sm"> {isRu ? 'сом/мес' : 'сом/ай'}</span>
+                <p className="text-green-600 text-xs font-semibold mt-1">
+                  {isRu ? 'Первый месяц — бесплатно!' : 'Биринчи ай — акысыз!'}
+                </p>
+              </div>
+
+              <ul className="space-y-2 flex-1 mb-5">
+                {plan.features.map((f, i) => (
+                  <li key={i} className={`flex items-start gap-2 text-sm ${f.included ? 'text-gray-700' : 'text-gray-300'}`}>
+                    {f.included
+                      ? <Check size={16} className="text-green-500 mt-0.5 shrink-0" />
+                      : <X size={16} className="text-gray-300 mt-0.5 shrink-0" />
+                    }
+                    <span className={f.bold ? 'font-semibold' : ''}>{isRu ? f.textRu : f.textKg}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/auth"
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-colors ${
+                  plan.popular
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : plan.color === 'amber'
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'bg-slate-800 text-white hover:bg-slate-700'
+                }`}
+              >
+                {isRu ? 'Начать бесплатно' : 'Акысыз баштоо'} <ArrowRight size={16} />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Подробнее о возможностях */}
+      <FeaturesDetails lang={lang} isRu={isRu} />
+
+      {/* Дополнительные услуги */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+          {isRu ? 'Дополнительные услуги' : 'Кошумча кызматтар'}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {addons.map((addon, i) => {
+            const Icon = addon.icon;
+            return (
+              <div key={i} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className={`w-10 h-10 ${addon.iconBg} rounded-xl flex items-center justify-center mb-3`}>
+                  <Icon size={20} className={addon.iconColor} />
+                </div>
+                <h3 className="font-bold text-gray-800 mb-1">{isRu ? addon.nameRu : addon.nameKg}</h3>
+                <p className="text-sm text-gray-500 mb-3">{isRu ? addon.descRu : addon.descKg}</p>
+                <p className="text-lg font-bold text-green-600">{isRu ? addon.priceRu : addon.priceKg}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="max-w-3xl mx-auto px-4 pb-16">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 sm:p-12 text-center text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+            {isRu ? 'Начните бесплатно уже сегодня' : 'Бүгүн акысыз баштаңыз'}
+          </h2>
+          <p className="text-slate-300 mb-6 max-w-md mx-auto">
+            {isRu
+              ? 'Первый месяц бесплатно. Без контрактов. Можно сменить тариф в любой момент'
+              : 'Биринчи ай акысыз. Контрактсыз. Тарифти каалаган убакта алмаштырса болот'}
+          </p>
+          <Link
+            href="/auth"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-colors"
+          >
+            {isRu ? 'Зарегистрироваться' : 'Катталуу'} <ArrowRight size={18} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const featuresData = [
+  {
+    icon: '📦',
+    titleRu: 'Карточки товаров',
+    titleKg: 'Товар карточкалары',
+    descRu: 'Каждый товар — это отдельная карточка с фото, названием, ценой, описанием и единицей измерения. Лимит зависит от тарифа: Старт — до 30, Базовый — до 100, Бизнес — до 300, Премиум — без ограничений. Если нужно больше — можно докупить по 10 сом за карточку.',
+    descKg: 'Ар бир товар — сүрөтү, аталышы, баасы, сүрөттөмөсү жана өлчөө бирдиги менен өзүнчө карточка. Лимит тарифке жараша: Старт — 30, Базалык — 100, Бизнес — 300, Премиум — чексиз. Көбүрөөк керек болсо — карточкага 10 сом кошумча.',
+  },
+  {
+    icon: '🏪',
+    titleRu: 'Страница поставщика',
+    titleKg: 'Жеткирүүчүнүн баракчасы',
+    descRu: 'Ваша персональная страница на MarketKG с названием компании, описанием, контактами, адресом, картой и рейтингом. Клиенты видят все ваши товары в одном месте, могут оставить отзыв и связаться через WhatsApp или Telegram.',
+    descKg: 'MarketKG деги жеке баракчаңыз — компаниянын аты, сүрөттөмө, байланыш, дарек, карта жана рейтинг. Кардарлар бардык товарларыңызды бир жерден көрүп, пикир калтырып, WhatsApp же Telegram аркылуу байланыша алышат.',
+  },
+  {
+    icon: '📋',
+    titleRu: 'Приём заказов',
+    titleKg: 'Буйрутмаларды кабыл алуу',
+    descRu: 'Клиенты добавляют ваши товары в корзину и оформляют заявку. Вы получаете заказ с именем клиента, телефоном, адресом доставки и списком товаров. Можно принять, отклонить или связаться с клиентом для уточнения.',
+    descKg: 'Кардарлар товарларыңызды себетке кошуп заявка берет. Сиз кардардын аты, телефону, жеткирүү дареги жана товарлар тизмеси менен буйрутма аласыз. Кабыл алуу, четке кагуу же тактоо үчүн кардар менен байланышуу мүмкүн.',
+  },
+  {
+    icon: '💬',
+    titleRu: 'WhatsApp / Telegram связь',
+    titleKg: 'WhatsApp / Telegram байланыш',
+    descRu: 'На вашей странице и в карточке поставщика показываются кнопки WhatsApp и Telegram. Клиенты могут написать вам напрямую — обсудить заказ, уточнить наличие или договориться о доставке.',
+    descKg: 'Баракчаңызда жана жеткирүүчү карточкасында WhatsApp жана Telegram баскычтары көрсөтүлөт. Кардарлар сизге түз жаза алышат — буйрутманы талкуулоо, бар-жоктугун тактоо же жеткирүү жөнүндө сүйлөшүү.',
+  },
+  {
+    icon: '💰',
+    titleRu: 'Комиссия 5% / 3%',
+    titleKg: '5% / 3% комиссия',
+    descRu: 'С каждого заказа, оформленного через платформу, взимается комиссия: 5% на тарифах Старт, Базовый и Бизнес, 3% на тарифе Премиум. Комиссия считается от суммы заказа. Заказы через WhatsApp напрямую — без комиссии.',
+    descKg: 'Платформа аркылуу түзүлгөн ар бир буйрутмадан комиссия алынат: Старт, Базалык жана Бизнес тарифтеринде 5%, Премиум тарифинде 3%. Комиссия буйрутма суммасынан эсептелет. WhatsApp аркылуу түз буйрутмалар — комиссиясыз.',
+  },
+  {
+    icon: '✅',
+    titleRu: 'Бейдж «Проверенный поставщик»',
+    titleKg: '«Текшерилген жеткирүүчү» бейджи',
+    descRu: 'Зелёная галочка рядом с названием вашей компании. Показывает клиентам, что вы надёжный партнёр. Повышает доверие и конверсию в заказы. Доступно на тарифах Бизнес и Премиум.',
+    descKg: 'Компанияңыздын аталышынын жанындагы жашыл белги. Кардарларга ишенимдүү өнөктөш экениңизди көрсөтөт. Ишенимди жана буйрутмаларга конверсияны жогорулатат. Бизнес жана Премиум тарифтеринде жеткиликтүү.',
+  },
+  {
+    icon: '📊',
+    titleRu: 'Расширенная аналитика',
+    titleKg: 'Кеңейтилген аналитика',
+    descRu: 'Подробная статистика вашего магазина:\n• Просмотры страницы и каждого товара\n• Из каких городов заходят клиенты\n• Какие товары добавляют в корзину, но не заказывают\n• Выручка по дням, неделям и месяцам (графики)\n• Средний чек и ТОП-5 товаров\n• Количество повторных клиентов\n\nНа Старте и Базовом — только количество заказов и сумма. Полная аналитика — на Бизнес и Премиум.',
+    descKg: 'Дүкөнүңүздүн толук статистикасы:\n• Баракчанын жана ар бир товардын көрүүлөрү\n• Кайсы шаарлардан кардарлар келет\n• Кайсы товарларды себетке кошуп, бирок заказ кылышпайт\n• Күндөр, жумалар жана айлар боюнча киреше (графиктер)\n• Орточо чек жана ТОП-5 товарлар\n• Кайталанган кардарлардын саны\n\nСтарт жана Базалыкта — буйрутмалардын саны жана суммасы гана. Толук аналитика — Бизнес жана Премиумда.',
+  },
+  {
+    icon: '🎧',
+    titleRu: 'Приоритетная поддержка',
+    titleKg: 'Приоритеттүү колдоо',
+    descRu: 'Только для Премиум:\n• Ответ на вопросы в течение 1 часа (вместо 24 часов)\n• Личный менеджер в WhatsApp\n• Помощь с загрузкой товаров и настройкой страницы\n• Консультации по продвижению и увеличению продаж\n• Первоочередное решение технических проблем',
+    descKg: 'Премиум үчүн гана:\n• Суроолорго 1 сааттын ичинде жооп (24 сааттын ордуна)\n• WhatsApp тагы жеке менеджер\n• Товарларды жүктөө жана баракчаны жөндөө боюнча жардам\n• Жылдыруу жана сатууну көбөйтүү боюнча кеңештер\n• Техникалык көйгөйлөрдү биринчи кезекте чечүү',
+  },
+];
+
+function FeaturesDetails({ lang, isRu }) {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+        {isRu ? 'Что входит в тарифы — подробно' : 'Тарифтерге эмне кирет — толук'}
+      </h2>
+      <p className="text-center text-sm text-gray-500 mb-8">
+        {isRu ? 'Нажмите на пункт, чтобы узнать подробности' : 'Толук маалымат үчүн пунктту басыңыз'}
+      </p>
+
+      <div className="space-y-2">
+        {featuresData.map((f, i) => {
+          const isOpen = openIndex === i;
+          return (
+            <div key={i} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+              <button
+                onClick={() => setOpenIndex(isOpen ? null : i)}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-2xl">{f.icon}</span>
+                <span className="flex-1 font-semibold text-gray-800">{isRu ? f.titleRu : f.titleKg}</span>
+                <ChevronDown size={20} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isOpen && (
+                <div className="px-5 pb-5 pt-0">
+                  <div className="pl-11 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                    {isRu ? f.descRu : f.descKg}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

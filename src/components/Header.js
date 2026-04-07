@@ -84,7 +84,7 @@ export default function Header() {
               {/* Уведомления */}
               <Link href="/notifications" className="relative p-2 text-white/80 hover:text-white transition-colors hidden sm:block">
                 <Bell size={20} />
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
+                {/* TODO: подключить реальный счётчик уведомлений */}
               </Link>
 
               {/* Корзина — скрыта на мобильном (есть в нижней навигации) */}
@@ -96,7 +96,7 @@ export default function Header() {
               </Link>
 
               {/* Профиль */}
-              {true && (
+              {(
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}

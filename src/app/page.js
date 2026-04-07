@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CATEGORIES, getProducts, getSuppliers } from '@/lib/firestore';
+import { CATEGORIES, SUBCATEGORIES, getProducts, getSuppliers } from '@/lib/firestore';
 import { useLang } from '@/context/LangContext';
 import SupplierCard from '@/components/SupplierCard';
 import ProductCard from '@/components/ProductCard';
@@ -35,38 +35,7 @@ export default function HomePage() {
   const catName = (id) => t(id) || CATEGORIES.find(c => c.id === id)?.name || id;
   const isRu = lang === 'ru';
 
-  const SUBCATEGORIES = {
-    confectionery: isRu
-      ? ['Конфеты шоколадные', 'Карамель', 'Печенье', 'Торты', 'Пахлава', 'Вафли']
-      : ['Шоколад конфеталар', 'Карамель', 'Печенье', 'Торттор', 'Пахлава', 'Вафли'],
-    drinks: isRu
-      ? ['Максым', 'Чалап', 'Бозо', 'Квас', 'Компот', 'Минеральная вода', 'Чай']
-      : ['Максым', 'Чалап', 'Бозо', 'Квас', 'Компот', 'Минералдык суу', 'Чай'],
-    grocery: isRu
-      ? ['Мука', 'Рис', 'Макароны', 'Сахар', 'Масло растительное', 'Гречка', 'Соль']
-      : ['Ун', 'Күрүч', 'Макарон', 'Кант', 'Өсүмдүк майы', 'Гречка', 'Туз'],
-    dairy: isRu
-      ? ['Молоко', 'Кефир', 'Сметана', 'Творог', 'Масло сливочное', 'Айран', 'Йогурт']
-      : ['Сүт', 'Кефир', 'Каймак', 'Быштак', 'Сары май', 'Айран', 'Йогурт'],
-    meat: isRu
-      ? ['Говядина', 'Баранина', 'Курица', 'Колбаса', 'Фарш']
-      : ['Уй эти', 'Кой эти', 'Тоок', 'Колбаса', 'Фарш'],
-    fruits: isRu
-      ? ['Яблоки', 'Картофель', 'Морковь', 'Помидоры', 'Огурцы', 'Лук']
-      : ['Алма', 'Картошка', 'Сабиз', 'Помидор', 'Бадыраң', 'Пияз'],
-    frozen: isRu
-      ? ['Пельмени', 'Манты', 'Самса', 'Овощные смеси', 'Мороженое']
-      : ['Пельмендер', 'Манты', 'Самса', 'Жашылча аралашма', 'Балмуздак'],
-    snacks: isRu
-      ? ['Чипсы', 'Орехи', 'Сухофрукты', 'Семечки', 'Сухарики']
-      : ['Чипсы', 'Жаңгак', 'Кургатылган жемиш', 'Чечек', 'Сухарилер'],
-    household: isRu
-      ? ['Стиральный порошок', 'Мыло', 'Средство для посуды', 'Шампунь']
-      : ['Кир жуугуч порошок', 'Сабын', 'Идиш жуугуч', 'Шампунь'],
-    other: isRu
-      ? ['Салфетки', 'Пакеты', 'Одноразовая посуда']
-      : ['Салфеткалар', 'Пакеттер', 'Бир жолку идиштер'],
-  };
+  const getSubcats = (catId) => SUBCATEGORIES[catId]?.[lang] || SUBCATEGORIES[catId]?.ru || [];
 
   return (
     <div>
@@ -220,7 +189,7 @@ export default function HomePage() {
               </div>
               <div className="p-4 space-y-1">
                 {CATEGORIES.map(cat => {
-                  const subcats = SUBCATEGORIES[cat.id] || [];
+                  const subcats = getSubcats(cat.id);
                   const isOpenCat = openCatId === cat.id;
                   return (
                     <div key={cat.id}>
@@ -261,31 +230,31 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Десктоп: чистые иконки категорий в ряд со стрелками */}
+        {/* Десктоп: горизонтальная лента со стрелками */}
         <div className="hidden md:block relative">
           <button
-            onClick={() => { document.getElementById('cat-row').scrollBy({ left: -250, behavior: 'smooth' }); }}
+            onClick={() => { document.getElementById('cat-row').scrollBy({ left: -300, behavior: 'smooth' }); }}
             className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <button
-            onClick={() => { document.getElementById('cat-row').scrollBy({ left: 250, behavior: 'smooth' }); }}
+            onClick={() => { document.getElementById('cat-row').scrollBy({ left: 300, behavior: 'smooth' }); }}
             className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
-        <div id="cat-row" className="grid grid-cols-5 lg:grid-cols-10 gap-3">
-          {CATEGORIES.map(cat => (
-            <Link key={cat.id} href={`/catalog?category=${cat.id}`}
-              className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 hover:border-slate-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group">
-              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                <CategoryIcon categoryId={cat.id} size={42} />
-              </div>
-              <span className="text-sm font-bold text-gray-800 group-hover:text-slate-700 transition-colors text-center leading-tight">{catName(cat.id)}</span>
-            </Link>
-          ))}
-        </div>
+          <div id="cat-row" className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-1">
+            {CATEGORIES.map(cat => (
+              <Link key={cat.id} href={`/catalog?category=${cat.id}`}
+                className="shrink-0 flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 hover:border-slate-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group w-[100px]">
+                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-slate-100 transition-colors">
+                  <CategoryIcon categoryId={cat.id} size={36} />
+                </div>
+                <span className="text-xs font-bold text-gray-800 group-hover:text-slate-700 transition-colors text-center leading-tight line-clamp-2">{catName(cat.id)}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -338,14 +307,12 @@ export default function HomePage() {
             <p className="text-yellow-100 text-sm leading-relaxed flex-1">
               {t('topPlacementDesc')}
             </p>
-            <a
-              href="https://wa.me/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/support"
               className="inline-block px-6 py-3 bg-white text-slate-800 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-6 text-center"
             >
               {t('topPlacementBtn')}
-            </a>
+            </Link>
           </div>
 
           {/* Пригласить поставщика */}

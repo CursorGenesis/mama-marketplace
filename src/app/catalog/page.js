@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getProducts, getSuppliers, CATEGORIES, CITIES } from '@/lib/firestore';
+import { getProducts, getSuppliers, CATEGORIES, CITIES, SUBCATEGORIES } from '@/lib/firestore';
 import { useLang } from '@/context/LangContext';
 import ProductCard from '@/components/ProductCard';
 import SupplierCard from '@/components/SupplierCard';
@@ -16,6 +16,7 @@ function CatalogContent() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   // Фильтры
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -113,6 +114,7 @@ function CatalogContent() {
   const clearFilters = () => {
     setSearch(''); setCategory(''); setCity('');
     setPriceMin(''); setPriceMax(''); setSortBy('newest');
+    setVisibleCount(20);
   };
 
   const hasFilters = search || category || city || priceMin || priceMax;
@@ -132,7 +134,7 @@ function CatalogContent() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={lang === 'kg' ? 'Издөө: "арзан сүт", "конфета"...' : 'Поиск: "дешёвое молоко", "конфеты"...'}
+              placeholder={lang === 'kg' ? 'Издөө: "сүт", "конфета"...' : 'Поиск: "молоко", "конфеты"...'}
               className="w-full pl-10 pr-4 py-2.5 md:py-3 bg-white border border-gray-200 rounded-lg text-sm md:text-base md:font-medium focus:outline-none focus:ring-2 focus:ring-slate-500"
             />
           </div>
@@ -147,28 +149,43 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* Категории — горизонтальная лента */}
-      <div className="mb-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Категории — горизонтальная лента со стрелками */}
+      <div className="mb-4 relative">
+        {/* Стрелка влево */}
+        <button
+          onClick={() => document.getElementById('cat-scroll').scrollBy({ left: -200, behavior: 'smooth' })}
+          className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all hidden md:flex"
+        >
+          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        {/* Стрелка вправо */}
+        <button
+          onClick={() => document.getElementById('cat-scroll').scrollBy({ left: 200, behavior: 'smooth' })}
+          className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all hidden md:flex"
+        >
+          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        </button>
+
+        <div id="cat-scroll" className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
           <button
             onClick={() => { setCategory(''); setSearch(''); }}
-            className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-all min-w-[72px] ${
               !category ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
             }`}
           >
-            <ShoppingBag size={16} />
-            {t('all')}
+            <ShoppingBag size={24} />
+            <span>{t('all')}</span>
           </button>
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               onClick={() => { setCategory(category === cat.id ? '' : cat.id); setSearch(''); }}
-              className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-all min-w-[72px] ${
                 category === cat.id ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
               }`}
             >
-              <CategoryIcon categoryId={cat.id} size={16} />
-              {catName(cat.id)}
+              <CategoryIcon categoryId={cat.id} size={28} />
+              <span className="text-center leading-tight line-clamp-1">{catName(cat.id)}</span>
             </button>
           ))}
         </div>
@@ -176,26 +193,14 @@ function CatalogContent() {
 
       {/* Подкатегории — появляются когда выбрана категория */}
       {category && (() => {
-        const SUBCATEGORIES = {
-          confectionery: lang === 'ru' ? ['Конфеты шоколадные', 'Карамель', 'Печенье', 'Торты', 'Пахлава', 'Вафли'] : ['Шоколад конфеталар', 'Карамель', 'Печенье', 'Торттор', 'Пахлава', 'Вафли'],
-          drinks: lang === 'ru' ? ['Максым', 'Чалап', 'Бозо', 'Квас', 'Компот', 'Минеральная вода', 'Чай'] : ['Максым', 'Чалап', 'Бозо', 'Квас', 'Компот', 'Минералдык суу', 'Чай'],
-          grocery: lang === 'ru' ? ['Мука', 'Рис', 'Макароны', 'Сахар', 'Масло растительное', 'Гречка', 'Соль'] : ['Ун', 'Күрүч', 'Макарон', 'Кант', 'Өсүмдүк майы', 'Гречка', 'Туз'],
-          dairy: lang === 'ru' ? ['Молоко', 'Кефир', 'Сметана', 'Творог', 'Масло сливочное', 'Айран', 'Йогурт'] : ['Сүт', 'Кефир', 'Каймак', 'Быштак', 'Сары май', 'Айран', 'Йогурт'],
-          meat: lang === 'ru' ? ['Говядина', 'Баранина', 'Курица', 'Колбаса', 'Фарш'] : ['Уй эти', 'Кой эти', 'Тоок', 'Колбаса', 'Фарш'],
-          fruits: lang === 'ru' ? ['Яблоки', 'Картофель', 'Морковь', 'Помидоры', 'Огурцы', 'Лук'] : ['Алма', 'Картошка', 'Сабиз', 'Помидор', 'Бадыраң', 'Пияз'],
-          frozen: lang === 'ru' ? ['Пельмени', 'Манты', 'Самса', 'Овощные смеси', 'Мороженое'] : ['Пельмендер', 'Манты', 'Самса', 'Жашылча аралашма', 'Балмуздак'],
-          snacks: lang === 'ru' ? ['Чипсы', 'Орехи', 'Сухофрукты', 'Семечки', 'Сухарики'] : ['Чипсы', 'Жаңгак', 'Кургатылган жемиш', 'Чечек', 'Сухарилер'],
-          household: lang === 'ru' ? ['Стиральный порошок', 'Мыло', 'Средство для посуды', 'Шампунь'] : ['Кир жуугуч порошок', 'Сабын', 'Идиш жуугуч', 'Шампунь'],
-          other: lang === 'ru' ? ['Салфетки', 'Пакеты', 'Одноразовая посуда'] : ['Салфеткалар', 'Пакеттер', 'Бир жолку идиштер'],
-        };
-        const subs = SUBCATEGORIES[category] || [];
+        const subs = SUBCATEGORIES[category]?.[lang] || SUBCATEGORIES[category]?.ru || [];
         if (subs.length === 0) return null;
         return (
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="mb-4 flex flex-wrap gap-2">
             {subs.map((sub, i) => (
               <button key={i}
                 onClick={() => setSearch(sub)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   search === sub ? 'bg-slate-100 text-slate-800 border border-slate-300' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                 }`}>
                 {sub}
@@ -281,8 +286,20 @@ function CatalogContent() {
               </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.map(p => <ProductCard key={p.id} product={p} />)}
-          </div>
+              {filteredProducts.slice(0, visibleCount).map(p => <ProductCard key={p.id} product={p} />)}
+            </div>
+            {visibleCount < filteredProducts.length && (
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 20)}
+                  className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  {lang === 'kg'
+                    ? `Дагы көрсөтүү (${filteredProducts.length - visibleCount} калды)`
+                    : `Показать ещё (${filteredProducts.length - visibleCount} осталось)`}
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center py-20 text-gray-400">{t('productsNotFound')}</div>

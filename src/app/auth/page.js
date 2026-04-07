@@ -13,6 +13,10 @@ function AuthForm() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('buyer');
+  const [companyName, setCompanyName] = useState('');
+  const [city, setCity] = useState('');
+  const [category, setCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register, loginWithGoogle, loginWithApple } = useAuth();
   const { t, lang } = useLang();
@@ -29,7 +33,10 @@ function AuthForm() {
         await login(email, password);
         toast.success(isRu ? 'Добро пожаловать!' : 'Кош келиңиз!');
       } else {
-        await register(email, password, name, phone, role);
+        await register(email, password, name, phone, role, {
+          companyName, city,
+          category: category === 'other' ? customCategory : category,
+        });
         toast.success(isRu ? 'Регистрация прошла успешно!' : 'Каттоо ийгиликтүү!');
       }
       router.push('/');
@@ -215,6 +222,73 @@ function AuthForm() {
                     </button>
                   </div>
                 </div>
+
+                {/* Дополнительные поля для поставщика */}
+                {role === 'supplier' && (
+                  <>
+                    <input
+                      type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+                      placeholder={isRu ? 'Название компании' : 'Компаниянын аты'}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <select value={city} onChange={e => setCity(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                      <option value="">{isRu ? 'Выберите город' : 'Шаар тандаңыз'}</option>
+                      <option value="Бишкек">Бишкек</option>
+                      <option value="Ош">Ош</option>
+                      <option value="Джалал-Абад">Джалал-Абад</option>
+                      <option value="Каракол">Каракол</option>
+                      <option value="Токмок">Токмок</option>
+                      <option value="Нарын">Нарын</option>
+                      <option value="Баткен">Баткен</option>
+                      <option value="Талас">Талас</option>
+                      <option value="Балыкчы">Балыкчы</option>
+                      <option value="Кызыл-Кия">Кызыл-Кия</option>
+                    </select>
+                    <select value={category} onChange={e => setCategory(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                      <option value="">{isRu ? 'Категория товаров' : 'Товар категориясы'}</option>
+                      <option value="confectionery">{isRu ? 'Кондитерка' : 'Кондитердик'}</option>
+                      <option value="drinks">{isRu ? 'Напитки' : 'Суусундуктар'}</option>
+                      <option value="grocery">{isRu ? 'Бакалея' : 'Бакалея'}</option>
+                      <option value="dairy">{isRu ? 'Молочные продукты' : 'Сүт азыктары'}</option>
+                      <option value="meat">{isRu ? 'Мясо и птица' : 'Эт жана канаттуулар'}</option>
+                      <option value="fruits">{isRu ? 'Фрукты и овощи' : 'Жемиштер жана жашылчалар'}</option>
+                      <option value="frozen">{isRu ? 'Заморозка' : 'Тоңдурулган'}</option>
+                      <option value="snacks">{isRu ? 'Снеки' : 'Снектер'}</option>
+                      <option value="bakery">{isRu ? 'Хлеб и выпечка' : 'Нан жана токоч'}</option>
+                      <option value="oils">{isRu ? 'Масла и соусы' : 'Май жана соустар'}</option>
+                      <option value="eggs">{isRu ? 'Яйца' : 'Жумуртка'}</option>
+                      <option value="tea_coffee">{isRu ? 'Чай и кофе' : 'Чай жана кофе'}</option>
+                      <option value="canned">{isRu ? 'Консервы' : 'Консерва'}</option>
+                      <option value="spices">{isRu ? 'Специи и приправы' : 'Даамдоочтор'}</option>
+                      <option value="baby">{isRu ? 'Детское питание' : 'Балдар тамагы'}</option>
+                      <option value="tobacco">{isRu ? 'Табак' : 'Тамеки'}</option>
+                      <option value="disposable">{isRu ? 'Одноразовая посуда' : 'Бир жолку идиштер'}</option>
+                      <option value="pet_food">{isRu ? 'Корма для животных' : 'Жаныбарлар тоюту'}</option>
+                      <option value="alcohol">{isRu ? 'Алкоголь' : 'Алкоголь'}</option>
+                      <option value="hardware">{isRu ? 'Хозтовары' : 'Чарба товарлары'}</option>
+                      <option value="stationery">{isRu ? 'Канцтовары' : 'Канцтоварлар'}</option>
+                      <option value="textile">{isRu ? 'Текстиль' : 'Текстиль'}</option>
+                      <option value="hygiene">{isRu ? 'Гигиена' : 'Гигиена'}</option>
+                      <option value="honey">{isRu ? 'Мёд и варенье' : 'Бал жана варенье'}</option>
+                      <option value="dried_fruits">{isRu ? 'Сухофрукты и орехи' : 'Кургатылган жемиш жана жаңгак'}</option>
+                      <option value="household">{isRu ? 'Бытовая химия' : 'Тиричилик химиясы'}</option>
+                      <option value="other">{isRu ? 'Другое' : 'Башка'}</option>
+                    </select>
+                    {category === 'other' && (
+                      <input
+                        type="text" value={customCategory} onChange={e => setCustomCategory(e.target.value)}
+                        placeholder={isRu ? 'Укажите вашу категорию' : 'Категорияңызды жазыңыз'}
+                        required
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                      />
+                    )}
+                  </>
+                )}
               </>
             )}
 

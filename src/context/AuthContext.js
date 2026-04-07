@@ -10,7 +10,7 @@ import {
   OAuthProvider,
   signOut,
 } from 'firebase/auth';
-import { getUserProfile, createUserProfile } from '@/lib/firestore';
+import { getUserProfile, createUserProfile, updateUserProfile } from '@/lib/firestore';
 
 const AuthContext = createContext({});
 
@@ -36,9 +36,15 @@ export function AuthProvider({ children }) {
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
 
-  const register = async (email, password, name, phone, role = 'buyer') => {
+  const register = async (email, password, name, phone, role = 'buyer', extra = {}) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await createUserProfile(cred.user.uid, { email, name, phone, role });
+    const profileData = { email, name, phone, role };
+    if (role === 'supplier' && extra.companyName) {
+      profileData.companyName = extra.companyName;
+      profileData.city = extra.city || '';
+      profileData.category = extra.category || '';
+    }
+    await createUserProfile(cred.user.uid, profileData);
     const p = await getUserProfile(cred.user.uid);
     setProfile(p);
     return cred;
@@ -83,13 +89,20 @@ export function AuthProvider({ children }) {
 
   const logout = () => signOut(auth);
 
+  const updateProfile = async (data) => {
+    if (!user) return;
+    await updateUserProfile(user.uid, data);
+    const p = await getUserProfile(user.uid);
+    setProfile(p);
+  };
+
   const isAdmin = profile?.role === 'admin' ||
     user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const isSupplier = profile?.role === 'supplier';
 
   return (
     <AuthContext.Provider value={{
-      user, profile, loading, login, register, logout, loginWithGoogle, loginWithApple, isAdmin, isSupplier
+      user, profile, loading, login, register, logout, loginWithGoogle, loginWithApple, updateProfile, isAdmin, isSupplier
     }}>
       {children}
     </AuthContext.Provider>

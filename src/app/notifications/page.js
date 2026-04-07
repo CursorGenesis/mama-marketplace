@@ -3,12 +3,20 @@ import { useLang } from '@/context/LangContext';
 import { useState } from 'react';
 import { Package, Tag, Bell, Check } from 'lucide-react';
 
-const demoNotifications = [
-  { id: 1, type: 'order', title: 'Заказ доставлен', message: 'Ваш заказ от Шоро успешно доставлен', date: new Date('2026-03-30'), read: false },
-  { id: 2, type: 'promo', title: 'Новая акция!', message: 'Скидка 15% на все напитки Шоро до конца месяца', date: new Date('2026-03-29'), read: false },
-  { id: 3, type: 'order', title: 'Заказ в обработке', message: 'Ваш заказ от Бишкек Сүт принят в обработку', date: new Date('2026-03-28'), read: true },
-  { id: 4, type: 'system', title: 'Добро пожаловать!', message: 'Добро пожаловать в MarketKG! Начните с каталога товаров', date: new Date('2026-03-20'), read: true },
-];
+const demoNotificationsData = {
+  ru: [
+    { id: 1, type: 'order', title: 'Заказ доставлен', message: 'Ваш заказ от Шоро успешно доставлен', date: new Date('2026-03-30'), read: false },
+    { id: 2, type: 'promo', title: 'Новая акция!', message: 'Скидка 15% на все напитки Шоро до конца месяца', date: new Date('2026-03-29'), read: false },
+    { id: 3, type: 'order', title: 'Заказ в обработке', message: 'Ваш заказ от Бишкек Сүт принят в обработку', date: new Date('2026-03-28'), read: true },
+    { id: 4, type: 'system', title: 'Добро пожаловать!', message: 'Добро пожаловать в MarketKG! Начните с каталога товаров', date: new Date('2026-03-20'), read: true },
+  ],
+  kg: [
+    { id: 1, type: 'order', title: 'Буйрутма жеткирилди', message: 'Шоро буйрутмаңыз ийгиликтүү жеткирилди', date: new Date('2026-03-30'), read: false },
+    { id: 2, type: 'promo', title: 'Жаңы акция!', message: 'Шоро суусундуктарына 15% арзандатуу ай аягына чейин', date: new Date('2026-03-29'), read: false },
+    { id: 3, type: 'order', title: 'Буйрутма иштелүүдө', message: 'Бишкек Сүт буйрутмаңыз кабыл алынды', date: new Date('2026-03-28'), read: true },
+    { id: 4, type: 'system', title: 'Кош келиңиз!', message: 'MarketKG ге кош келиңиз! Каталогдон баштаңыз', date: new Date('2026-03-20'), read: true },
+  ],
+};
 
 const typeConfig = {
   order: { icon: Package, color: 'bg-blue-50 text-blue-600', label: 'notif_order' },
@@ -17,8 +25,8 @@ const typeConfig = {
 };
 
 export default function NotificationsPage() {
-  const { t } = useLang();
-  const [notifications, setNotifications] = useState(demoNotifications);
+  const { t, lang } = useLang();
+  const [notifications, setNotifications] = useState(demoNotificationsData[lang] || demoNotificationsData.ru);
 
   const markAsRead = (id) => {
     setNotifications(prev =>

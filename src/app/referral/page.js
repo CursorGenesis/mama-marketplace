@@ -1,197 +1,182 @@
 'use client';
 import { useLang } from '@/context/LangContext';
-import { Search, Send, MessageCircle, CheckCircle, Clock, Building2, Phone, MapPin, Plus } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Gift, Share2, Crown, Percent, MessageCircle, Copy, CheckCircle, Building2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 
-// Демо: уже поступившие заявки
-const demoRequests = [
-  { id: 1, company: 'Ак-Суу Молоко', city: 'Каракол', category: 'Молочные продукты', status: 'connected', date: '2026-03-20', requestedBy: 'Магазин "Береке"' },
-  { id: 2, company: 'Ош Нан', city: 'Ош', category: 'Хлеб и выпечка', status: 'searching', date: '2026-03-25', requestedBy: 'Мини-маркет "Айжан"' },
-  { id: 3, company: 'Фрукты от Ахмата', city: 'Джалал-Абад', category: 'Фрукты и овощи', status: 'new', date: '2026-03-28', requestedBy: 'Магазин "Достук"' },
-];
-
-export default function InviteSupplierPage() {
+export default function ReferralPage() {
   const { lang } = useLang();
+  const { user, profile } = useAuth();
   const isRu = lang === 'ru';
+  const [copied, setCopied] = useState(false);
 
-  const [form, setForm] = useState({ company: '', city: '', category: '', phone: '', comment: '' });
-  const [submitted, setSubmitted] = useState(false);
-  const [requests, setRequests] = useState(demoRequests);
+  // Генерируем реферальный код из uid или рандомный для демо
+  const refCode = user ? user.uid.slice(0, 6).toUpperCase() : 'DEMO01';
+  const refLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth?ref=${refCode}`;
 
-  const categories = [
-    { id: 'dairy', ru: 'Молочные продукты', kg: 'Сүт азыктары' },
-    { id: 'drinks', ru: 'Напитки', kg: 'Суусундуктар' },
-    { id: 'grocery', ru: 'Бакалея', kg: 'Бакалея' },
-    { id: 'meat', ru: 'Мясо и птица', kg: 'Эт жана канаттуулар' },
-    { id: 'fruits', ru: 'Фрукты и овощи', kg: 'Жемиштер жана жашылчалар' },
-    { id: 'confectionery', ru: 'Кондитерка', kg: 'Кондитердик' },
-    { id: 'frozen', ru: 'Заморозка', kg: 'Тоңдурулган' },
-    { id: 'household', ru: 'Бытовая химия', kg: 'Тиричилик химиясы' },
-    { id: 'other', ru: 'Другое', kg: 'Башка' },
-  ];
+  // Готовое сообщение для поставщика
+  const messageRu = `Здравствуйте! Приглашаю вас на MarketKG — B2B маркетплейс поставщиков Кыргызстана.
 
-  const cities = ['Бишкек', 'Ош', 'Джалал-Абад', 'Каракол', 'Токмок', 'Нарын', 'Баткен', 'Талас'];
+✅ Бесплатная регистрация
+✅ Готовые клиенты по всей стране
+✅ Удобное управление заказами
+✅ Связь через WhatsApp/Telegram
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.company.trim()) {
-      toast.error(isRu ? 'Укажите название компании' : 'Компаниянын атын жазыңыз');
-      return;
-    }
+🎁 При регистрации по моей ссылке вы получите бесплатное ТОП-размещение на 7 дней!
 
-    const newRequest = {
-      id: Date.now(),
-      company: form.company,
-      city: form.city || 'Не указан',
-      category: form.category || 'Другое',
-      status: 'new',
-      date: new Date().toISOString().split('T')[0],
-      requestedBy: isRu ? 'Вы' : 'Сиз',
-    };
+А я как ваш первый клиент получу скидку 5% на первый заказ — выгодно обоим!
 
-    setRequests([newRequest, ...requests]);
-    setSubmitted(true);
-    setForm({ company: '', city: '', category: '', phone: '', comment: '' });
-    toast.success(isRu ? 'Заявка отправлена! Мы свяжемся с этим поставщиком' : 'Заявка жөнөтүлдү! Бул жеткирүүчү менен байланышабыз');
+Регистрация: ${refLink}`;
 
-    setTimeout(() => setSubmitted(false), 3000);
+  const messageKg = `Саламатсызбы! Сизди MarketKG га чакырамын — Кыргызстандын B2B жеткирүүчүлөр маркетплейси.
+
+✅ Акысыз каттоо
+✅ Бүт өлкө боюнча даяр кардарлар
+✅ Буйрутмаларды ыңгайлуу башкаруу
+✅ WhatsApp/Telegram аркылуу байланыш
+
+🎁 Менин шилтемем менен катталсаңыз 7 күнгө акысыз ТОП-жайгашуу аласыз!
+
+Мен биринчи кардарыңыз катары биринчи заказга 5% арзандатуу алам — экөөбүзгө тең пайдалуу!
+
+Каттоо: ${refLink}`;
+
+  const message = isRu ? messageRu : messageKg;
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success(isRu ? 'Скопировано!' : 'Көчүрүлдү!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      new: { bg: 'bg-blue-100 text-blue-700', text: isRu ? 'Новая заявка' : 'Жаңы заявка', icon: <Clock size={12} /> },
-      searching: { bg: 'bg-yellow-100 text-yellow-700', text: isRu ? 'Ищем контакт' : 'Байланыш издеп жатабыз', icon: <Search size={12} /> },
-      connected: { bg: 'bg-green-100 text-green-700', text: isRu ? 'Подключён!' : 'Кошулду!', icon: <CheckCircle size={12} /> },
-    };
-    const s = styles[status] || styles.new;
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${s.bg}`}>
-        {s.icon} {s.text}
-      </span>
-    );
+  const handleWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleTelegram = () => {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: 'MarketKG', text: message, url: refLink });
+    } else {
+      handleCopy(message);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-emerald-700 py-12 sm:py-16">
+      <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-green-900 py-12 sm:py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Building2 size={32} className="text-white" />
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Gift size={32} className="text-green-400" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-            {isRu ? 'Пригласить поставщика' : 'Жеткирүүчүнү чакыруу'}
+            {isRu ? 'Пригласи поставщика — получи скидку!' : 'Жеткирүүчүнү чакыр — арзандатуу ал!'}
           </h1>
-          <p className="text-primary-100 text-lg max-w-xl mx-auto">
+          <p className="text-slate-300 text-lg max-w-xl mx-auto">
             {isRu
-              ? 'Не нашли нужного поставщика? Расскажите нам — мы найдём его и подключим к платформе'
-              : 'Керектүү жеткирүүчүнү таппадыңызбы? Бизге айтыңыз — биз аны таап, платформага кошобуз'}
+              ? 'Отправьте ссылку поставщику. Он получит бесплатный ТОП, а вы — скидку 5% на первый заказ'
+              : 'Жеткирүүчүгө шилтеме жөнөтүңүз. Ал акысыз ТОП алат, сиз — биринчи заказга 5% арзандатуу'}
           </p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 -mt-6">
-        {/* Форма заявки */}
+
+        {/* Выгоды для обоих */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+              <Percent size={20} className="text-green-600" />
+            </div>
+            <h3 className="font-bold text-gray-800 mb-1">{isRu ? 'Вам — скидка 5%' : 'Сизге — 5% арзандатуу'}</h3>
+            <p className="text-sm text-gray-500">
+              {isRu
+                ? 'На первый заказ у приглашённого поставщика. Скидку предоставляет сам поставщик'
+                : 'Чакырылган жеткирүүчүдөгү биринчи заказга. Арзандатууну жеткирүүчү өзү берет'}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mb-3">
+              <Crown size={20} className="text-amber-600" />
+            </div>
+            <h3 className="font-bold text-gray-800 mb-1">{isRu ? 'Поставщику — ТОП 7 дней' : 'Жеткирүүчүгө — 7 күн ТОП'}</h3>
+            <p className="text-sm text-gray-500">
+              {isRu
+                ? 'Бесплатное размещение в разделе «Топ поставщики» на главной странице'
+                : 'Башкы беттеги «Топ жеткирүүчүлөр» бөлүмүндө акысыз жайгашуу'}
+            </p>
+          </div>
+        </div>
+
+        {/* Готовое сообщение */}
         <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
           <h2 className="font-bold text-lg text-gray-800 mb-1">
-            {isRu ? 'Какого поставщика вы ищете?' : 'Кайсы жеткирүүчүнү издеп жатасыз?'}
+            {isRu ? 'Готовое сообщение для поставщика' : 'Жеткирүүчү үчүн даяр кабар'}
           </h2>
-          <p className="text-sm text-gray-500 mb-5">
-            {isRu ? 'Заполните форму — мы свяжемся с поставщиком и пригласим его на MarketKG' : 'Форманы толтуруңуз — жеткирүүчү менен байланышып, MarketKG га чакырабыз'}
+          <p className="text-sm text-gray-500 mb-4">
+            {isRu ? 'Отправьте через WhatsApp или Telegram — текст уже составлен' : 'WhatsApp же Telegram аркылуу жөнөтүңүз — текст даяр'}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Название компании */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {isRu ? 'Название компании / поставщика' : 'Компаниянын / жеткирүүчүнүн аты'} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={form.company}
-                onChange={e => setForm({ ...form, company: e.target.value })}
-                placeholder={isRu ? 'Например: Шоро, Бишкек Сүт...' : 'Мисалы: Шоро, Бишкек Сүт...'}
-                required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
+          {/* Превью сообщения */}
+          <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm text-gray-700 whitespace-pre-line border border-gray-200 max-h-64 overflow-y-auto">
+            {message}
+          </div>
 
-            {/* Город и Категория */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {isRu ? 'Город' : 'Шаар'}
-                </label>
-                <select
-                  value={form.city}
-                  onChange={e => setForm({ ...form, city: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">{isRu ? 'Выберите город' : 'Шаар тандаңыз'}</option>
-                  {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {isRu ? 'Категория товаров' : 'Товар категориясы'}
-                </label>
-                <select
-                  value={form.category}
-                  onChange={e => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">{isRu ? 'Выберите категорию' : 'Категория тандаңыз'}</option>
-                  {categories.map(c => <option key={c.id} value={isRu ? c.ru : c.kg}>{isRu ? c.ru : c.kg}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Телефон поставщика */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {isRu ? 'Телефон поставщика (если знаете)' : 'Жеткирүүчүнүн телефону (билсеңиз)'}
-              </label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={e => setForm({ ...form, phone: e.target.value })}
-                placeholder="+996 ..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-
-            {/* Комментарий */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {isRu ? 'Что именно хотите заказывать?' : 'Эмне заказ кылгыңыз келет?'}
-              </label>
-              <textarea
-                value={form.comment}
-                onChange={e => setForm({ ...form, comment: e.target.value })}
-                placeholder={isRu ? 'Например: молоко, кефир, сметану оптом каждую неделю' : 'Мисалы: сүт, кефир, каймак оптом ар жума'}
-                rows={2}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-
-            {/* Кнопка */}
+          {/* Кнопки отправки */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
-              type="submit"
-              disabled={submitted}
-              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all ${
-                submitted
-                  ? 'bg-green-500 text-white'
-                  : 'bg-primary-600 text-white hover:bg-primary-700'
-              }`}
+              onClick={handleWhatsApp}
+              className="flex items-center justify-center gap-2 py-3 px-4 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors font-semibold"
             >
-              {submitted ? (
-                <><CheckCircle size={18} /> {isRu ? 'Заявка отправлена!' : 'Заявка жөнөтүлдү!'}</>
-              ) : (
-                <><Send size={18} /> {isRu ? 'Отправить заявку' : 'Заявка жөнөтүү'}</>
-              )}
+              <MessageCircle size={18} />
+              WhatsApp
             </button>
-          </form>
+            <button
+              onClick={handleTelegram}
+              className="flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-semibold"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              </svg>
+              Telegram
+            </button>
+            <button
+              onClick={handleNativeShare}
+              className="flex items-center justify-center gap-2 py-3 px-4 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors font-semibold"
+            >
+              <Share2 size={18} />
+              {isRu ? 'Поделиться' : 'Бөлүшүү'}
+            </button>
+          </div>
+        </div>
+
+        {/* Ваша ссылка */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
+          <h3 className="font-bold text-gray-800 mb-3">{isRu ? 'Ваша реферальная ссылка' : 'Сиздин реферал шилтемеңиз'}</h3>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={refLink}
+              readOnly
+              className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600"
+            />
+            <button
+              onClick={() => handleCopy(refLink)}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors text-sm font-medium"
+            >
+              {copied ? <CheckCircle size={16} /> : <Copy size={16} />}
+              {copied ? (isRu ? 'Готово!' : 'Даяр!') : (isRu ? 'Копировать' : 'Көчүрүү')}
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            {isRu ? 'Код: ' : 'Код: '}<span className="font-mono font-bold">{refCode}</span>
+          </p>
         </div>
 
         {/* Как это работает */}
@@ -199,15 +184,16 @@ export default function InviteSupplierPage() {
           <h2 className="font-bold text-lg text-gray-800 mb-6">
             {isRu ? 'Как это работает' : 'Кантип иштейт'}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
-              { step: 1, icon: '📝', titleRu: 'Вы отправляете заявку', titleKg: 'Заявка жөнөтөсүз', descRu: 'Укажите название поставщика и что хотите заказывать', descKg: 'Жеткирүүчүнүн атын жана эмне заказ кылгыңыз келгенин жазыңыз' },
-              { step: 2, icon: '📞', titleRu: 'Мы находим и звоним', titleKg: 'Биз таап, чалабыз', descRu: 'Наша команда связывается с поставщиком и приглашает на платформу', descKg: 'Биздин команда жеткирүүчү менен байланышып, платформага чакырат' },
-              { step: 3, icon: '✅', titleRu: 'Поставщик подключается', titleKg: 'Жеткирүүчү кошулат', descRu: 'Он добавляет товары — и вы можете заказывать через MarketKG', descKg: 'Товарларын кошот — жана сиз MarketKG аркылуу заказ кыла аласыз' },
+              { step: 1, emoji: '📤', titleRu: 'Отправьте ссылку', titleKg: 'Шилтеме жөнөтүңүз', descRu: 'Нажмите WhatsApp или Telegram — сообщение уже готово', descKg: 'WhatsApp же Telegram басыңыз — кабар даяр' },
+              { step: 2, emoji: '📝', titleRu: 'Поставщик регистрируется', titleKg: 'Жеткирүүчү катталат', descRu: 'Переходит по ссылке и создаёт аккаунт', descKg: 'Шилтемеден өтүп аккаунт түзөт' },
+              { step: 3, emoji: '👑', titleRu: 'Он получает ТОП', titleKg: 'Ал ТОП алат', descRu: 'Бесплатное размещение в ТОП на 7 дней', descKg: '7 күнгө акысыз ТОП жайгашуу' },
+              { step: 4, emoji: '🎉', titleRu: 'Вы получаете скидку', titleKg: 'Сиз арзандатуу аласыз', descRu: '5% скидка на первый заказ у этого поставщика', descKg: 'Бул жеткирүүчүдөн биринчи заказга 5%' },
             ].map(s => (
               <div key={s.step} className="text-center">
-                <div className="text-3xl mb-2">{s.icon}</div>
-                <div className="w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-2">
+                <div className="text-3xl mb-2">{s.emoji}</div>
+                <div className="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-2">
                   {s.step}
                 </div>
                 <h3 className="font-semibold text-gray-800 text-sm mb-1">{isRu ? s.titleRu : s.titleKg}</h3>
@@ -217,53 +203,38 @@ export default function InviteSupplierPage() {
           </div>
         </div>
 
-        {/* Заявки от других клиентов */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 mb-8">
-          <h2 className="font-bold text-lg text-gray-800 mb-1">
-            {isRu ? 'Последние заявки' : 'Акыркы заявкалар'}
+        {/* FAQ */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 mb-12">
+          <h2 className="font-bold text-lg text-gray-800 mb-4">
+            {isRu ? 'Частые вопросы' : 'Көп берилген суроолор'}
           </h2>
-          <p className="text-sm text-gray-400 mb-4">
-            {isRu ? 'Другие клиенты тоже ищут поставщиков' : 'Башка кардарлар да жеткирүүчүлөрдү издешет'}
-          </p>
-
-          <div className="space-y-3">
-            {requests.map(r => (
-              <div key={r.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-lg flex items-center justify-center">
-                    <Building2 size={18} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-800 text-sm">{r.company}</p>
-                    <p className="text-xs text-gray-400 flex items-center gap-2">
-                      <span className="flex items-center gap-0.5"><MapPin size={10} /> {r.city}</span>
-                      <span>·</span>
-                      <span>{r.category}</span>
-                    </p>
-                  </div>
-                </div>
-                {getStatusBadge(r.status)}
+          <div className="space-y-4">
+            {[
+              {
+                qRu: 'Кто даёт скидку 5%?',
+                aRu: 'Поставщик сам предоставляет скидку первому клиенту, который его пригласил. Это указано в сообщении-приглашении.',
+                qKg: 'Ким 5% арзандатуу берет?',
+                aKg: 'Жеткирүүчү аны чакырган биринчи кардарга арзандатууну өзү берет. Бул чакыруу кабарында көрсөтүлгөн.',
+              },
+              {
+                qRu: 'Как поставщик получит бесплатный ТОП?',
+                aRu: 'После регистрации по вашей ссылке мы автоматически активируем ТОП-размещение на 7 дней.',
+                qKg: 'Жеткирүүчү акысыз ТОП кантип алат?',
+                aKg: 'Сиздин шилтемеңиз менен катталгандан кийин 7 күнгө ТОП-жайгашууну автоматтык түрдө иштетебиз.',
+              },
+              {
+                qRu: 'Сколько поставщиков можно пригласить?',
+                aRu: 'Без ограничений! Чем больше пригласите — тем больше скидок получите.',
+                qKg: 'Канча жеткирүүчү чакырса болот?',
+                aKg: 'Чектөөсүз! Канчалык көп чакырсаңыз — ошончолук көп арзандатуу аласыз.',
+              },
+            ].map((faq, i) => (
+              <div key={i} className="border-b border-gray-100 pb-3 last:border-0">
+                <h4 className="font-semibold text-gray-800 text-sm mb-1">{isRu ? faq.qRu : faq.qKg}</h4>
+                <p className="text-sm text-gray-500">{isRu ? faq.aRu : faq.aKg}</p>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Или напишите нам */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 sm:p-8 mb-12 text-center text-white">
-          <h3 className="font-bold text-lg mb-2">
-            {isRu ? 'Или просто напишите нам' : 'Же жөн гана бизге жазыңыз'}
-          </h3>
-          <p className="text-green-100 text-sm mb-4">
-            {isRu ? 'Расскажите какого поставщика ищете — мы найдём' : 'Кайсы жеткирүүчүнү издеп жатканыңызды айтыңыз — биз табабыз'}
-          </p>
-          <a
-            href="https://wa.me/996555000000?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%98%D1%89%D1%83%20%D0%BF%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D1%89%D0%B8%D0%BA%D0%B0:"
-            target="_blank"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-green-700 rounded-xl font-semibold hover:bg-green-50 transition-colors shadow-lg"
-          >
-            <MessageCircle size={18} />
-            {isRu ? 'Написать в WhatsApp' : 'WhatsApp га жазуу'}
-          </a>
         </div>
       </div>
     </div>

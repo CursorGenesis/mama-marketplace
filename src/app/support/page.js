@@ -1,121 +1,144 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
 import { useLang } from '@/context/LangContext';
-import { Send, ArrowLeft, Clock, User, Headphones } from 'lucide-react';
+import { MessageCircle, Mail, Clock, Phone, ChevronDown, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
+
+const faqData = [
+  {
+    qRu: 'Как зарегистрироваться как поставщик?',
+    aRu: 'Нажмите «Регистрация», выберите роль «Поставщик», заполните данные. После регистрации добавьте товары в личном кабинете.',
+    qKg: 'Жеткирүүчү катары кантип катталса болот?',
+    aKg: '«Каттоо» басыңыз, «Жеткирүүчү» ролун тандаңыз, маалыматтарды толтуруңуз. Катталгандан кийин жеке кабинетте товарларды кошуңуз.',
+  },
+  {
+    qRu: 'Как оформить заказ?',
+    aRu: 'Добавьте товары в корзину, укажите имя, телефон и адрес доставки, нажмите «Отправить заявку». Поставщик свяжется с вами.',
+    qKg: 'Буйрутма кантип берүүгө болот?',
+    aKg: 'Товарларды себетке кошуңуз, атыңызды, телефонуңузду жана жеткирүү дарегин көрсөтүңүз, «Заявка жөнөтүү» басыңыз.',
+  },
+  {
+    qRu: 'Какие способы оплаты?',
+    aRu: 'Оплата при получении — наличными или переводом на Элсом/Мбанк. Условия оплаты обсуждаются с поставщиком.',
+    qKg: 'Кандай төлөө ыкмалары бар?',
+    aKg: 'Алганда төлөө — накталай же Элсом/Мбанк аркылуу которуу. Төлөө шарттары жеткирүүчү менен талкууланат.',
+  },
+  {
+    qRu: 'Сколько стоит размещение для поставщиков?',
+    aRu: 'Первый месяц бесплатно на любом тарифе. Далее — от 1 000 сом/мес. Подробности на странице тарифов.',
+    qKg: 'Жеткирүүчүлөр үчүн жайгашуу канча турат?',
+    aKg: 'Каалаган тарифте биринчи ай акысыз. Андан кийин — 1 000 сом/айдан. Толугураак тарифтер барагында.',
+  },
+  {
+    qRu: 'Как работает доставка?',
+    aRu: 'Доставку осуществляет сам поставщик. При заказе вы указываете адрес и точку на карте — поставщик видит куда везти.',
+    qKg: 'Жеткирүү кантип иштейт?',
+    aKg: 'Жеткирүүнү жеткирүүчүнүн өзү жүзөгө ашырат. Буйрутма берүүдө даректи жана картадагы чекитти көрсөтөсүз.',
+  },
+  {
+    qRu: 'Можно ли вернуть товар?',
+    aRu: 'Возврат обсуждается напрямую с поставщиком. Свяжитесь через WhatsApp или Telegram на странице поставщика.',
+    qKg: 'Товарды кайтарса болобу?',
+    aKg: 'Кайтаруу жеткирүүчү менен түз талкууланат. Жеткирүүчүнүн баракчасындагы WhatsApp же Telegram аркылуу байланышыңыз.',
+  },
+];
 
 export default function SupportPage() {
   const { lang } = useLang();
   const isRu = lang === 'ru';
-  const [messages, setMessages] = useState([
-    { id: 1, from: 'support', text: isRu ? 'Здравствуйте! Служба поддержки MarketKG. Чем можем помочь?' : 'Саламатсызбы! MarketKG колдоо кызматы. Кандай жардам бере алабыз?', time: new Date() },
-  ]);
-  const [input, setInput] = useState('');
-  const messagesEnd = useRef(null);
-
-  useEffect(() => {
-    messagesEnd.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const handleSend = () => {
-    const text = input.trim();
-    if (!text) return;
-
-    // Сообщение пользователя
-    setMessages(prev => [...prev, {
-      id: Date.now(),
-      from: 'user',
-      text,
-      time: new Date(),
-    }]);
-    setInput('');
-
-    // Ответ поддержки через 1-2 секунды
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        from: 'support',
-        text: isRu
-          ? 'Спасибо за обращение! Ваше сообщение принято. Оператор ответит в рабочее время (Пн-Сб, 09:00-18:00).'
-          : 'Кайрылуу үчүн рахмат! Кабарыңыз кабыл алынды. Оператор иш убактысында жооп берет (Дш-Шб, 09:00-18:00).',
-        time: new Date(),
-      }]);
-    }, 1000 + Math.random() * 1000);
-  };
-
-  const formatTime = (date) => {
-    return date.toLocaleTimeString(isRu ? 'ru-RU' : 'ky-KG', { hour: '2-digit', minute: '2-digit' });
-  };
+  const [openFaq, setOpenFaq] = useState(null);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 flex flex-col" style={{ height: 'calc(100vh - 80px)' }}>
-      {/* Шапка */}
-      <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-        <Link href="/" className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft size={20} />
-        </Link>
-        <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-          <Headphones size={20} className="text-primary-600" />
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-2">{isRu ? 'Поддержка' : 'Колдоо'}</h1>
+      <p className="text-gray-500 text-sm mb-8">
+        {isRu ? 'Свяжитесь с нами или найдите ответ в FAQ' : 'Биз менен байланышыңыз же FAQ дан жооп табыңыз'}
+      </p>
+
+      {/* Контакты */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+        <a
+          href="https://wa.me/996555000000"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-50 border border-green-200 rounded-xl p-5 flex items-center gap-4 hover:bg-green-100 transition-colors"
+        >
+          <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shrink-0">
+            <MessageCircle size={24} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">WhatsApp</h3>
+            <p className="text-sm text-gray-500">{isRu ? 'Ответим за 5 минут' : '5 мүнөттө жооп беребиз'}</p>
+          </div>
+        </a>
+
+        <a
+          href="https://t.me/MarketKG_support"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-50 border border-blue-200 rounded-xl p-5 flex items-center gap-4 hover:bg-blue-100 transition-colors"
+        >
+          <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shrink-0">
+            <MessageCircle size={24} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">Telegram</h3>
+            <p className="text-sm text-gray-500">@MarketKG_support</p>
+          </div>
+        </a>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center shrink-0">
+            <Mail size={24} className="text-gray-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">Email</h3>
+            <p className="text-sm text-gray-500">info@marketkg.com</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-gray-800">{isRu ? 'Поддержка MarketKG' : 'MarketKG колдоо'}</h1>
-          <p className="text-xs text-gray-400 flex items-center gap-1">
-            <Clock size={10} />
-            {isRu ? 'Пн-Сб: 09:00-18:00' : 'Дш-Шб: 09:00-18:00'}
-          </p>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center shrink-0">
+            <Clock size={24} className="text-gray-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">{isRu ? 'Время работы' : 'Иш убактысы'}</h3>
+            <p className="text-sm text-gray-500">{isRu ? 'Пн-Сб: 09:00 — 18:00' : 'Дш-Шб: 09:00 — 18:00'}</p>
+          </div>
         </div>
       </div>
 
-      {/* Сообщения */}
-      <div className="flex-1 overflow-y-auto py-4 space-y-4">
-        {messages.map(msg => (
-          <div key={msg.id} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className="max-w-[80%]">
-              {/* Аватар */}
-              {msg.from === 'support' && (
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center">
-                    <Headphones size={10} className="text-primary-600" />
-                  </div>
-                  <span className="text-xs text-gray-400">{isRu ? 'Поддержка' : 'Колдоо'}</span>
-                </div>
-              )}
-
-              <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                msg.from === 'user'
-                  ? 'bg-primary-600 text-white rounded-br-md'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-md'
-              }`}>
-                {msg.text}
+      {/* FAQ */}
+      <h2 className="text-xl font-bold mb-4">{isRu ? 'Частые вопросы' : 'Көп берилген суроолор'}</h2>
+      <div className="space-y-2 mb-10">
+        {faqData.map((faq, i) => (
+          <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <button
+              onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+            >
+              <span className="flex-1 font-semibold text-gray-800 text-sm">{isRu ? faq.qRu : faq.qKg}</span>
+              <ChevronDown size={18} className={`text-gray-400 transition-transform shrink-0 ${openFaq === i ? 'rotate-180' : ''}`} />
+            </button>
+            {openFaq === i && (
+              <div className="px-5 pb-4">
+                <p className="text-sm text-gray-600 leading-relaxed">{isRu ? faq.aRu : faq.aKg}</p>
               </div>
-              <p className={`text-[10px] text-gray-400 mt-1 ${msg.from === 'user' ? 'text-right' : ''}`}>
-                {formatTime(msg.time)}
-              </p>
-            </div>
+            )}
           </div>
         ))}
-        <div ref={messagesEnd} />
       </div>
 
-      {/* Ввод */}
-      <div className="border-t border-gray-200 pt-3">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder={isRu ? 'Напишите сообщение...' : 'Кабар жазыңыз...'}
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-30"
-          >
-            <Send size={18} />
-          </button>
-        </div>
+      {/* Ссылки */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href="/pricing" className="bg-white rounded-xl p-4 shadow-sm text-center hover:shadow-md transition-shadow border border-gray-100">
+          <span className="text-2xl block mb-2">💰</span>
+          <span className="text-sm font-medium text-gray-700">{isRu ? 'Тарифы' : 'Тарифтер'}</span>
+        </Link>
+        <Link href="/about" className="bg-white rounded-xl p-4 shadow-sm text-center hover:shadow-md transition-shadow border border-gray-100">
+          <span className="text-2xl block mb-2">ℹ️</span>
+          <span className="text-sm font-medium text-gray-700">{isRu ? 'О платформе' : 'Платформа жөнүндө'}</span>
+        </Link>
       </div>
     </div>
   );

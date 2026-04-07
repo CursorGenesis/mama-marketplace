@@ -2,14 +2,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { useFavorites } from '@/context/FavoritesContext';
 import { useLang } from '@/context/LangContext';
-import { Home, Search, ShoppingCart, UserCircle, Menu, Share2 } from 'lucide-react';
+import { Home, Search, ShoppingCart, Heart, UserCircle, Menu, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { totalItems } = useCart();
+  const { totalFavorites } = useFavorites();
   const { lang } = useLang();
   const [showMore, setShowMore] = useState(false);
   const isRu = lang === 'ru';
@@ -20,8 +22,8 @@ export default function BottomNav() {
   const tabs = [
     { href: '/', icon: Home, label: isRu ? 'Главная' : 'Башкы', active: pathname === '/' },
     { href: '/catalog', icon: Search, label: isRu ? 'Каталог' : 'Каталог', active: pathname === '/catalog' || pathname.startsWith('/catalog/') },
+    { href: '/favorites', icon: Heart, label: isRu ? 'Избранное' : 'Тандалма', active: pathname === '/favorites', badge: totalFavorites },
     { href: '/cart', icon: ShoppingCart, label: isRu ? 'Корзина' : 'Себет', active: pathname === '/cart', badge: totalItems },
-    { href: '/my', icon: UserCircle, label: isRu ? 'Кабинет' : 'Кабинет', active: pathname === '/my' || pathname === '/orders' },
   ];
 
   const moreLinks = [
@@ -29,7 +31,6 @@ export default function BottomNav() {
     { href: '/support', label: isRu ? 'Поддержка' : 'Колдоо' },
     { href: '/notifications', label: isRu ? 'Уведомления' : 'Билдирүүлөр' },
     { href: '/referral', label: isRu ? 'Пригласить поставщика' : 'Жеткирүүчү чакыруу' },
-    { href: '/feedback', label: isRu ? 'Обратная связь' : 'Кайтарым байланыш' },
   ];
 
   return (

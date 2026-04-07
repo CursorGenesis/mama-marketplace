@@ -8,7 +8,7 @@ import { getSmartRecommendations, saveOrderToHistory, seedDemoHistory } from '@/
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const DeliveryMap = dynamic(() => import('@/components/DeliveryMap'), {
   ssr: false,
@@ -30,7 +30,7 @@ const PROMO_CODES = {
 
 export default function CartPage() {
   const { items, addItem, removeItem, updateQuantity, clearCart, totalPrice, totalItems } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { t, lang } = useLang();
   const [submitting, setSubmitting] = useState({});
   const [sentSuppliers, setSentSuppliers] = useState([]);
@@ -61,12 +61,25 @@ export default function CartPage() {
   const discountAmount = totalPrice - discountedTotal;
 
   const [form, setForm] = useState({
-    name: profile?.name || '',
+    name: '',
     shopName: '',
-    phone: profile?.phone || '',
+    phone: '',
     address: '',
     comment: '',
   });
+
+  // Авто-заполнение из профиля
+  useEffect(() => {
+    if (profile) {
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || profile.name || '',
+        phone: prev.phone || profile.phone || '',
+        shopName: prev.shopName || profile.shopName || '',
+        address: prev.address || profile.address || '',
+      }));
+    }
+  }, [profile]);
   const [deliveryMarker, setDeliveryMarker] = useState(null);
   const [orderReceipt, setOrderReceipt] = useState(null);
   const [searchingAddress, setSearchingAddress] = useState(false);
@@ -155,6 +168,12 @@ export default function CartPage() {
     // 3. Проверка названия магазина
     if (!form.shopName || form.shopName.trim().length < 2) {
       toast.error(lang === 'kg' ? 'Дүкөнүңүздүн атын жазыңыз' : 'Укажите название вашего магазина');
+      return false;
+    }
+
+    // 3.1. Проверка адреса
+    if (!form.address || form.address.trim().length < 3) {
+      toast.error(lang === 'kg' ? 'Жеткирүү дарегин жазыңыз' : 'Укажите адрес доставки');
       return false;
     }
 
@@ -258,6 +277,16 @@ export default function CartPage() {
       deliveryMarker: deliveryMarker,
     };
 
+    // Сохраняем данные клиента в профиль для авто-заполнения
+    if (user && updateProfile) {
+      updateProfile({
+        shopName: form.shopName,
+        address: form.address,
+        phone: form.phone,
+        name: form.name,
+      }).catch(() => {});
+    }
+
     setTimeout(() => {
       // Сохраняем заказ в историю для умных рекомендаций
       saveOrderToHistory(items);
@@ -280,7 +309,7 @@ export default function CartPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Заголовок */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-6" data-print="hide">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Send size={28} className="text-green-600" />
           </div>
@@ -379,7 +408,7 @@ export default function CartPage() {
 
         {/* Общий итог */}
         {r.suppliers.length > 1 && (
-          <div className="bg-white rounded-xl shadow-sm p-5 mt-6">
+          <div className="bg-white rounded-xl shadow-sm p-5 mt-6" data-print="hide">
             <div className="flex justify-between items-center">
               <span className="text-gray-500">{lang === 'kg' ? 'Бардык заявкалар боюнча жалпы:' : 'Общий итог по всем заявкам:'}</span>
               <span className="text-xl font-bold text-primary-600">{r.total.toLocaleString('ru-RU')} сом</span>
@@ -409,7 +438,7 @@ export default function CartPage() {
         )}
 
         {/* Кнопки */}
-        <div className="flex flex-col sm:flex-row gap-3 mt-6">
+        <div className="flex flex-col sm:flex-row gap-3 mt-6" data-print="hide">
           <button
             onClick={() => window.print()}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors font-medium text-sm"
@@ -754,19 +783,19 @@ export default function CartPage() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('yourName')} *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('yourName')} <span className="text-red-500">*</span></label>
                 <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                   placeholder={lang === 'kg' ? 'Атыңыз' : 'Иван Петров'}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')} *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')} <span className="text-red-500">*</span></label>
                 <input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
                   placeholder="+996 555 123 456"
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('deliveryAddress')}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('deliveryAddress')} <span className="text-red-500">*</span></label>
                 <div className="flex gap-2">
                   <input type="text" value={form.address} onChange={e => setForm({...form, address: e.target.value})}
                     placeholder="Бишкек, ул. Манаса 40"

@@ -28,7 +28,40 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
   @apply antialiased;
+}
+
+input, textarea, select, [contenteditable="true"] {
+  cursor: text;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+a, button, [role="button"] {
+  cursor: pointer;
+}
+
+@media print {
+  header, footer, nav, .fixed,
+  [data-print="hide"] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-user-select: text;
+    user-select: text;
+    font-size: 12px;
+  }
+  @page {
+    margin: 10mm;
+  }
+  .shadow-lg, .shadow-sm, .shadow-2xl {
+    box-shadow: none !important;
+  }
 }
 
 .line-clamp-2 {

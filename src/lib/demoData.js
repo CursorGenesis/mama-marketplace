@@ -23,6 +23,7 @@ export const DEMO_SUPPLIERS = [
     minOrderUnit: 'сом',
     featured: true,
     badge: 'top',
+    verified: true,
   },
   {
     id: 'sup2',
@@ -44,6 +45,7 @@ export const DEMO_SUPPLIERS = [
     minOrderUnit: 'сом',
     featured: true,
     badge: 'recommended',
+    verified: true,
   },
   {
     id: 'sup3',

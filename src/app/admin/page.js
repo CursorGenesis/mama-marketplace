@@ -109,13 +109,6 @@ export default function AdminPage() {
           </div>
           <p className="text-gray-500">Продажи, статистика, графики и отчёты</p>
         </Link>
-        <Link href="/admin/feedback" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-3 mb-1">
-            <MessageSquare size={22} className="text-primary-600" />
-            <h3 className="font-bold text-lg">Обратная связь</h3>
-          </div>
-          <p className="text-gray-500">Отзывы и предложения</p>
-        </Link>
         <Link href="/admin/commissions" className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-1">
             <DollarSign size={22} className="text-green-600" />

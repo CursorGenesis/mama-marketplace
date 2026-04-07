@@ -17,8 +17,13 @@ export default function SupplierCard({ supplier }) {
   return (
     <div className="bg-white rounded-xl p-5 md:p-8 shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
       <Link href={`/supplier/${supplier.id}`}>
-        <h3 className="font-bold text-lg md:text-2xl md:font-extrabold text-gray-800 mb-2 hover:text-slate-700 transition-colors">
+        <h3 className="font-bold text-lg md:text-2xl md:font-extrabold text-gray-800 mb-2 hover:text-slate-700 transition-colors flex items-center gap-2">
           {supplier.name}
+          {supplier.verified && (
+            <span className="inline-flex items-center gap-0.5 bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full" title={t('moreDetails')}>
+              ✅ {lang === 'kg' ? 'Текшерилген' : 'Проверенный'}
+            </span>
+          )}
         </h3>
       </Link>
 

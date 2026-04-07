@@ -5,7 +5,6 @@ import { getProducts, createProduct, updateProduct, deleteProduct, uploadImage, 
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { ArrowLeft, Plus, Pencil, Trash2, Save, X, Sparkles, Image } from 'lucide-react';
-import { generateDescription, getAutoPhoto, detectCategory } from '@/lib/aiHelper';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -156,11 +155,6 @@ export default function SupplierProductsPage() {
                   onChange={e => {
                     const name = e.target.value;
                     setForm(prev => ({ ...prev, name }));
-                    // Автоопределение категории
-                    if (name.length > 3 && !form.category) {
-                      const detected = detectCategory(name);
-                      if (detected) setForm(prev => ({ ...prev, name, category: detected }));
-                    }
                   }}
                   placeholder="Молоко 3.2% 1л" required maxLength={80}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" />
@@ -224,24 +218,12 @@ export default function SupplierProductsPage() {
                   <label className="block text-sm font-semibold text-gray-700">
                     4. Описание
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!form.name) { toast.error('Сначала введите название товара'); return; }
-                      const desc = generateDescription(form.name, form.category || 'grocery', form.unit);
-                      setForm(prev => ({ ...prev, description: desc }));
-                      toast.success('Описание сгенерировано!');
-                    }}
-                    className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors"
-                  >
-                    <Sparkles size={12} /> Сгенерировать
-                  </button>
                 </div>
                 <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})}
-                  placeholder="Нажмите «Сгенерировать» или напишите вручную" rows={3} maxLength={300}
+                  placeholder="Описание товара" rows={3} maxLength={300}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 <p className="text-xs text-gray-400 mt-1 flex items-center justify-between">
-                  <span>✨ Нажмите «Сгенерировать» — описание создастся автоматически</span>
+                  <span>Опишите товар для покупателей</span>
                   <span>{form.description.length}/300</span>
                 </p>
               </div>
@@ -252,17 +234,6 @@ export default function SupplierProductsPage() {
                   <label className="block text-sm font-semibold text-gray-700">
                     5. Фото товара
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const photo = getAutoPhoto(form.category || 'grocery');
-                      setForm(prev => ({ ...prev, autoImageUrl: photo, imageFile: null }));
-                      toast.success('Фото подобрано!');
-                    }}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-200 transition-colors"
-                  >
-                    <Image size={12} /> Подобрать фото
-                  </button>
                 </div>
 
                 {/* Показать подобранное фото */}
