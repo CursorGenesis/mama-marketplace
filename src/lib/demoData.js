@@ -189,7 +189,7 @@ export const DEMO_PRODUCTS = [
     name: 'Мука пшеничная в/с 2кг', price: 95, unit: 'шт', category: 'grocery',
     description: 'Мука пшеничная высшего сорта, 2 кг. Произведено в Кыргызстане.',
     imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&h=800&fit=crop&q=80',
-    badge: 'top', orderCount: 340,
+    badge: 'top', orderCount: 340, madeInKG: true,
   },
   {
     id: 'p2', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
@@ -215,13 +215,13 @@ export const DEMO_PRODUCTS = [
     id: 'p5', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
     name: 'Масло подсолнечное 1л', price: 145, unit: 'шт', category: 'grocery',
     description: 'Масло подсолнечное рафинированное, 1 литр.',
-    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7f28a9a31cfe?w=800&h=800&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&h=800&fit=crop&q=80',
   },
   {
     id: 'p31', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
     name: 'Гречка 1кг', price: 120, unit: 'шт', category: 'grocery',
     description: 'Гречневая крупа ядрица, 1 кг.',
-    imageUrl: 'https://images.unsplash.com/photo-1614961233913-a5113e3d74f2?w=800&h=800&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1585672840563-f2af2ced55c9?w=800&h=800&fit=crop&q=80',
   },
 
   // === Шоро (напитки) ===
@@ -230,31 +230,35 @@ export const DEMO_PRODUCTS = [
     name: 'Максым 1л', price: 75, unit: 'шт', category: 'drinks',
     description: 'Национальный кисломолочный напиток из злаков, 1 литр.',
     imageUrl: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800&h=800&fit=crop&q=80',
-    badge: 'top', orderCount: 520,
+    badge: 'top', orderCount: 520, madeInKG: true,
   },
   {
     id: 'p7', supplierId: 'sup2', supplierName: 'Шоро', city: 'Бишкек',
     name: 'Чалап 1л', price: 70, unit: 'шт', category: 'drinks',
     description: 'Освежающий кисломолочный напиток, 1 литр.',
-    imageUrl: 'https://images.unsplash.com/photo-1571006917032-3a752540c0e0?w=800&h=800&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p8', supplierId: 'sup2', supplierName: 'Шоро', city: 'Бишкек',
     name: 'Компот вишнёвый 1л', price: 90, unit: 'шт', category: 'drinks',
     description: 'Компот из натуральной вишни, 1 литр.',
     imageUrl: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p9', supplierId: 'sup2', supplierName: 'Шоро', city: 'Бишкек',
     name: 'Бозо 0.5л', price: 65, unit: 'шт', category: 'drinks',
     description: 'Традиционный кыргызский напиток бозо, 0.5 литра.',
-    imageUrl: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed514?w=800&h=800&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p32', supplierId: 'sup2', supplierName: 'Шоро', city: 'Бишкек',
     name: 'Квас Шоро 1.5л', price: 85, unit: 'шт', category: 'drinks',
     description: 'Хлебный квас натуральный, 1.5 литра.',
     imageUrl: 'https://images.unsplash.com/photo-1570831739435-6601aa3fa4fb?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
 
   // === Бишкек Сүт (молочка) ===
@@ -263,25 +267,28 @@ export const DEMO_PRODUCTS = [
     name: 'Молоко 3.2% 1л', price: 68, unit: 'шт', category: 'dairy',
     description: 'Молоко пастеризованное 3.2%, 1 литр.',
     imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&h=800&fit=crop&q=80',
-    badge: 'top', orderCount: 450,
+    badge: 'top', orderCount: 450, madeInKG: true,
   },
   {
     id: 'p11', supplierId: 'sup3', supplierName: 'Бишкек Сүт', city: 'Бишкек',
     name: 'Сметана 20% 400г', price: 110, unit: 'шт', category: 'dairy',
     description: 'Сметана 20% жирности, стаканчик 400 г.',
     imageUrl: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p12', supplierId: 'sup3', supplierName: 'Бишкек Сүт', city: 'Бишкек',
     name: 'Айран 0.5л', price: 55, unit: 'шт', category: 'dairy',
     description: 'Айран натуральный, 0.5 литра.',
     imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p13', supplierId: 'sup3', supplierName: 'Бишкек Сүт', city: 'Бишкек',
     name: 'Творог 5% 200г', price: 85, unit: 'шт', category: 'dairy',
     description: 'Творог мягкий 5% жирности, 200 г.',
     imageUrl: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
   {
     id: 'p33', supplierId: 'sup3', supplierName: 'Бишкек Сүт', city: 'Бишкек',
@@ -334,7 +341,7 @@ export const DEMO_PRODUCTS = [
     id: 'p19', supplierId: 'sup5', supplierName: 'Ак-Суу Агро', city: 'Каракол',
     name: 'Картофель 1кг', price: 25, unit: 'кг', category: 'fruits',
     description: 'Картофель столовый, Иссык-Кульская область.',
-    imageUrl: 'https://images.unsplash.com/photo-1518977676601-b53f82ber85f?w=800&h=800&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1518977676601-b53f82bbe9e8?w=800&h=800&fit=crop&q=80',
   },
   {
     id: 'p20', supplierId: 'sup5', supplierName: 'Ак-Суу Агро', city: 'Каракол',

@@ -44,6 +44,12 @@ a, button, [role="button"] {
   cursor: pointer;
 }
 
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1 !important;
+}
+
 @media print {
   header, footer, nav, .fixed,
   [data-print="hide"] {

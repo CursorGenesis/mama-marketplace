@@ -162,7 +162,20 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-3 snap-x scrollbar-hide">
+          <div className="relative">
+            <button
+              onClick={() => document.getElementById('cat-mobile').scrollBy({ left: -200, behavior: 'smooth' })}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"
+            >
+              <svg className="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <button
+              onClick={() => document.getElementById('cat-mobile').scrollBy({ left: 200, behavior: 'smooth' })}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"
+            >
+              <svg className="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          <div id="cat-mobile" className="flex gap-3 overflow-x-auto pb-3 snap-x scrollbar-hide px-1">
             {CATEGORIES.map(cat => (
               <Link key={cat.id} href={`/catalog?category=${cat.id}`} className="shrink-0 w-[30%] snap-start">
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-3 active:scale-95 transition-transform">
@@ -173,6 +186,7 @@ export default function HomePage() {
                 </div>
               </Link>
             ))}
+          </div>
           </div>
         </div>
 

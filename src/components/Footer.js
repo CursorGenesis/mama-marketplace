@@ -36,6 +36,7 @@ export default function Footer() {
             <div className="space-y-2 text-sm">
               <Link href="/pricing" className="block hover:text-white transition-colors">{isRu ? 'Тарифы' : 'Тарифтер'}</Link>
               <Link href="/auth" className="block hover:text-white transition-colors">{t('becomeSupplier')}</Link>
+              <Link href="/agents" className="block hover:text-white transition-colors">{isRu ? 'Стать агентом' : 'Агент болуу'}</Link>
               <Link href="/dashboard" className="block hover:text-white transition-colors">{isRu ? 'Панель управления' : 'Башкаруу панели'}</Link>
               <Link href="/dashboard/products" className="block hover:text-white transition-colors">{isRu ? 'Мои товары' : 'Менин товарларым'}</Link>
               <Link href="/dashboard/orders" className="block hover:text-white transition-colors">{isRu ? 'Заказы' : 'Буйрутмалар'}</Link>

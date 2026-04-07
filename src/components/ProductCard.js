@@ -81,6 +81,11 @@ export default function ProductCard({ product }) {
                 🆕 {isRu ? 'Новинка' : 'Жаңылык'}
               </span>
             )}
+            {product.madeInKG && (
+              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                🇰🇬 {isRu ? 'Сделано в КГ' : 'КР өндүрүмү'}
+              </span>
+            )}
           </div>
 
           {/* Избранное + Поделиться */}

@@ -220,6 +220,18 @@ function AuthForm() {
                       }`}>
                       📦 {isRu ? 'Поставщик' : 'Жеткирүүчү'}
                     </button>
+                    <button type="button" onClick={() => setRole('agent')}
+                      className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                        role === 'agent' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}>
+                      🤝 {isRu ? 'Агент' : 'Агент'}
+                    </button>
+                    <button type="button" onClick={() => setRole('driver')}
+                      className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                        role === 'driver' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}>
+                      🚚 {isRu ? 'Экспедитор' : 'Экспедитор'}
+                    </button>
                   </div>
                 </div>
 

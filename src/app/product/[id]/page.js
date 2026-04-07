@@ -114,6 +114,11 @@ export default function ProductPage() {
                 🆕 {isRu ? 'Новинка' : 'Жаңылык'}
               </span>
             )}
+            {product.madeInKG && (
+              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                🇰🇬 {isRu ? 'Сделано в КГ' : 'КР өндүрүмү'}
+              </span>
+            )}
           </div>
 
           {/* Кнопки справа */}
@@ -160,6 +165,17 @@ export default function ProductPage() {
               <span className="text-gray-400 ml-2">/ {product.unit}</span>
             )}
           </div>
+
+          {/* Сделано в КГ */}
+          {product.madeInKG && (
+            <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl mb-6">
+              <span className="text-2xl">🇰🇬</span>
+              <div>
+                <h4 className="font-bold text-red-700 text-sm">{isRu ? 'Произведено в Кыргызстане' : 'Кыргызстанда өндүрүлгөн'}</h4>
+                <p className="text-xs text-gray-500">{isRu ? 'Поддержи местного производителя!' : 'Жергиликтүү өндүрүүчүнү колдо!'}</p>
+              </div>
+            </div>
+          )}
 
           {/* Описание */}
           {product.description && (

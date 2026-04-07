@@ -25,6 +25,7 @@ function CatalogContent() {
   const [sortBy, setSortBy] = useState('newest');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
+  const [onlyKG, setOnlyKG] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -96,6 +97,7 @@ function CatalogContent() {
       }
       if (priceMin && p.price < Number(priceMin)) return false;
       if (priceMax && p.price > Number(priceMax)) return false;
+      if (onlyKG && !p.madeInKG) return false;
       return true;
     })
     .sort((a, b) => {
@@ -114,7 +116,7 @@ function CatalogContent() {
   const clearFilters = () => {
     setSearch(''); setCategory(''); setCity('');
     setPriceMin(''); setPriceMax(''); setSortBy('newest');
-    setVisibleCount(20);
+    setVisibleCount(20); setOnlyKG(false);
   };
 
   const hasFilters = search || category || city || priceMin || priceMax;
@@ -154,16 +156,16 @@ function CatalogContent() {
         {/* Стрелка влево */}
         <button
           onClick={() => document.getElementById('cat-scroll').scrollBy({ left: -200, behavior: 'smooth' })}
-          className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all hidden md:flex"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          <svg className="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
         {/* Стрелка вправо */}
         <button
           onClick={() => document.getElementById('cat-scroll').scrollBy({ left: 200, behavior: 'smooth' })}
-          className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all hidden md:flex"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-all"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <svg className="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </button>
 
         <div id="cat-scroll" className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
@@ -227,6 +229,14 @@ function CatalogContent() {
           }`}
         >
           {t('suppliersTab')} ({filteredSuppliers.length})
+        </button>
+        <button
+          onClick={() => { setOnlyKG(!onlyKG); setVisibleCount(20); }}
+          className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-1 ml-auto ${
+            onlyKG ? 'bg-red-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+          }`}
+        >
+          🇰🇬 {lang === 'kg' ? 'КР өндүрүмү' : 'Сделано в КГ'}
         </button>
       </div>
 
