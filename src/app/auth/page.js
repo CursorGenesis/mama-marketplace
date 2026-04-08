@@ -17,6 +17,8 @@ function AuthForm() {
   const [city, setCity] = useState('');
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptLicense, setAcceptLicense] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, register, loginWithGoogle, loginWithApple } = useAuth();
   const { t, lang } = useLang();
@@ -36,6 +38,7 @@ function AuthForm() {
         await register(email, password, name, phone, role, {
           companyName, city,
           category: category === 'other' ? customCategory : category,
+          licenseConfirmed: role === 'supplier' ? acceptLicense : undefined,
         });
         toast.success(isRu ? 'Регистрация прошла успешно!' : 'Каттоо ийгиликтүү!');
       }
@@ -315,7 +318,22 @@ function AuthForm() {
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
             />
 
-            <button type="submit" disabled={loading}
+            {mode === 'register' && (
+              <div className="space-y-2 pt-1">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={acceptTerms} onChange={e => setAcceptTerms(e.target.checked)} className="mt-0.5 w-4 h-4 accent-green-500 shrink-0" />
+                  <span className="text-xs text-gray-600">{isRu ? 'Я принимаю условия ' : 'Мен '}<Link href="/terms" className="text-slate-800 underline font-medium" target="_blank">{isRu ? 'Пользовательского соглашения' : 'Колдонуучу келишиминин'}</Link>{!isRu && ' шарттарын кабыл алам'}</span>
+                </label>
+                {role === 'supplier' && (
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={acceptLicense} onChange={e => setAcceptLicense(e.target.checked)} className="mt-0.5 w-4 h-4 accent-green-500 shrink-0" />
+                    <span className="text-xs text-gray-600">{isRu ? 'Я подтверждаю, что имею все необходимые лицензии для реализации товаров, включая алкогольную и табачную продукцию (при необходимости)' : 'Мен товарларды сатуу үчүн бардык зарыл лицензиялардын бар экенин ырастайм, анын ичинде алкоголь жана тамеки продукциясы (зарыл болгон учурда)'}</span>
+                  </label>
+                )}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading || (mode === 'register' && (!acceptTerms || (role === 'supplier' && !acceptLicense)))}
               className="w-full py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-semibold disabled:opacity-50">
               {loading
                 ? (isRu ? 'Подождите...' : 'Күтө туруңуз...')

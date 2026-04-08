@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
       profileData.companyName = extra.companyName;
       profileData.city = extra.city || '';
       profileData.category = extra.category || '';
+      if (extra.licenseConfirmed) profileData.licenseConfirmed = true;
     }
     await createUserProfile(cred.user.uid, profileData);
     const p = await getUserProfile(cred.user.uid);
