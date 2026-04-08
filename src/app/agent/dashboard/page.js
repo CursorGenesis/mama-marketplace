@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
+import RoleGuard from '@/components/RoleGuard';
 import { Store, Package, DollarSign, TrendingUp, Plus, ClipboardList, Copy, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -23,6 +24,14 @@ const demoRecentOrders = [
 ];
 
 export default function AgentDashboardPage() {
+  return (
+    <RoleGuard roles={['agent', 'admin']}>
+      <AgentDashboardContent />
+    </RoleGuard>
+  );
+}
+
+function AgentDashboardContent() {
   const { user, profile } = useAuth();
   const { lang } = useLang();
   const isRu = lang === 'ru';

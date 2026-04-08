@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
+import RoleGuard from '@/components/RoleGuard';
 import { Truck, CheckCircle, XCircle, AlertTriangle, MapPin, Phone, Package, Clock, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -53,6 +54,10 @@ const refuseReasons = {
 };
 
 export default function DriverDashboardPage() {
+  return <RoleGuard roles={['driver', 'admin']}><DriverDashboardContent /></RoleGuard>;
+}
+
+function DriverDashboardContent() {
   const { profile } = useAuth();
   const { lang } = useLang();
   const isRu = lang === 'ru';

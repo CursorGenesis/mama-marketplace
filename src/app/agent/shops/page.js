@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLang } from '@/context/LangContext';
+import RoleGuard from '@/components/RoleGuard';
 import { Store, Plus, MapPin, Phone, Package, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -14,6 +15,10 @@ const demoShops = [
 ];
 
 export default function AgentShopsPage() {
+  return <RoleGuard roles={['agent', 'admin']}><AgentShopsContent /></RoleGuard>;
+}
+
+function AgentShopsContent() {
   const { lang } = useLang();
   const isRu = lang === 'ru';
   const [shops, setShops] = useState(demoShops);

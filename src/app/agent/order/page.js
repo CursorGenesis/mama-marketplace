@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useLang } from '@/context/LangContext';
+import RoleGuard from '@/components/RoleGuard';
 import { DEMO_PRODUCTS, DEMO_SUPPLIERS } from '@/lib/demoData';
 import { ArrowLeft, Search, Plus, Minus, Trash2, Send, Store, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -24,6 +25,10 @@ const frequentByShop = {
 };
 
 export default function AgentOrderPage() {
+  return <RoleGuard roles={['agent', 'admin']}><AgentOrderContent /></RoleGuard>;
+}
+
+function AgentOrderContent() {
   const { lang } = useLang();
   const isRu = lang === 'ru';
 
