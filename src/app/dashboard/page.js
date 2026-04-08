@@ -100,7 +100,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Навигация */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Link href="/dashboard/products" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="font-bold mb-1">Мои товары</h3>
           <p className="text-sm text-gray-500">Добавление, редактирование, удаление товаров</p>
@@ -108,6 +108,13 @@ export default function DashboardPage() {
         <Link href="/dashboard/orders" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="font-bold mb-1">Заказы</h3>
           <p className="text-sm text-gray-500">Просмотр заявок и управление статусами</p>
+        </Link>
+        <Link href="/dashboard/logistics" className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow border border-amber-200">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold">Логистика</h3>
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">PRO</span>
+          </div>
+          <p className="text-sm text-gray-500">Экспедиторы, доставки, статусы</p>
         </Link>
       </div>
 
