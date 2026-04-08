@@ -2,7 +2,7 @@
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
-import { Minus, Plus, Trash2, ShoppingBag, Send, MessageCircle, Tag, MapPin, Sparkles } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Send, MessageCircle, MapPin, Sparkles } from 'lucide-react';
 import { BOUGHT_TOGETHER, DEMO_PRODUCTS, DEMO_SUPPLIERS } from '@/lib/demoData';
 import { getSmartRecommendations, saveOrderToHistory, seedDemoHistory } from '@/lib/recommendations';
 import Link from 'next/link';
@@ -22,11 +22,6 @@ const DeliveryMap = dynamic(() => import('@/components/DeliveryMap'), {
   ),
 });
 
-const PROMO_CODES = {
-  'WELCOME10': { discount: 10, description: 'Скидка 10% для новых клиентов' },
-  'SPRING15': { discount: 15, description: 'Весенняя скидка 15%' },
-  'MARKET20': { discount: 20, description: 'Скидка 20% на первый заказ' },
-};
 
 export default function CartPage() {
   const { items, addItem, removeItem, updateQuantity, clearCart, totalPrice, totalItems } = useCart();
@@ -34,31 +29,6 @@ export default function CartPage() {
   const { t, lang } = useLang();
   const [submitting, setSubmitting] = useState({});
   const [sentSuppliers, setSentSuppliers] = useState([]);
-  const [promoCode, setPromoCode] = useState('');
-  const [promoDiscount, setPromoDiscount] = useState(0);
-  const [promoApplied, setPromoApplied] = useState(false);
-
-  function applyPromoCode() {
-    const code = promoCode.trim().toUpperCase();
-    if (PROMO_CODES[code]) {
-      setPromoDiscount(PROMO_CODES[code].discount);
-      setPromoApplied(true);
-      toast.success(PROMO_CODES[code].description);
-    } else {
-      toast.error(t('promo_invalid'));
-      setPromoDiscount(0);
-      setPromoApplied(false);
-    }
-  }
-
-  function removePromoCode() {
-    setPromoCode('');
-    setPromoDiscount(0);
-    setPromoApplied(false);
-  }
-
-  const discountedTotal = promoApplied ? Math.round(totalPrice * (1 - promoDiscount / 100)) : totalPrice;
-  const discountAmount = totalPrice - discountedTotal;
 
   const [form, setForm] = useState({
     name: '',
@@ -280,10 +250,10 @@ export default function CartPage() {
         subtotal: g.total,
       })),
       subtotal: totalPrice,
-      discount: promoApplied ? promoDiscount : 0,
-      discountAmount: discountAmount,
-      total: discountedTotal,
-      promoCode: promoApplied ? promoCode.toUpperCase() : null,
+      discount: 0,
+      discountAmount: 0,
+      total: totalPrice,
+      promoCode: null,
       deliveryMarker: deliveryMarker,
     };
 
@@ -522,10 +492,10 @@ export default function CartPage() {
             <div key={group.supplierId} className="bg-white rounded-xl shadow-sm overflow-hidden">
               {/* Заголовок поставщика */}
               <div className={`px-5 py-3 flex items-center justify-between border-b ${group.minOrder > 0 && group.total < group.minOrder ? 'bg-red-50' : 'bg-gray-50'}`}>
-                <div>
+                <Link href={`/supplier/${group.supplierId}`} className="hover:opacity-80">
                   <h3 className="font-bold text-gray-800">{group.supplierName}</h3>
                   <p className="text-xs text-gray-400">{group.items.length} {lang === 'kg' ? 'товар' : 'товаров'}</p>
-                </div>
+                </Link>
                 <span className="font-bold text-primary-600">
                   {group.total.toLocaleString('ru-RU')} {t('som')}
                 </span>
@@ -541,9 +511,17 @@ export default function CartPage() {
                   <div className="mt-1.5 w-full bg-red-200 rounded-full h-1.5">
                     <div className="bg-red-500 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(100, (group.total / group.minOrder) * 100)}%` }}></div>
                   </div>
-                  <p className="text-xs text-red-400 mt-1">
-                    {Math.round((group.total / group.minOrder) * 100)}% {lang === 'kg' ? 'толтурулду' : 'набрано'}
-                  </p>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <p className="text-xs text-red-400">
+                      {Math.round((group.total / group.minOrder) * 100)}% {lang === 'kg' ? 'толтурулду' : 'набрано'}
+                    </p>
+                    <Link href={`/supplier/${group.supplierId}`}
+                      className="px-3 py-1.5 bg-white text-red-600 border border-red-300 text-xs font-bold rounded-lg hover:bg-red-600 hover:text-white transition-colors shadow-sm">
+                      {lang === 'kg'
+                        ? `Дагы ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом кошуу`
+                        : `Добавить ещё на ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом`}
+                    </Link>
+                  </div>
                 </div>
               )}
 
@@ -718,63 +696,13 @@ export default function CartPage() {
                 </div>
               ))}
             </div>
-            {/* Промокод */}
-            <div className="pt-3 border-t">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                <Tag size={14} className="inline mr-1" />
-                {t('promo_code')}
-              </label>
-              {promoApplied ? (
-                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                  <div>
-                    <span className="text-green-700 font-semibold text-sm">{promoCode.toUpperCase()}</span>
-                    <span className="text-green-600 text-xs ml-2">-{promoDiscount}%</span>
-                  </div>
-                  <button onClick={removePromoCode} className="text-green-500 hover:text-red-500 text-xs font-medium">
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={e => setPromoCode(e.target.value)}
-                    placeholder="WELCOME10"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    onKeyDown={e => e.key === 'Enter' && applyPromoCode()}
-                  />
-                  <button
-                    onClick={applyPromoCode}
-                    disabled={!promoCode.trim()}
-                    className="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
-                  >
-                    {t('promo_apply')}
-                  </button>
-                </div>
-              )}
-            </div>
 
             <div className="flex justify-between items-center pt-3 border-t">
               <span className="text-lg font-semibold">{t('total')}:</span>
-              <span className={`text-2xl font-bold ${promoApplied ? 'text-gray-400 line-through text-lg' : 'text-primary-600'}`}>
+              <span className="text-2xl font-bold text-primary-600">
                 {totalPrice.toLocaleString('ru-RU')} {t('som')}
               </span>
             </div>
-            {promoApplied && (
-              <>
-                <div className="flex justify-between text-sm text-green-600 mt-1">
-                  <span>{t('promo_discount')} ({promoDiscount}%)</span>
-                  <span>-{discountAmount.toLocaleString('ru-RU')} {t('som')}</span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-lg font-semibold">{t('total_with_discount')}:</span>
-                  <span className="text-2xl font-bold text-primary-600">
-                    {discountedTotal.toLocaleString('ru-RU')} {t('som')}
-                  </span>
-                </div>
-              </>
-            )}
             <p className="text-xs text-gray-400 mt-2">
               {supplierGroups.length} поставщик(ов) — {totalItems} {t('items')}
             </p>
