@@ -6,8 +6,8 @@ import { LangProvider } from '@/context/LangContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingCart from '@/components/FloatingCart';
-import SupportButton from '@/components/SupportButton';
 import BottomNav from '@/components/BottomNav';
+import ChatWidget from '@/components/ChatWidget';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
                 <Header />
                 <main className="flex-1">{children}</main>
                 <FloatingCart />
-                <SupportButton />
+                <ChatWidget />
                 <Footer />
                 <BottomNav />
               </FavoritesProvider>

@@ -12,7 +12,7 @@ export default function FloatingCart() {
 
   return (
     <Link href="/cart">
-      <div className="fixed bottom-20 right-4 z-50 bg-slate-800 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-3 hover:bg-slate-700 transition-all hover:scale-105 cursor-pointer md:bottom-6 md:right-6">
+      <div className="fixed bottom-36 right-4 z-50 bg-slate-800 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-3 hover:bg-slate-700 transition-all hover:scale-105 cursor-pointer md:bottom-24 md:right-6">
         <div className="relative">
           <ShoppingCart size={24} />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">

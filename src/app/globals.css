@@ -50,6 +50,19 @@ a, button, [role="button"] {
   z-index: 1 !important;
 }
 
+/* Tawk.to — позиция на мобильном выше навигации */
+@media (max-width: 768px) {
+  iframe[title="chat widget"],
+  .tawk-min-container,
+  #tawk-default-container {
+    bottom: 70px !important;
+  }
+  .widget-visible iframe:not([title="chat widget"]) {
+    bottom: 70px !important;
+    max-height: 65vh !important;
+  }
+}
+
 @media print {
   header, footer, nav, .fixed,
   [data-print="hide"] {
