@@ -15,7 +15,7 @@ export default function TermsPage() {
 
       <h1 className="text-2xl font-bold mb-6">{isRu ? 'Пользовательское соглашение (Публичная оферта)' : 'Колдонуучу келишими (Коомдук оферта)'}</h1>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-6 text-sm text-gray-600 leading-relaxed">
+      <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-6 text-base text-gray-600 leading-relaxed">
 
         <p className="text-gray-500 italic">
           {isRu

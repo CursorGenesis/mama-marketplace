@@ -11,8 +11,8 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-400 mt-20">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="col-span-2 md:col-span-1">
             <h3 className="text-white font-bold text-lg mb-3">MarketKG</h3>
             <p className="text-sm leading-relaxed">
               {t('footerDesc')}
@@ -35,17 +35,21 @@ export default function Footer() {
             <div className="space-y-2 text-sm">
               <Link href="/pricing" className="block hover:text-white transition-colors">{isRu ? 'Тарифы' : 'Тарифтер'}</Link>
               <Link href="/auth" className="block hover:text-white transition-colors">{t('becomeSupplier')}</Link>
-              <Link href="/agents" className="block hover:text-white transition-colors">{isRu ? 'Стать агентом' : 'Агент болуу'}</Link>
               <Link href="/dashboard" className="block hover:text-white transition-colors">{isRu ? 'Панель управления' : 'Башкаруу панели'}</Link>
-              <Link href="/dashboard/products" className="block hover:text-white transition-colors">{isRu ? 'Мои товары' : 'Менин товарларым'}</Link>
-              <Link href="/dashboard/orders" className="block hover:text-white transition-colors">{isRu ? 'Заказы' : 'Буйрутмалар'}</Link>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-3">{isRu ? 'Агентам' : 'Агенттерге'}</h4>
+            <div className="space-y-2 text-sm">
+              <Link href="/agents" className="block hover:text-white transition-colors">{isRu ? 'Стать агентом' : 'Агент болуу'}</Link>
+              <Link href="/agent/dashboard" className="block hover:text-white transition-colors">{isRu ? 'Кабинет агента' : 'Агент кабинети'}</Link>
             </div>
           </div>
           <div>
             <h4 className="text-white font-semibold mb-3">{isRu ? 'Компания' : 'Компания'}</h4>
             <div className="space-y-2 text-sm">
               <Link href="/about" className="block hover:text-white transition-colors">{isRu ? 'О платформе' : 'Платформа жөнүндө'}</Link>
-              <Link href="/terms" className="block hover:text-white transition-colors">{isRu ? 'Условия использования' : 'Колдонуу шарттары'}</Link>
+              <Link href="/terms" className="block hover:text-white transition-colors">{isRu ? 'Пользовательское соглашение' : 'Колдонуучу келишими'}</Link>
               <Link href="/privacy" className="block hover:text-white transition-colors">{isRu ? 'Конфиденциальность' : 'Купуялык'}</Link>
             </div>
           </div>
