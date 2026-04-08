@@ -5,6 +5,7 @@ import { getProducts, getSuppliers, CATEGORIES, CITIES, SUBCATEGORIES } from '@/
 import { useLang } from '@/context/LangContext';
 import ProductCard from '@/components/ProductCard';
 import SupplierCard from '@/components/SupplierCard';
+import SkeletonCard from '@/components/SkeletonCard';
 import { Search, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import CategoryIcon from '@/components/CategoryIcon';
 
@@ -282,7 +283,9 @@ function CatalogContent() {
 
       {/* Контент */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">{t('loading')}</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       ) : tab === 'products' ? (
         filteredProducts.length > 0 ? (
           <>

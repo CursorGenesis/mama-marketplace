@@ -579,7 +579,7 @@ export default function CartPage() {
                     </div>
 
                     {/* Удалить */}
-                    <button onClick={() => removeItem(item.id)} className="text-gray-300 hover:text-red-500 p-1">
+                    <button onClick={() => { if (confirm(lang === 'kg' ? 'Товарды себеттен алып салабызбы?' : 'Удалить товар из корзины?')) removeItem(item.id); }} className="text-gray-300 hover:text-red-500 p-1">
                       <Trash2 size={16} />
                     </button>
                   </div>
