@@ -51,6 +51,11 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <p className="text-xs text-gray-500 text-center mb-3 max-w-2xl mx-auto leading-relaxed">
+            {isRu
+              ? 'Платформа не является продавцом товаров. Все сделки заключаются напрямую между Покупателем и Поставщиком. Поставщики несут ответственность за наличие лицензий и соблюдение законодательства КР.'
+              : 'Платформа товарларды сатуучу эмес. Бардык бүтүмдөр Сатып алуучу менен Жеткирүүчүнүн ортосунда түздөн-түз түзүлөт. Жеткирүүчүлөр лицензиялар жана КР мыйзамдарын сактоо үчүн жоопкерчилик тартышат.'}
+          </p>
           <span>&copy; {new Date().getFullYear()} MarketKG. {t('allRights')}</span>
           <button
             onClick={() => {
