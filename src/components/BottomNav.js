@@ -17,7 +17,7 @@ export default function BottomNav() {
   const isRu = lang === 'ru';
 
   // Не показывать на страницах чата и карты (мешает)
-  if (pathname === '/support' || pathname === '/map') return null;
+  if (pathname === '/map') return null;
 
   const tabs = [
     { href: '/', icon: Home, label: isRu ? 'Главная' : 'Башкы', active: pathname === '/' },
@@ -28,7 +28,6 @@ export default function BottomNav() {
 
   const moreLinks = [
     { href: '/about', label: isRu ? 'О платформе' : 'Платформа' },
-    { href: '/support', label: isRu ? 'Поддержка' : 'Колдоо' },
     { href: '/notifications', label: isRu ? 'Уведомления' : 'Билдирүүлөр' },
     { href: '/referral', label: isRu ? 'Пригласить поставщика' : 'Жеткирүүчү чакыруу' },
   ];

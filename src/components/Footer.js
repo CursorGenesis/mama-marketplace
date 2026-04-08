@@ -28,7 +28,6 @@ export default function Footer() {
               <Link href="/catalog" className="block hover:text-white transition-colors">{t('catalog')}</Link>
               <Link href="/map" className="block hover:text-white transition-colors">{t('suppliersMap')}</Link>
               <Link href="/orders" className="block hover:text-white transition-colors">{t('my_orders')}</Link>
-              <Link href="/support" className="block hover:text-white transition-colors">{isRu ? 'Поддержка' : 'Колдоо'}</Link>
             </div>
           </div>
           <div>
@@ -48,7 +47,6 @@ export default function Footer() {
               <Link href="/about" className="block hover:text-white transition-colors">{isRu ? 'О платформе' : 'Платформа жөнүндө'}</Link>
               <Link href="/terms" className="block hover:text-white transition-colors">{isRu ? 'Условия использования' : 'Колдонуу шарттары'}</Link>
               <Link href="/privacy" className="block hover:text-white transition-colors">{isRu ? 'Конфиденциальность' : 'Купуялык'}</Link>
-              <Link href="/support" className="block hover:text-white transition-colors">{isRu ? 'Поддержка' : 'Колдоо'}</Link>
             </div>
           </div>
         </div>

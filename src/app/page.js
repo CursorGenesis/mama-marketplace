@@ -322,7 +322,7 @@ export default function HomePage() {
               {t('topPlacementDesc')}
             </p>
             <Link
-              href="/support"
+              href="/pricing"
               className="inline-block px-6 py-3 bg-white text-slate-800 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-6 text-center"
             >
               {t('topPlacementBtn')}

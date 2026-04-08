@@ -31,7 +31,7 @@ export default function Header() {
           <span>Доставка по всему Кыргызстану</span>
           <div className="flex gap-4">
             <Link href="/about" className="hover:text-white transition-colors">О нас</Link>
-            <Link href="/support" className="hover:text-white transition-colors">Помощь</Link>
+            <Link href="/about" className="hover:text-white transition-colors">Помощь</Link>
           </div>
         </div>
       </div>
