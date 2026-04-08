@@ -86,7 +86,7 @@ function AuthForm() {
     const text = isRu
       ? 'Здравствуйте! Хочу войти в MarketKG. Мой телефон: '
       : 'Саламатсызбы! MarketKG ге кирүүнү каалайм. Менин телефоном: ';
-    window.open(`https://wa.me/996555000000?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     toast.success(isRu ? 'Отправьте сообщение в WhatsApp для входа' : 'Кирүү үчүн WhatsApp га кабар жөнөтүңүз');
   };
 

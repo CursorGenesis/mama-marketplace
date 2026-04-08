@@ -58,7 +58,7 @@ export default function SupportPage() {
       {/* Контакты */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         <a
-          href="https://wa.me/996555000000"
+          href="https://wa.me/"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-green-50 border border-green-200 rounded-xl p-5 flex items-center gap-4 hover:bg-green-100 transition-colors"
