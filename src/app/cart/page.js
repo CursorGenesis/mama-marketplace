@@ -184,6 +184,16 @@ export default function CartPage() {
       return false;
     }
 
+    // 5. Лимит заказов (не более 10 в час)
+    const now = Date.now();
+    const orderTimes = JSON.parse(localStorage.getItem(ORDER_LIMIT_KEY) || '[]');
+    const recentOrders = orderTimes.filter(t => now - t < 3600000);
+    if (recentOrders.length >= 10) {
+      toast.error(lang === 'kg' ? 'Заказдар лимити ашты. 1 сааттан кийин кайталаңыз' : 'Превышен лимит заказов. Попробуйте через 1 час');
+      return false;
+    }
+    localStorage.setItem(ORDER_LIMIT_KEY, JSON.stringify([...recentOrders, now]));
+
     return true;
   }
 
