@@ -14,7 +14,10 @@ function AuthForm() {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('buyer');
   const [companyName, setCompanyName] = useState('');
+  const [inn, setInn] = useState('');
   const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -36,7 +39,7 @@ function AuthForm() {
         toast.success(isRu ? 'Добро пожаловать!' : 'Кош келиңиз!');
       } else {
         await register(email, password, name, phone, role, {
-          companyName, city,
+          companyName, inn, city, address, whatsapp,
           category: category === 'other' ? customCategory : category,
           licenseConfirmed: role === 'supplier' ? acceptLicense : undefined,
         });
@@ -247,6 +250,22 @@ function AuthForm() {
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
+                    <input
+                      type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder={isRu ? 'ИНН компании' : 'Компаниянын ИНН'}
+                      required maxLength={14}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <input
+                      type="text" value={address} onChange={e => setAddress(e.target.value)}
+                      placeholder={isRu ? 'Адрес склада/офиса' : 'Кампа/офис дареги'}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <input
+                      type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)}
+                      placeholder={isRu ? 'WhatsApp номер +996...' : 'WhatsApp номер +996...'}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
                     <select value={city} onChange={e => setCity(e.target.value)}
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
@@ -303,6 +322,16 @@ function AuthForm() {
                       />
                     )}
                   </>
+                )}
+
+                {/* ИНН для агента и экспедитора */}
+                {(role === 'agent' || role === 'driver') && (
+                  <input
+                    type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder={isRu ? 'ИНН (для выплат)' : 'ИНН (төлөмдөр үчүн)'}
+                    required maxLength={14}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                  />
                 )}
               </>
             )}

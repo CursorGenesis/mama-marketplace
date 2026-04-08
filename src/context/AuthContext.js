@@ -39,9 +39,12 @@ export function AuthProvider({ children }) {
   const register = async (email, password, name, phone, role = 'buyer', extra = {}) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const profileData = { email, name, phone, role };
-    if (role === 'supplier' && extra.companyName) {
-      profileData.companyName = extra.companyName;
+    if (extra.inn) profileData.inn = extra.inn;
+    if (role === 'supplier') {
+      profileData.companyName = extra.companyName || '';
       profileData.city = extra.city || '';
+      profileData.address = extra.address || '';
+      profileData.whatsapp = extra.whatsapp || '';
       profileData.category = extra.category || '';
       if (extra.licenseConfirmed) profileData.licenseConfirmed = true;
     }

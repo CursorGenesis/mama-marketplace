@@ -8,23 +8,29 @@ export default function TermsPage() {
   const isRu = lang === 'ru';
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <Link href="/" className="flex items-center gap-1 text-slate-600 hover:text-slate-800 mb-6 font-medium text-sm">
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      <Link href="/" className="flex items-center gap-1 text-slate-600 hover:text-slate-800 mb-8 font-medium text-sm">
         <ArrowLeft size={18} /> {isRu ? 'На главную' : 'Башкы бетке'}
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">{isRu ? 'Пользовательское соглашение (Публичная оферта)' : 'Колдонуучу келишими (Коомдук оферта)'}</h1>
+      <div className="text-center mb-8">
+        <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">📄</span>
+        </div>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{isRu ? 'Пользовательское соглашение' : 'Колдонуучу келишими'}</h1>
+        <p className="text-gray-400 text-sm">{isRu ? 'Публичная оферта' : 'Коомдук оферта'}</p>
+      </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-6 text-base text-gray-600 leading-relaxed">
+      <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-10 space-y-8 text-[15px] text-gray-600 leading-[1.8]">
 
-        <p className="text-gray-500 italic">
+        <p className="text-gray-500 italic border-l-4 border-slate-200 pl-4">
           {isRu
             ? 'Настоящее соглашение регулирует использование Платформы (далее — Платформа) и является публичной офертой.'
             : 'Бул келишим Платформаны колдонууну жөнгө салат жана коомдук оферта болуп эсептелет.'}
         </p>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '1. Общие положения' : '1. Жалпы жоболор'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '1. Общие положения' : '1. Жалпы жоболор'}</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>{isRu ? '1.1. Платформа предоставляет информационные услуги по размещению предложений товаров и поиску контрагентов.' : '1.1. Платформа товарлардын сунуштарын жайгаштыруу жана контрагенттерди издөө боюнча маалыматтык кызматтарды көрсөтөт.'}</li>
             <li>{isRu ? '1.2. Платформа не является продавцом, поставщиком, агентом или участником сделок купли-продажи.' : '1.2. Платформа сатуучу, жеткирүүчү, агент же сатып алуу-сатуу бүтүмдөрүнүн катышуучусу ЭМЕС.'}</li>
@@ -33,7 +39,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '2. Роль Платформы' : '2. Платформанын ролу'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '2. Роль Платформы' : '2. Платформанын ролу'}</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>{isRu ? '2.1. Платформа предоставляет техническую возможность размещения информации о товарах и услугах.' : '2.1. Платформа товарлар жана кызматтар жөнүндө маалыматты жайгаштыруунун техникалык мүмкүнчүлүгүн берет.'}</li>
             <li>{isRu ? '2.2. Платформа не участвует в расчётах между сторонами.' : '2.2. Платформа тараптардын ортосундагы эсептешүүлөргө катышпайт.'}</li>
@@ -42,7 +48,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '3. Ответственность Поставщика' : '3. Жеткирүүчүнүн жоопкерчилиги'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '3. Ответственность Поставщика' : '3. Жеткирүүчүнүн жоопкерчилиги'}</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>{isRu ? '3.1. Поставщик обязуется соблюдать законодательство Кыргызской Республики.' : '3.1. Жеткирүүчү Кыргыз Республикасынын мыйзамдарын сактоого милдеттенет.'}</li>
             <li>{isRu ? '3.2. В случае реализации лицензируемых товаров (алкоголь, табачные изделия и др.) Поставщик гарантирует наличие всех необходимых лицензий и разрешений.' : '3.2. Лицензияланган товарларды (алкоголь, тамеки буюмдары ж.б.) сатууда Жеткирүүчү бардык зарыл лицензиялардын жана уруксаттардын бар экенине кепилдик берет.'}</li>
@@ -51,7 +57,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '4. Ограничение ответственности' : '4. Жоопкерчиликти чектөө'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '4. Ограничение ответственности' : '4. Жоопкерчиликти чектөө'}</h2>
           <p className="mb-2">{isRu ? '4.1. Платформа не несёт ответственности за:' : '4.1. Платформа төмөнкүлөр үчүн жоопкерчилик тартпайт:'}</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>{isRu ? 'качество товаров;' : 'товарлардын сапаты;'}</li>
@@ -62,7 +68,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '5. Оплата услуг Платформы' : '5. Платформа кызматтарына төлөө'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '5. Оплата услуг Платформы' : '5. Платформа кызматтарына төлөө'}</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>{isRu ? '5.1. Платформа может предоставлять платные услуги (размещение, продвижение, доступ к функционалу).' : '5.1. Платформа акылуу кызматтарды көрсөтө алат (жайгаштыруу, жылдыруу, функционалга мүмкүнчүлүк).'}</li>
             <li>{isRu ? '5.2. Оплата осуществляется за использование функционала Платформы и не является оплатой за товары.' : '5.2. Төлөм Платформанын функционалын колдонуу үчүн жүргүзүлөт жана товарлар үчүн төлөм болуп саналбайт.'}</li>
@@ -70,7 +76,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="font-bold text-gray-800 text-base mb-2">{isRu ? '6. Заключительные положения' : '6. Жыйынтыктоочу жоболор'}</h2>
+          <h2 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">{isRu ? '6. Заключительные положения' : '6. Жыйынтыктоочу жоболор'}</h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>{isRu ? '6.1. Используя Платформу, Пользователь подтверждает согласие с условиями настоящего соглашения.' : '6.1. Платформаны колдонуу менен, Колдонуучу ушул келишимдин шарттарына макулдугун ырастайт.'}</li>
             <li>{isRu ? '6.2. Платформа вправе вносить изменения в настоящее соглашение.' : '6.2. Платформа ушул келишимге өзгөртүүлөрдү киргизүүгө укуктуу.'}</li>
@@ -78,16 +84,16 @@ export default function TermsPage() {
         </section>
 
         {/* Дисклеймер */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
-          <h3 className="font-bold text-amber-800 text-sm mb-2">{isRu ? 'Дисклеймер' : 'Дисклеймер'}</h3>
-          <p className="text-amber-700 text-xs leading-relaxed">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mt-8">
+          <h3 className="font-bold text-amber-800 text-base mb-3 flex items-center gap-2">⚠️ {isRu ? 'Дисклеймер' : 'Дисклеймер'}</h3>
+          <p className="text-amber-700 text-sm leading-relaxed">
             {isRu
               ? 'Платформа не является продавцом товаров и не участвует в расчётах между Покупателем и Поставщиком. Все сделки заключаются напрямую между сторонами. Поставщики самостоятельно несут ответственность за наличие необходимых лицензий и соблюдение законодательства Кыргызской Республики.'
               : 'Платформа товарларды сатуучу эмес жана Сатып алуучу менен Жеткирүүчүнүн ортосундагы эсептешүүлөргө катышпайт. Бардык бүтүмдөр тараптардын ортосунда түздөн-түз түзүлөт. Жеткирүүчүлөр зарыл лицензиялардын бар болушу жана Кыргыз Республикасынын мыйзамдарын сактоо үчүн өз алдынча жоопкерчилик тартышат.'}
           </p>
         </div>
 
-        <div className="border-t pt-4 text-xs text-gray-400 text-center">
+        <div className="border-t pt-6 text-sm text-gray-400 text-center">
           {isRu ? 'Последнее обновление: апрель 2026' : 'Акыркы жаңыртуу: апрель 2026'}
         </div>
       </div>
