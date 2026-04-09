@@ -5,6 +5,31 @@ import { useRouter } from 'next/navigation';
 import { useLang } from '@/context/LangContext';
 import { Users, Search, UserCheck, UserX, Clock, DollarSign, Store, ChevronDown } from 'lucide-react';
 
+// Демо-данные магазинов по агентам
+const agentShops = {
+  agt1: [
+    { name: 'Мини-маркет "Береке"', address: 'ул. Манаса, 40', city: 'Бишкек', orders: 12, total: 156000, date: '2026-03-05' },
+    { name: 'Магазин "Ырыс"', address: 'ул. Жибек Жолу, 200', city: 'Бишкек', orders: 9, total: 98000, date: '2026-03-08' },
+    { name: 'Супермаркет "Алтын"', address: 'пр. Манаса, 77', city: 'Бишкек', orders: 15, total: 210000, date: '2026-03-12' },
+  ],
+  agt2: [
+    { name: 'Магазин "Достук"', address: 'ул. Токтогула, 120', city: 'Бишкек', orders: 8, total: 89000, date: '2026-03-15' },
+    { name: 'Кафе "Нурдин"', address: 'ул. Боконбаева, 33', city: 'Бишкек', orders: 6, total: 72000, date: '2026-03-18' },
+  ],
+  agt3: [
+    { name: 'Супермаркет "Народный"', address: 'пр. Чуй, 150', city: 'Бишкек', orders: 23, total: 312000, date: '2026-02-20' },
+    { name: 'Мини-маркет "Айжан"', address: 'ул. Киевская, 77', city: 'Бишкек', orders: 15, total: 198000, date: '2026-02-25' },
+    { name: 'Магазин "Салам"', address: 'ул. Исанова, 45', city: 'Бишкек', orders: 18, total: 245000, date: '2026-03-01' },
+    { name: 'Кафе "Жаштык"', address: 'ул. Ахунбаева, 93', city: 'Бишкек', orders: 5, total: 42000, date: '2026-03-10' },
+  ],
+  agt4: [
+    { name: 'Магазин "Арзан"', address: 'ул. Льва Толстого, 15', city: 'Бишкек', orders: 3, total: 35000, date: '2026-03-01' },
+  ],
+  agt5: [
+    { name: 'Мини-маркет "Бай"', address: 'ул. Панфилова, 80', city: 'Бишкек', orders: 2, total: 18000, date: '2026-02-01' },
+  ],
+};
+
 // Демо-данные агентов
 const demoAgents = [
   {
@@ -162,67 +187,74 @@ export default function AdminAgentsPage() {
         </div>
       </div>
 
-      {/* Таблица */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Список агентов */}
+      <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="text-center py-12 text-gray-400">{isRu ? 'Агенты не найдены' : 'Агенттер табылган жок'}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-gray-500 bg-gray-50">
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Агент' : 'Агент'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Код' : 'Код'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Статус' : 'Статус'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Магазины' : 'Дүкөндөр'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Заказы' : 'Заказдар'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Заработок' : 'Киреше'}</th>
-                  <th className="px-4 py-3 font-medium">{isRu ? 'Последний вход' : 'Акыркы кирүү'}</th>
-                  <th className="px-4 py-3 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(agent => {
-                  const sc = statusConfig[agent.status];
-                  const StatusIcon = sc.icon;
-                  return (
-                    <tr key={agent.id} className="border-b last:border-0 hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-800">{agent.name}</div>
-                        <div className="text-xs text-gray-400">{agent.phone}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{agent.code}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sc.color}`}>
-                          <StatusIcon size={12} /> {sc.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-medium">{agent.shops}</td>
-                      <td className="px-4 py-3 font-medium">{agent.totalOrders}</td>
-                      <td className="px-4 py-3 font-medium text-green-600">{agent.earnings.toLocaleString('ru-RU')} сом</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{daysAgo(agent.lastLogin)}</td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => toggleStatus(agent.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                            agent.status === 'active'
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                              : 'bg-green-50 text-green-600 hover:bg-green-100'
-                          }`}
-                        >
-                          {agent.status === 'active'
-                            ? (isRu ? 'Отключить' : 'Өчүрүү')
-                            : (isRu ? 'Активировать' : 'Активдештирүү')}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        ) : filtered.map(agent => {
+          const sc = statusConfig[agent.status];
+          const StatusIcon = sc.icon;
+          const isExpanded = selectedAgent === agent.id;
+          const shops = agentShops[agent.id] || [];
+          return (
+            <div key={agent.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              {/* Строка агента */}
+              <button onClick={() => setSelectedAgent(isExpanded ? null : agent.id)} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 text-left">
+                <div className="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                  {agent.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-gray-800">{agent.name}</span>
+                    <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{agent.code}</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${sc.color}`}><StatusIcon size={12} /> {sc.label}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                    <span>{agent.phone}</span>
+                    <span>{agent.shops} {isRu ? 'магазинов' : 'дүкөн'}</span>
+                    <span>{agent.totalOrders} {isRu ? 'заказов' : 'заказ'}</span>
+                    <span className="text-green-600 font-medium">{agent.earnings.toLocaleString('ru-RU')} сом</span>
+                    <span>{isRu ? 'Вход:' : 'Кирүү:'} {daysAgo(agent.lastLogin)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleStatus(agent.id); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${agent.status === 'active' ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
+                  >
+                    {agent.status === 'active' ? (isRu ? 'Отключить' : 'Өчүрүү') : (isRu ? 'Активировать' : 'Активдештирүү')}
+                  </button>
+                  <svg className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </button>
+
+              {/* Раскрывающийся список магазинов */}
+              {isExpanded && (
+                <div className="border-t bg-gray-50 px-4 py-3">
+                  <h4 className="text-sm font-bold text-gray-700 mb-3">{isRu ? 'Привлечённые магазины' : 'Тартылган дүкөндөр'} ({shops.length})</h4>
+                  {shops.length > 0 ? (
+                    <div className="space-y-2">
+                      {shops.map((shop, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white rounded-lg p-3 text-sm">
+                          <div>
+                            <div className="font-medium text-gray-800">{shop.name}</div>
+                            <div className="text-xs text-gray-400">{shop.address}, {shop.city}</div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-xs text-gray-500">{shop.orders} {isRu ? 'заказов' : 'заказ'} / {shop.total.toLocaleString('ru-RU')} сом</div>
+                            <div className="text-xs text-gray-400">{isRu ? 'Подключён:' : 'Туташтырылган:'} {shop.date}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">{isRu ? 'Магазинов пока нет' : 'Дүкөндөр жок'}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
         )}
       </div>
 
