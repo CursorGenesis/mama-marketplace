@@ -139,6 +139,7 @@ export async function updateSupplier(id, data) {
 export async function getProducts(filters = {}) {
   if (IS_DEMO) {
     let result = [...DEMO_PRODUCTS];
+    if (!filters.includeHidden) result = result.filter(p => !p.hidden);
     if (filters.supplierId) result = result.filter(p => p.supplierId === filters.supplierId);
     if (filters.category) result = result.filter(p => p.category === filters.category);
     if (filters.city) result = result.filter(p => p.city === filters.city);
