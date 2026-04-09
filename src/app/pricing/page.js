@@ -10,7 +10,7 @@ const plans = [
     icon: '🌱',
     nameRu: 'Старт', nameKg: 'Старт',
     descRu: 'Для небольших поставщиков и новичков', descKg: 'Кичинекей жеткирүүчүлөр жана жаңы баштагандар үчүн',
-    price: 1000,
+    price: 1500,
     color: 'slate',
     features: [
       { textRu: 'До 30 карточек товаров', textKg: '30 товар карточкасына чейин', included: true },
@@ -28,7 +28,7 @@ const plans = [
     icon: '📦',
     nameRu: 'Базовый', nameKg: 'Базалык',
     descRu: 'Для активных поставщиков с широким ассортиментом', descKg: 'Кең ассортименттүү активдүү жеткирүүчүлөр үчүн',
-    price: 2000,
+    price: 3000,
     color: 'blue',
     features: [
       { textRu: 'До 100 карточек товаров', textKg: '100 товар карточкасына чейин', included: true },
@@ -46,7 +46,7 @@ const plans = [
     icon: '🏢',
     nameRu: 'Бизнес', nameKg: 'Бизнес',
     descRu: 'Для серьёзных поставщиков — доверие и аналитика', descKg: 'Олуттуу жеткирүүчүлөр үчүн — ишеним жана аналитика',
-    price: 5000,
+    price: 7000,
     color: 'green',
     popular: true,
     features: [
@@ -65,7 +65,7 @@ const plans = [
     icon: '👑',
     nameRu: 'Премиум', nameKg: 'Премиум',
     descRu: 'Для крупных компаний — всё включено', descKg: 'Ири компаниялар үчүн — баары камтылган',
-    price: 12000,
+    price: 15000,
     color: 'amber',
     features: [
       { textRu: 'Безлимит карточек товаров', textKg: 'Чексиз товар карточкалары', included: true, bold: true },
