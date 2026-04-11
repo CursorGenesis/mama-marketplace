@@ -255,7 +255,6 @@ export default function AdminAgentsPage() {
             </div>
           );
         })}
-        )}
       </div>
 
       {/* Автоматизация */}
