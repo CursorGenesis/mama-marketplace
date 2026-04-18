@@ -75,9 +75,41 @@ function writeOrder(ss, data) {
     '', '', ''
   ]);
 
+  // Записываем каждый товар отдельной строкой в лист "Товары"
+  writeOrderItems(ss, data);
+
   // Обновляем торговую точку — добавляем если новая, обновляем дату последнего заказа
   if (data.buyerPhone || data.shopName) {
     updateShopLastOrder(ss, data);
+  }
+}
+
+// =============================================
+// ЛИСТ "Товары" — каждый товар отдельной строкой
+// =============================================
+function writeOrderItems(ss, data) {
+  var sheet = getOrCreateSheet(ss, 'Товары', [
+    'Дата', 'Номер заказа', 'Поставщик', 'Покупатель', 'Город',
+    'Товар', 'Ед.', 'Кол-во', 'Цена', 'Сумма'
+  ]);
+
+  var items = data.items || [];
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    var qty = Number(item.quantity || 0);
+    var price = Number(item.price || 0);
+    sheet.appendRow([
+      new Date(),
+      data.orderNumber || '',
+      data.supplierName || '',
+      data.buyerName || data.shopName || '',
+      data.city || '',
+      item.name || '',
+      item.unit || 'шт',
+      qty,
+      price,
+      qty * price
+    ]);
   }
 }
 
@@ -482,65 +514,159 @@ function setupSheets() {
   supSheet.getRange('C4').setFormula('=IF(A4="","",SUMIF(Заказы!H:H,A4,Заказы!J:J))');
   supSheet.getRange('D4').setFormula('=IF(A4="","",SUMIF(Заказы!H:H,A4,Заказы!K:K))');
 
-  // По месяцам
-  var monthSheet = getOrCreateSheet(ss, 'По месяцам', [
-    'Месяц', 'Заказов', 'Сумма', 'Комиссия 5%', 'Комиссия агентов 2%', 'Чистый доход', 'Возвратов'
+  // Товары (каждый товар отдельной строкой)
+  getOrCreateSheet(ss, 'Товары', [
+    'Дата', 'Номер заказа', 'Поставщик', 'Покупатель', 'Город',
+    'Товар', 'Ед.', 'Кол-во', 'Цена', 'Сумма'
   ]);
-  monthSheet.getRange('A2').setValue('Формулы подтягиваются автоматически');
-  monthSheet.getRange('A2').setFontStyle('italic').setFontColor('#999');
 
-  // Итоги
+  // Оплата тарифов
+  getOrCreateSheet(ss, 'Оплата тарифов', [
+    'Дата оплаты', 'Поставщик', 'ИНН', 'Тариф', 'Сумма оплаты',
+    'Период с', 'Период по', 'Способ оплаты', 'Примечание'
+  ]);
+
+  // По месяцам (формулы)
+  var monthSheet = getOrCreateSheet(ss, 'По месяцам', [
+    'Месяц', 'Заказов', 'Сумма', 'Комиссия 5%', 'Комиссия агентов 2%', 'Чистый доход', 'Возвратов', 'Новых клиентов'
+  ]);
+  // Заполняем 12 месяцев текущего года
+  var months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var year = new Date().getFullYear();
+  for (var m = 0; m < 12; m++) {
+    var row = m + 2;
+    monthSheet.getRange(row, 1).setValue(months[m] + ' ' + year);
+    // Заказов за месяц
+    monthSheet.getRange(row, 2).setFormula('=SUMPRODUCT((MONTH(Заказы!A2:A)=' + (m+1) + ')*(YEAR(Заказы!A2:A)=' + year + '))');
+    // Сумма за месяц
+    monthSheet.getRange(row, 3).setFormula('=SUMPRODUCT((MONTH(Заказы!A2:A)=' + (m+1) + ')*(YEAR(Заказы!A2:A)=' + year + ')*Заказы!J2:J)');
+    monthSheet.getRange(row, 3).setNumberFormat('#,##0');
+    // Комиссия 5%
+    monthSheet.getRange(row, 4).setFormula('=SUMPRODUCT((MONTH(Заказы!A2:A)=' + (m+1) + ')*(YEAR(Заказы!A2:A)=' + year + ')*Заказы!K2:K)');
+    monthSheet.getRange(row, 4).setNumberFormat('#,##0');
+    // Комиссия агентов 2%
+    monthSheet.getRange(row, 5).setFormula('=SUMPRODUCT((MONTH(Заказы!A2:A)=' + (m+1) + ')*(YEAR(Заказы!A2:A)=' + year + ')*Заказы!M2:M)');
+    monthSheet.getRange(row, 5).setNumberFormat('#,##0');
+    // Чистый доход
+    monthSheet.getRange(row, 6).setFormula('=D' + row + '-E' + row);
+    monthSheet.getRange(row, 6).setNumberFormat('#,##0');
+    // Возвратов
+    monthSheet.getRange(row, 7).setFormula('=SUMPRODUCT((MONTH(Возвраты!A2:A)=' + (m+1) + ')*(YEAR(Возвраты!A2:A)=' + year + '))');
+    // Новых клиентов
+    monthSheet.getRange(row, 8).setFormula('=SUMPRODUCT((MONTH(Клиенты!A2:A)=' + (m+1) + ')*(YEAR(Клиенты!A2:A)=' + year + '))');
+  }
+  // Итого за год
+  monthSheet.getRange(14, 1).setValue('ИТОГО ' + year);
+  monthSheet.getRange('A14:H14').setFontWeight('bold');
+  for (var c = 2; c <= 8; c++) {
+    monthSheet.getRange(14, c).setFormula('=SUM(' + String.fromCharCode(64+c) + '2:' + String.fromCharCode(64+c) + '13)');
+    if (c >= 3 && c <= 6) monthSheet.getRange(14, c).setNumberFormat('#,##0');
+  }
+
+  // =============================================
+  // ИТОГИ (расширенные)
+  // =============================================
   var itogSheet = getOrCreateSheet(ss, 'Итоги', ['Показатель', 'Значение']);
 
   itogSheet.getRange('A1').setValue('ИТОГИ MarketKG');
   itogSheet.getRange('A1').setFontSize(16).setFontWeight('bold');
 
-  itogSheet.getRange('A3').setValue('Всего заказов:');
-  itogSheet.getRange('B3').setFormula('=COUNTA(Заказы!A2:A)');
+  // --- ФИНАНСЫ ---
+  itogSheet.getRange('A3').setValue('💰 ФИНАНСЫ').setFontWeight('bold').setFontSize(12);
 
-  itogSheet.getRange('A4').setValue('Общая сумма заказов:');
-  itogSheet.getRange('B4').setFormula('=SUM(Заказы!J2:J)');
-  itogSheet.getRange('B4').setNumberFormat('#,##0 "сом"');
+  itogSheet.getRange('A4').setValue('Всего заказов:');
+  itogSheet.getRange('B4').setFormula('=COUNTA(Заказы!A2:A)');
 
-  itogSheet.getRange('A5').setValue('Доход платформы (комиссия 5%):');
-  itogSheet.getRange('B5').setFormula('=SUM(Заказы!K2:K)');
+  itogSheet.getRange('A5').setValue('Общая сумма заказов:');
+  itogSheet.getRange('B5').setFormula('=SUM(Заказы!J2:J)');
   itogSheet.getRange('B5').setNumberFormat('#,##0 "сом"');
 
-  itogSheet.getRange('A6').setValue('Выплаты агентам (2%):');
-  itogSheet.getRange('B6').setFormula('=SUM(Заказы!M2:M)');
+  itogSheet.getRange('A6').setValue('Средний чек:');
+  itogSheet.getRange('B6').setFormula('=IF(B4>0,B5/B4,0)');
   itogSheet.getRange('B6').setNumberFormat('#,##0 "сом"');
 
-  itogSheet.getRange('A7').setValue('Чистый доход:');
-  itogSheet.getRange('B7').setFormula('=B5-B6');
+  itogSheet.getRange('A7').setValue('Доход платформы (комиссия 5%):');
+  itogSheet.getRange('B7').setFormula('=SUM(Заказы!K2:K)');
   itogSheet.getRange('B7').setNumberFormat('#,##0 "сом"');
-  itogSheet.getRange('A7:B7').setFontWeight('bold').setFontColor('#0a7e0a');
 
-  itogSheet.getRange('A9').setValue('Всего клиентов:');
-  itogSheet.getRange('B9').setFormula('=COUNTA(Клиенты!A2:A)');
+  itogSheet.getRange('A8').setValue('Выплаты агентам (2%):');
+  itogSheet.getRange('B8').setFormula('=SUM(Заказы!M2:M)');
+  itogSheet.getRange('B8').setNumberFormat('#,##0 "сом"');
 
-  itogSheet.getRange('A10').setValue('Торговых точек:');
-  itogSheet.getRange('B10').setFormula('=COUNTA(\'Торговые точки\'!A2:A)');
+  itogSheet.getRange('A9').setValue('Доход от тарифов:');
+  itogSheet.getRange('B9').setFormula('=SUM(\'Оплата тарифов\'!E2:E)');
+  itogSheet.getRange('B9').setNumberFormat('#,##0 "сом"');
 
-  itogSheet.getRange('A11').setValue('Агентов:');
-  itogSheet.getRange('B11').setFormula('=COUNTIF(Клиенты!E:E,"agent")');
+  itogSheet.getRange('A10').setValue('ЧИСТЫЙ ДОХОД:');
+  itogSheet.getRange('B10').setFormula('=B7-B8+B9');
+  itogSheet.getRange('B10').setNumberFormat('#,##0 "сом"');
+  itogSheet.getRange('A10:B10').setFontWeight('bold').setFontColor('#0a7e0a').setFontSize(13);
 
-  itogSheet.getRange('A12').setValue('Поставщиков:');
-  itogSheet.getRange('B12').setFormula('=COUNTIF(Клиенты!E:E,"supplier")');
+  // --- ВОЗВРАТЫ ---
+  itogSheet.getRange('A12').setValue('❌ ВОЗВРАТЫ').setFontWeight('bold').setFontSize(12);
 
-  itogSheet.getRange('A14').setValue('Возвратов:');
-  itogSheet.getRange('B14').setFormula('=COUNTA(Возвраты!A2:A)');
+  itogSheet.getRange('A13').setValue('Всего возвратов:');
+  itogSheet.getRange('B13').setFormula('=COUNTA(Возвраты!A2:A)');
 
-  itogSheet.getRange('A15').setValue('Сумма возвратов:');
-  itogSheet.getRange('B15').setFormula('=SUM(Возвраты!E2:E)');
-  itogSheet.getRange('B15').setNumberFormat('#,##0 "сом"');
+  itogSheet.getRange('A14').setValue('Сумма возвратов:');
+  itogSheet.getRange('B14').setFormula('=SUM(Возвраты!E2:E)');
+  itogSheet.getRange('B14').setNumberFormat('#,##0 "сом"');
 
-  itogSheet.getRange('A17').setValue('Заказов за сегодня:');
-  itogSheet.getRange('B17').setFormula('=COUNTIF(Заказы!A2:A,TODAY())');
+  itogSheet.getRange('A15').setValue('Процент возвратов:');
+  itogSheet.getRange('B15').setFormula('=IF(B4>0,B13/B4*100,0)');
+  itogSheet.getRange('B15').setNumberFormat('0.0"%"');
 
-  itogSheet.getRange('A18').setValue('Сумма за сегодня:');
-  itogSheet.getRange('B18').setFormula('=SUMIF(Заказы!A2:A,TODAY(),Заказы!J2:J)');
-  itogSheet.getRange('B18').setNumberFormat('#,##0 "сом"');
+  // --- УЧАСТНИКИ ---
+  itogSheet.getRange('A17').setValue('👥 УЧАСТНИКИ').setFontWeight('bold').setFontSize(12);
 
-  itogSheet.setColumnWidth(1, 280);
-  itogSheet.setColumnWidth(2, 150);
+  itogSheet.getRange('A18').setValue('Всего клиентов:');
+  itogSheet.getRange('B18').setFormula('=COUNTA(Клиенты!A2:A)');
+
+  itogSheet.getRange('A19').setValue('Торговых точек:');
+  itogSheet.getRange('B19').setFormula('=COUNTA(\'База клиентов\'!A2:A)');
+
+  itogSheet.getRange('A20').setValue('Поставщиков:');
+  itogSheet.getRange('B20').setFormula('=COUNTA(\'База поставщиков\'!A2:A)');
+
+  itogSheet.getRange('A21').setValue('Агентов:');
+  itogSheet.getRange('B21').setFormula('=COUNTIF(Клиенты!E:E,"agent")');
+
+  // --- СЕГОДНЯ ---
+  itogSheet.getRange('A23').setValue('📅 СЕГОДНЯ').setFontWeight('bold').setFontSize(12);
+
+  itogSheet.getRange('A24').setValue('Заказов сегодня:');
+  itogSheet.getRange('B24').setFormula('=COUNTIF(Заказы!A2:A,TODAY())');
+
+  itogSheet.getRange('A25').setValue('Сумма сегодня:');
+  itogSheet.getRange('B25').setFormula('=SUMIF(Заказы!A2:A,TODAY(),Заказы!J2:J)');
+  itogSheet.getRange('B25').setNumberFormat('#,##0 "сом"');
+
+  itogSheet.getRange('A26').setValue('Заказов вчера:');
+  itogSheet.getRange('B26').setFormula('=COUNTIF(Заказы!A2:A,TODAY()-1)');
+
+  itogSheet.getRange('A27').setValue('Заказов за неделю:');
+  itogSheet.getRange('B27').setFormula('=COUNTIFS(Заказы!A2:A,">="&(TODAY()-7),Заказы!A2:A,"<="&TODAY())');
+
+  itogSheet.getRange('A28').setValue('Сумма за неделю:');
+  itogSheet.getRange('B28').setFormula('=SUMIFS(Заказы!J2:J,Заказы!A2:A,">="&(TODAY()-7),Заказы!A2:A,"<="&TODAY())');
+  itogSheet.getRange('B28').setNumberFormat('#,##0 "сом"');
+
+  itogSheet.getRange('A29').setValue('Новых клиентов за неделю:');
+  itogSheet.getRange('B29').setFormula('=COUNTIFS(Клиенты!A2:A,">="&(TODAY()-7),Клиенты!A2:A,"<="&TODAY())');
+
+  // --- ТОП ---
+  itogSheet.getRange('A31').setValue('🏆 ТОП-5 ПОСТАВЩИКОВ').setFontWeight('bold').setFontSize(12);
+  itogSheet.getRange('A32').setValue('(по сумме заказов — смотрите лист "Поставщики")');
+  itogSheet.getRange('A32').setFontStyle('italic').setFontColor('#999');
+
+  itogSheet.getRange('A34').setValue('🏆 ТОП-5 ГОРОДОВ').setFontWeight('bold').setFontSize(12);
+  itogSheet.getRange('A35').setValue('(по количеству торговых точек — смотрите лист "База клиентов")');
+  itogSheet.getRange('A35').setFontStyle('italic').setFontColor('#999');
+
+  itogSheet.getRange('A37').setValue('🏆 ТОП ТОВАРОВ').setFontWeight('bold').setFontSize(12);
+  itogSheet.getRange('A38').setValue('(по количеству продаж — смотрите лист "Товары")');
+  itogSheet.getRange('A38').setFontStyle('italic').setFontColor('#999');
+
+  itogSheet.setColumnWidth(1, 300);
+  itogSheet.setColumnWidth(2, 160);
 }
