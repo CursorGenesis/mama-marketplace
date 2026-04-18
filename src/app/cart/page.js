@@ -5,6 +5,8 @@ import { useLang } from '@/context/LangContext';
 import { Minus, Plus, Trash2, ShoppingBag, Send, MessageCircle, MapPin, Sparkles } from 'lucide-react';
 import { BOUGHT_TOGETHER, DEMO_PRODUCTS, DEMO_SUPPLIERS } from '@/lib/demoData';
 import { getSmartRecommendations, saveOrderToHistory, seedDemoHistory } from '@/lib/recommendations';
+import { createOrder } from '@/lib/firestore';
+import { sendTelegramNotification } from '@/lib/telegram';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
@@ -29,6 +31,7 @@ export default function CartPage() {
   const { t, lang } = useLang();
   const [submitting, setSubmitting] = useState({});
   const [sentSuppliers, setSentSuppliers] = useState([]);
+  const [expandedSupplier, setExpandedSupplier] = useState(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -154,7 +157,17 @@ export default function CartPage() {
       return false;
     }
 
-    // 5. Лимит заказов (не более 10 в час)
+    // 5. Проверка минимального заказа
+    const minOrderIssues = supplierGroups.filter(g => g.minOrder > 0 && g.total < g.minOrder);
+    if (minOrderIssues.length > 0) {
+      const names = minOrderIssues.map(g => g.supplierName).join(', ');
+      toast.error(lang === 'kg'
+        ? `Мин. заказ суммасына жеткен жок: ${names}`
+        : `Не набрана мин. сумма заказа: ${names}`);
+      return false;
+    }
+
+    // 6. Лимит заказов (не более 10 в час)
     const now = Date.now();
     const orderTimes = JSON.parse(localStorage.getItem(ORDER_LIMIT_KEY) || '[]');
     const recentOrders = orderTimes.filter(t => now - t < 3600000);
@@ -190,46 +203,98 @@ export default function CartPage() {
   };
 
   // Отправка заявки конкретному поставщику
-  const handleSubmitToSupplier = (group) => {
+  const handleSubmitToSupplier = async (group) => {
     if (!validateOrder()) return;
 
     setSubmitting(prev => ({ ...prev, [group.supplierId]: true }));
 
+    const orderNumber = 'MKG-' + Date.now().toString(36).toUpperCase();
+
+    let supplierChatId = null;
+    try {
+      const result = await createOrder({
+        orderNumber,
+        buyerId: user?.uid || null,
+        buyerName: form.name,
+        buyerPhone: form.phone,
+        shopName: form.shopName,
+        address: form.address,
+        comment: form.comment,
+        supplierId: group.supplierId,
+        supplierName: group.supplierName,
+        items: group.items.map(item => ({
+          id: item.id, name: item.name, quantity: item.quantity,
+          price: item.price, unit: item.unit || 'шт',
+        })),
+        totalPrice: group.total,
+        deliveryMarker: deliveryMarker,
+        agentRef: profile?.agentRef || localStorage.getItem('marketkg_ref') || null,
+      });
+      supplierChatId = result?.supplierChatId || null;
+    } catch (e) {
+      console.error('Order save error:', e);
+      toast.error(lang === 'kg' ? 'Заказ сакталган жок, кайра аракет кылыңыз' : 'Ошибка сохранения заказа, попробуйте ещё раз');
+      setSubmitting(prev => ({ ...prev, [group.supplierId]: false }));
+      return;
+    }
+
     const receipt = {
-      orderNumber: 'MKG-' + Date.now().toString(36).toUpperCase(),
+      orderNumber,
       date: new Date(),
       buyer: { name: form.name, shopName: form.shopName, phone: form.phone, address: form.address, comment: form.comment },
       suppliers: [{
         name: group.supplierName,
         items: group.items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          unit: item.unit || 'шт',
-          total: item.price * item.quantity,
+          name: item.name, quantity: item.quantity, price: item.price,
+          unit: item.unit || 'шт', total: item.price * item.quantity,
         })),
         subtotal: group.total,
       }],
-      subtotal: group.total,
-      discount: 0,
-      discountAmount: 0,
-      total: group.total,
-      promoCode: null,
-      deliveryMarker: deliveryMarker,
+      subtotal: group.total, discount: 0, discountAmount: 0,
+      total: group.total, promoCode: null, deliveryMarker,
     };
 
-    setTimeout(() => {
-      group.items.forEach(item => removeItem(item.id));
-      setOrderReceipt(receipt);
-      setSentSuppliers(prev => [...prev, group.supplierName]);
-      setSubmitting(prev => ({ ...prev, [group.supplierId]: false }));
-      toast.success(`Заявка для "${group.supplierName}" отправлена!`);
-    }, 1000);
+    // Telegram уведомление + Google Sheets
+    sendTelegramNotification('new_order', {
+      orderNumber,
+      supplierName: group.supplierName,
+      supplierId: group.supplierId,
+      supplierChatId,
+      shopName: form.shopName,
+      buyerName: form.name,
+      buyerPhone: form.phone,
+      address: form.address,
+      agentName: profile?.agentRef || localStorage.getItem('marketkg_ref') || 'Прямой клиент',
+      agentRef: profile?.agentRef || localStorage.getItem('marketkg_ref') || null,
+      city: profile?.city || '',
+      buyerEmail: user?.email || '',
+      items: group.items,
+      total: group.total,
+      totalPrice: group.total,
+    }).catch(() => {});
+
+    group.items.forEach(item => removeItem(item.id));
+    setOrderReceipt(receipt);
+    setSentSuppliers(prev => [...prev, group.supplierName]);
+    setSubmitting(prev => ({ ...prev, [group.supplierId]: false }));
+    toast.success(`Заявка для "${group.supplierName}" отправлена!`);
   };
 
   // Отправить всем поставщикам сразу
-  const handleSubmitAll = () => {
+  const handleSubmitAll = async () => {
     if (!validateOrder()) return;
+
+    // Сохраняем данные в профиль если не заполнены
+    if (user && updateProfile) {
+      const updates = {};
+      if (form.shopName && !profile?.shopName) updates.shopName = form.shopName;
+      if (form.address && !profile?.address) updates.address = form.address;
+      if (form.phone && !profile?.phone) updates.phone = form.phone;
+      if (form.name && !profile?.name) updates.name = form.name;
+      if (Object.keys(updates).length > 0) {
+        updateProfile(updates);
+      }
+    }
 
     setSubmitting({ all: true });
 
@@ -267,17 +332,72 @@ export default function CartPage() {
       }).catch(() => {});
     }
 
-    setTimeout(() => {
-      // Сохраняем заказ в историю для умных рекомендаций
-      saveOrderToHistory(items);
+    // Сохраняем каждый заказ в Firebase (по поставщикам)
+    const agentRef = profile?.agentRef || localStorage.getItem('marketkg_ref') || null;
 
-      const names = supplierGroups.map(g => g.supplierName);
-      setOrderReceipt(receipt);
-      clearCart();
-      setSentSuppliers(names);
+    const supplierChatIds = {};
+    let allSaved = true;
+    for (const group of supplierGroups) {
+      try {
+        const result = await createOrder({
+          orderNumber: receipt.orderNumber,
+          buyerId: user?.uid || null,
+          buyerName: form.name,
+          buyerPhone: form.phone,
+          shopName: form.shopName,
+          address: form.address,
+          comment: form.comment,
+          supplierId: group.supplierId,
+          supplierName: group.supplierName,
+          items: group.items.map(item => ({
+            id: item.id, name: item.name, quantity: item.quantity,
+            price: item.price, unit: item.unit || 'шт',
+          })),
+          totalPrice: group.total,
+          deliveryMarker: deliveryMarker,
+          agentRef,
+        });
+        if (result?.supplierChatId) supplierChatIds[group.supplierId] = result.supplierChatId;
+      } catch (e) {
+        console.error('Order save error:', e);
+        allSaved = false;
+      }
+    }
+
+    if (!allSaved) {
+      toast.error(lang === 'kg' ? 'Кээ бир заказдар сакталган жок, кайра аракет кылыңыз' : 'Некоторые заказы не сохранились, попробуйте ещё раз');
       setSubmitting({});
-      toast.success(`Заявки отправлены ${names.length} поставщикам!`);
-    }, 1500);
+      return;
+    }
+
+    // Telegram уведомления + Google Sheets
+    for (const group of supplierGroups) {
+      sendTelegramNotification('new_order', {
+        orderNumber: receipt.orderNumber,
+        supplierName: group.supplierName,
+        supplierId: group.supplierId,
+        supplierChatId: supplierChatIds[group.supplierId] || null,
+        shopName: form.shopName,
+        buyerName: form.name,
+        buyerPhone: form.phone,
+        address: form.address,
+        agentName: agentRef || 'Прямой клиент',
+        agentRef: agentRef,
+        items: group.items,
+        total: group.total,
+        totalPrice: group.total,
+      }).catch(() => {});
+    }
+
+    // Сохраняем заказ в историю для умных рекомендаций
+    saveOrderToHistory(items);
+
+    const names = supplierGroups.map(g => g.supplierName);
+    setOrderReceipt(receipt);
+    clearCart();
+    setSentSuppliers(names);
+    setSubmitting({});
+    toast.success(`Заявки отправлены ${names.length} поставщикам!`);
   };
 
   // Экран чека после отправки
@@ -492,10 +612,10 @@ export default function CartPage() {
             <div key={group.supplierId} className="bg-white rounded-xl shadow-sm overflow-hidden">
               {/* Заголовок поставщика */}
               <div className={`px-5 py-3 flex items-center justify-between border-b ${group.minOrder > 0 && group.total < group.minOrder ? 'bg-red-50' : 'bg-gray-50'}`}>
-                <Link href={`/supplier/${group.supplierId}`} className="hover:opacity-80">
+                <button onClick={() => setExpandedSupplier(expandedSupplier === group.supplierId ? null : group.supplierId)} className="text-left hover:opacity-80">
                   <h3 className="font-bold text-gray-800">{group.supplierName}</h3>
-                  <p className="text-xs text-gray-400">{group.items.length} {lang === 'kg' ? 'товар' : 'товаров'}</p>
-                </Link>
+                  <p className="text-xs text-gray-400">{group.items.length} {lang === 'kg' ? 'товар' : 'товаров'} {expandedSupplier !== group.supplierId ? (lang === 'kg' ? '• Дагы кошуу ▼' : '• Добавить ещё ▼') : '▲'}</p>
+                </button>
                 <span className="font-bold text-primary-600">
                   {group.total.toLocaleString('ru-RU')} {t('som')}
                 </span>
@@ -515,18 +635,74 @@ export default function CartPage() {
                     <p className="text-xs text-red-400">
                       {Math.round((group.total / group.minOrder) * 100)}% {lang === 'kg' ? 'толтурулду' : 'набрано'}
                     </p>
-                    <Link href={`/supplier/${group.supplierId}`}
+                    <button onClick={() => setExpandedSupplier(expandedSupplier === group.supplierId ? null : group.supplierId)}
                       className="px-3 py-1.5 bg-white text-red-600 border border-red-300 text-xs font-bold rounded-lg hover:bg-red-600 hover:text-white transition-colors shadow-sm">
-                      {lang === 'kg'
-                        ? `Дагы ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом кошуу`
-                        : `Добавить ещё на ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом`}
-                    </Link>
+                      {expandedSupplier === group.supplierId
+                        ? (lang === 'kg' ? 'Жабуу' : 'Свернуть')
+                        : (lang === 'kg'
+                          ? `Дагы ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом кошуу`
+                          : `Добавить ещё на ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом`)}
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Товары */}
-              <div className="divide-y">
+              {/* Ассортимент поставщика для дозаказа */}
+              {expandedSupplier === group.supplierId && (() => {
+                const allSupplierProducts = DEMO_PRODUCTS.filter(p => p.supplierId === group.supplierId);
+                const cartIds = group.items.map(i => i.id);
+                return (
+                  <div className="border-b bg-blue-50 px-4 py-3">
+                    <div className="flex items-center justify-between mb-2 sticky top-0 bg-blue-50 py-1 z-10">
+                      <h4 className="text-sm font-bold text-blue-800">
+                        {group.supplierName} — {lang === 'kg' ? 'ассортимент' : 'ассортимент'} ({allSupplierProducts.length})
+                      </h4>
+                      <button onClick={() => setExpandedSupplier(null)} className="text-xs text-blue-500 font-medium">
+                        {lang === 'kg' ? 'Жабуу' : 'Свернуть'} ✕
+                      </button>
+                    </div>
+                    {group.minOrder > 0 && group.total < group.minOrder && (
+                      <div className="text-xs text-blue-600 font-medium mb-2">
+                        {lang === 'kg' ? 'Дагы керек:' : 'Ещё нужно:'} {Math.max(0, group.minOrder - group.total).toLocaleString('ru-RU')} сом
+                      </div>
+                    )}
+                    <div className="space-y-1.5">
+                      {allSupplierProducts.map(p => {
+                        const inCart = items.find(i => i.id === p.id);
+                        const alreadyAdded = cartIds.includes(p.id);
+                        return (
+                          <div key={p.id} className={`flex items-center gap-2 p-2 rounded-lg ${alreadyAdded ? 'bg-green-50 border border-green-200' : 'bg-white'}`}>
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                              {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg">📦</div>}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-gray-800 truncate">{p.name}</div>
+                              <div className="text-xs text-green-600 font-bold">{p.price} сом {p.unit && `/ ${p.unit}`}</div>
+                            </div>
+                            {inCart ? (
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button onClick={() => { if (inCart.quantity <= 1) removeItem(p.id); else updateQuantity(p.id, inCart.quantity - 1); }}
+                                  className="w-7 h-7 rounded bg-gray-100 flex items-center justify-center text-gray-600"><Minus size={12} /></button>
+                                <span className="w-6 text-center text-xs font-bold">{inCart.quantity}</span>
+                                <button onClick={() => addItem(p, 1)}
+                                  className="w-7 h-7 rounded bg-gray-100 flex items-center justify-center text-gray-600"><Plus size={12} /></button>
+                                <button onClick={() => removeItem(p.id)}
+                                  className="w-7 h-7 rounded bg-red-50 flex items-center justify-center text-red-400 hover:text-red-600 ml-1"><Trash2 size={12} /></button>
+                              </div>
+                            ) : (
+                              <button onClick={() => { addItem(p, 1); toast.success(`${p.name} — добавлено!`); }}
+                                className="px-2.5 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-medium shrink-0"><Plus size={12} /></button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Товары (скрываем когда ассортимент открыт — они уже видны там) */}
+              {expandedSupplier !== group.supplierId && <div className="divide-y">
                 {group.items.map(item => (
                   <div key={item.id} className="px-5 py-3 flex items-center gap-3">
                     {/* Фото */}
@@ -572,31 +748,40 @@ export default function CartPage() {
                     </button>
                   </div>
                 ))}
-              </div>
+              </div>}
 
               {/* Кнопки для этого поставщика */}
-              <div className="px-5 py-3 bg-gray-50 border-t flex gap-2">
-                {group.minOrder > 0 && group.total < group.minOrder ? (
-                  <div className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-300 text-gray-500 rounded-lg text-sm font-semibold cursor-not-allowed">
-                    {lang === 'kg'
-                      ? `Дагы ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом кошуңуз`
-                      : `Добавьте ещё на ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом`}
-                  </div>
-                ) : (
+              <div className="px-5 py-3 bg-gray-50 border-t space-y-2">
+                <div className="flex gap-2">
+                  {group.minOrder > 0 && group.total < group.minOrder ? (
+                    <div className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-300 text-gray-500 rounded-lg text-sm font-semibold cursor-not-allowed">
+                      {lang === 'kg'
+                        ? `Дагы ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом кошуңуз`
+                        : `Добавьте ещё на ${(group.minOrder - group.total).toLocaleString('ru-RU')} сом`}
+                    </div>
+                  ) : (
+                  <button
+                    onClick={() => handleSubmitToSupplier(group)}
+                    disabled={submitting[group.supplierId]}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-semibold disabled:opacity-50"
+                  >
+                    <Send size={14} />
+                    {submitting[group.supplierId] ? t('sending') : `${t('submitOrder')}`}
+                  </button>
+                  )}
+                  <button
+                    onClick={() => handleWhatsApp(group)}
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold"
+                  >
+                    <MessageCircle size={14} /> WA
+                  </button>
+                </div>
                 <button
-                  onClick={() => handleSubmitToSupplier(group)}
-                  disabled={submitting[group.supplierId]}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-semibold disabled:opacity-50"
+                  onClick={() => { group.items.forEach(item => removeItem(item.id)); toast.success(lang === 'kg' ? 'Поставщик алынып салынды' : 'Поставщик удалён из корзины'); }}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors text-sm font-medium"
                 >
-                  <Send size={14} />
-                  {submitting[group.supplierId] ? t('sending') : `${t('submitOrder')}`}
-                </button>
-                )}
-                <button
-                  onClick={() => handleWhatsApp(group)}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-semibold"
-                >
-                  <MessageCircle size={14} /> WA
+                  <Trash2 size={14} />
+                  {lang === 'kg' ? 'Себеттен алуу' : 'Убрать из корзины'}
                 </button>
               </div>
             </div>
