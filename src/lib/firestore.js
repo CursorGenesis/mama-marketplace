@@ -536,7 +536,77 @@ export async function getOrders(filters = {}) {
 export async function updateOrderStatus(id, status, agentId = null) {
   const data = { status };
   if (agentId) data.agentId = agentId;
-  return updateDoc(doc(db, 'orders', id), data);
+  await updateDoc(doc(db, 'orders', id), data);
+
+  // При возврате (not_received) — откатываем комиссию агента, монетки покупателя, комиссию поставщика
+  if (status === 'not_received') {
+    try {
+      const orderSnap = await getDoc(doc(db, 'orders', id));
+      if (!orderSnap.exists()) return;
+      const order = orderSnap.data();
+      const totalPrice = Number(order.totalPrice || order.total || 0);
+      if (totalPrice <= 0) return;
+
+      // 1. Откат монеток покупателя
+      if (order.buyerId) {
+        const coins = Math.floor(totalPrice / 500);
+        if (coins > 0) {
+          const buyerRef = doc(db, 'users', order.buyerId);
+          await runTransaction(db, async (transaction) => {
+            const snap = await transaction.get(buyerRef);
+            if (!snap.exists()) return;
+            const currentCoins = snap.data().coins || 0;
+            const newCoins = Math.max(0, currentCoins - coins);
+            const coinStatus = newCoins >= 50 ? 'gold' : newCoins >= 20 ? 'silver' : 'bronze';
+            transaction.update(buyerRef, { coins: newCoins, coinStatus });
+          });
+        }
+      }
+
+      // 2. Откат комиссии агента (2%)
+      if (order.agentRef) {
+        const agentCommission = Math.ceil(totalPrice * 0.02);
+        const agentQuery = query(collection(db, 'users'), where('role', '==', 'agent'));
+        const agentSnap = await getDocs(agentQuery);
+        const agent = agentSnap.docs.find(d => {
+          const code = 'AGT-' + d.id.slice(0, 4).toUpperCase();
+          return code === order.agentRef;
+        });
+        if (agent) {
+          const agentDocRef = doc(db, 'users', agent.id);
+          await runTransaction(db, async (transaction) => {
+            const snap = await transaction.get(agentDocRef);
+            if (!snap.exists()) return;
+            const currentEarnings = snap.data().earnings || 0;
+            transaction.update(agentDocRef, {
+              earnings: Math.max(0, currentEarnings - agentCommission),
+            });
+          });
+        }
+      }
+
+      // 3. Возврат комиссии 5% поставщику
+      if (order.supplierId) {
+        const supplierRef = doc(db, 'suppliers', order.supplierId);
+        const supplierSnap = await getDoc(supplierRef);
+        if (supplierSnap.exists()) {
+          const commissionRate = supplierSnap.data().commissionRate || 0.05;
+          const commission = Math.ceil(totalPrice * commissionRate);
+          await runTransaction(db, async (transaction) => {
+            const snap = await transaction.get(supplierRef);
+            if (!snap.exists()) return;
+            const currentBalance = snap.data().balance || 0;
+            transaction.update(supplierRef, { balance: currentBalance + commission });
+          });
+        }
+      }
+
+      // Помечаем заказ как возвращённый
+      await updateDoc(doc(db, 'orders', id), { refunded: true, refundedAt: new Date() });
+    } catch (e) {
+      console.error('Refund rollback error:', e);
+    }
+  }
 }
 
 // =============================================

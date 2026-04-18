@@ -60,8 +60,17 @@ export async function sendTelegramNotification(type, data) {
       await sendMessage(data.supplierChatId, supplierMessage);
     }
 
-    // Сохраняем в Google Таблицу
-    sendToGoogleSheet({ type: 'order', ...data });
+    // Сохраняем в Google Таблицу с расширенными данными
+    const agentCommission = data.agentRef ? Math.ceil(total * 0.02) : 0;
+    const coins = Math.floor(total / 500);
+    sendToGoogleSheet({
+      type: 'order',
+      ...data,
+      commission,
+      agentRef: data.agentRef || '',
+      agentCommission,
+      coins,
+    });
   }
 
   if (type === 'new_registration') {
