@@ -1,52 +1,95 @@
 'use client';
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
-import { getOrders, ORDER_STATUSES } from '@/lib/firestore';
+import { getOrders, updateOrderStatus } from '@/lib/firestore';
+import { sendTelegramNotification } from '@/lib/telegram';
 import { useState, useEffect } from 'react';
-import { Package, ChevronDown, ChevronUp, ShoppingBag, LogIn } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle, XCircle, Clock, Truck } from 'lucide-react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
-const IS_DEMO = !process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'demo-key';
-
-const demoOrders = [
-  { id: 'demo-1', supplierName: 'Шоро', items: [{name: 'Максым 1л', quantity: 10, price: 75}, {name: 'Чалап 1л', quantity: 5, price: 70}], total: 1100, status: 'completed', createdAt: new Date('2026-03-25') },
-  { id: 'demo-2', supplierName: 'Бишкек Сүт', items: [{name: 'Молоко 3.2% 1л', quantity: 20, price: 68}, {name: 'Сметана 20% 400г', quantity: 10, price: 110}], total: 2460, status: 'in_progress', createdAt: new Date('2026-03-28') },
-  { id: 'demo-3', supplierName: 'Алтын Дан', items: [{name: 'Рис узгенский 1кг', quantity: 15, price: 180}, {name: 'Гречка 1кг', quantity: 10, price: 120}], total: 3900, status: 'new', createdAt: new Date('2026-03-30') },
-  { id: 'demo-4', supplierName: 'Sweet House KG', items: [{name: 'Печенье Ассорти 500г', quantity: 8, price: 180}], total: 1440, status: 'completed', createdAt: new Date('2026-03-20') },
-  { id: 'demo-5', supplierName: 'Тоо Муз', items: [{name: 'Пельмени Домашние 1кг', quantity: 5, price: 280}, {name: 'Манты 1кг', quantity: 3, price: 350}], total: 2450, status: 'cancelled', createdAt: new Date('2026-03-15') },
-];
+const STATUS_CONFIG = {
+  new: { label: 'Ожидает', labelKg: 'Күтүүдө', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
+  packed: { label: 'Собран', labelKg: 'Чогултулду', color: 'bg-orange-100 text-orange-700', icon: Package },
+  delivering: { label: 'В доставке', labelKg: 'Жеткирүүдө', color: 'bg-blue-100 text-blue-700', icon: Truck },
+  received: { label: 'Получено', labelKg: 'Алынды', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  not_received: { label: 'Не получен', labelKg: 'Алынган жок', color: 'bg-red-100 text-red-700', icon: XCircle },
+  cancelled: { label: 'Отменён', labelKg: 'Жокко чыгарылды', color: 'bg-gray-100 text-gray-600', icon: XCircle },
+};
 
 export default function OrdersPage() {
-  const { user } = useAuth();
-  const { t } = useLang();
+  const { user, profile } = useAuth();
+  const { lang } = useLang();
+  const isRu = lang === 'ru';
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
-    async function fetchOrders() {
-      try {
-        if (IS_DEMO || !user) {
-          // Показываем демо-заказы без регистрации
-          setOrders(demoOrders);
-        } else {
-          const allOrders = await getOrders();
-          const myOrders = allOrders.filter(o => o.buyerEmail === user.email);
-          setOrders(myOrders.length > 0 ? myOrders : demoOrders);
-        }
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-        setOrders(demoOrders);
-      }
-      setLoading(false);
-    }
-
+    if (!user) { setLoading(false); return; }
     fetchOrders();
   }, [user]);
 
-  const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
+  const fetchOrders = async () => {
+    try {
+      const allOrders = await getOrders({ buyerId: user.uid });
+      setOrders(allOrders);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+    setLoading(false);
+  };
+
+  const handleConfirmReceived = async (order) => {
+    setUpdating(order.id);
+    try {
+      await updateOrderStatus(order.id, 'received');
+
+      // Уведомление админу
+      sendTelegramNotification('order_status', {
+        shopName: order.shopName || profile?.shopName || '',
+        supplierName: order.supplierName || 'Поставщик',
+        status: 'received',
+        total: order.totalPrice || order.total || 0,
+      }).catch(() => {});
+
+      toast.success(isRu ? 'Спасибо! Заказ подтверждён' : 'Рахмат! Заказ ырасталды');
+      await fetchOrders();
+    } catch (e) {
+      toast.error(isRu ? 'Ошибка' : 'Ката');
+    }
+    setUpdating(null);
+  };
+
+  const handleNotReceived = async (order) => {
+    const raw = prompt(isRu
+      ? 'Укажите причину (не доехал, брак, не тот товар):'
+      : 'Себебин жазыңыз:');
+    if (!raw) return;
+    const reason = raw.replace(/[<>"'&]/g, '').trim();
+    if (!reason) return;
+
+    setUpdating(order.id);
+    try {
+      await updateOrderStatus(order.id, 'not_received');
+
+      // Уведомление админу с причиной
+      sendTelegramNotification('order_status', {
+        shopName: order.shopName || profile?.shopName || '',
+        supplierName: order.supplierName || 'Поставщик',
+        status: 'not_received',
+        total: order.totalPrice || order.total || 0,
+        reason,
+        buyerPhone: order.buyerPhone || profile?.phone || '',
+      }).catch(() => {});
+
+      toast.success(isRu ? 'Заявка на возврат отправлена' : 'Кайтаруу өтүнүчү жөнөтүлдү');
+      await fetchOrders();
+    } catch (e) {
+      toast.error(isRu ? 'Ошибка' : 'Ката');
+    }
+    setUpdating(null);
   };
 
   const formatDate = (date) => {
@@ -55,31 +98,30 @@ export default function OrdersPage() {
     return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  const getStatusBadge = (status) => {
-    const s = ORDER_STATUSES[status] || ORDER_STATUSES.new;
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.color}`}>
-        {s.label}
-      </span>
-    );
-  };
-
   if (loading) {
+    return <div className="max-w-4xl mx-auto px-4 py-20 text-center text-gray-400">{isRu ? 'Загрузка...' : 'Жүктөлүүдө...'}</div>;
+  }
+
+  if (!user) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <p className="text-gray-500">{t('loading')}</p>
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <ShoppingBag size={64} className="mx-auto mb-4 text-gray-300" />
+        <h2 className="text-xl font-bold text-gray-600 mb-2">{isRu ? 'Войдите чтобы увидеть заказы' : 'Заказдарды көрүү үчүн кириңиз'}</h2>
+        <Link href="/auth" className="mt-4 inline-block px-8 py-3 bg-slate-800 text-white rounded-xl font-semibold">
+          {isRu ? 'Войти' : 'Кирүү'}
+        </Link>
       </div>
     );
   }
 
-  // Empty state
   if (orders.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <ShoppingBag size={64} className="mx-auto mb-4 text-gray-300" />
-        <h2 className="text-2xl font-bold text-gray-600 mb-2">{t('orders_empty')}</h2>
-        <Link href="/catalog" className="mt-6 inline-block px-8 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium">
-          {t('goToCatalog')}
+        <h2 className="text-xl font-bold text-gray-600 mb-2">{isRu ? 'Заказов пока нет' : 'Заказдар жок'}</h2>
+        <p className="text-gray-400 mb-6">{isRu ? 'Оформите первый заказ в каталоге' : 'Каталогдон биринчи заказ берүүнү'}</p>
+        <Link href="/catalog" className="inline-block px-8 py-3 bg-slate-800 text-white rounded-xl font-semibold">
+          {isRu ? 'В каталог' : 'Каталогго'}
         </Link>
       </div>
     );
@@ -87,62 +129,115 @@ export default function OrdersPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">{t('my_orders')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{isRu ? 'Мои заказы' : 'Менин заказдарым'}</h1>
 
       <div className="space-y-4">
-        {orders.map(order => (
-          <div key={order.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-            {/* Order header */}
-            <button
-              onClick={() => toggleExpand(order.id)}
-              className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Package size={20} className="text-primary-600" />
-                </div>
-                <div className="text-left min-w-0">
-                  <h3 className="font-semibold text-gray-800 truncate">{order.supplierName}</h3>
-                  <p className="text-sm text-gray-400">{formatDate(order.createdAt)}</p>
-                </div>
-              </div>
+        {orders.map(order => {
+          const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.new;
+          const StatusIcon = status.icon;
+          const canConfirm = ['new', 'packed', 'delivering'].includes(order.status);
+          const total = order.totalPrice || order.total || 0;
 
-              <div className="flex items-center gap-4 flex-shrink-0">
-                {getStatusBadge(order.status)}
-                <span className="font-bold text-primary-600 whitespace-nowrap">
-                  {Number(order.total).toLocaleString('ru-RU')} {t('som')}
-                </span>
-                {expandedId === order.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
-              </div>
-            </button>
+          return (
+            <div key={order.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              {/* Заголовок заказа */}
+              <button onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+                className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
+                    <Package size={20} className="text-slate-600" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <h3 className="font-semibold text-gray-800 truncate">{order.supplierName}</h3>
+                    <p className="text-xs text-gray-400">{formatDate(order.createdAt)} {order.orderNumber && `• ${order.orderNumber}`}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                    <StatusIcon size={12} />
+                    {isRu ? status.label : status.labelKg}
+                  </span>
+                  <span className="font-bold text-slate-800 whitespace-nowrap">
+                    {Number(total).toLocaleString('ru-RU')} сом
+                  </span>
+                  {expandedId === order.id ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                </div>
+              </button>
 
-            {/* Expanded items */}
-            {expandedId === order.id && (
-              <div className="border-t px-5 py-4 bg-gray-50">
-                <h4 className="text-sm font-medium text-gray-500 mb-3">{t('order_items')}</h4>
-                <div className="space-y-2">
-                  {order.items?.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">{item.name}</span>
-                      <div className="flex items-center gap-4">
-                        <span className="text-gray-400">x{item.quantity}</span>
-                        <span className="font-medium text-gray-700">
-                          {(item.price * item.quantity).toLocaleString('ru-RU')} {t('som')}
-                        </span>
+              {/* Развёрнутые детали */}
+              {expandedId === order.id && (
+                <div className="border-t">
+                  {/* Товары */}
+                  <div className="px-5 py-4 bg-gray-50">
+                    <h4 className="text-sm font-medium text-gray-500 mb-3">{isRu ? 'Товары' : 'Товарлар'}</h4>
+                    <div className="space-y-2">
+                      {order.items?.map((item, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <span className="text-gray-700">{item.name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-400">x{item.quantity}</span>
+                            <span className="font-medium text-gray-700">
+                              {(item.price * item.quantity).toLocaleString('ru-RU')} сом
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-3 border-t flex justify-between">
+                      <span className="font-medium text-gray-600">{isRu ? 'Итого' : 'Жалпы'}</span>
+                      <span className="font-bold text-slate-800">{Number(total).toLocaleString('ru-RU')} сом</span>
+                    </div>
+                  </div>
+
+                  {/* Кнопки подтверждения */}
+                  {canConfirm && (
+                    <div className="px-5 py-4 bg-white border-t">
+                      <p className="text-sm text-gray-500 mb-3">
+                        {isRu ? 'Вы получили этот заказ?' : 'Бул заказды алдыңызбы?'}
+                      </p>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleConfirmReceived(order)}
+                          disabled={updating === order.id}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                          <CheckCircle size={18} />
+                          {updating === order.id ? '...' : (isRu ? 'Да, получил' : 'Ооба, алдым')}
+                        </button>
+                        <button
+                          onClick={() => handleNotReceived(order)}
+                          disabled={updating === order.id}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition-colors disabled:opacity-50"
+                        >
+                          <XCircle size={18} />
+                          {isRu ? 'Не получил' : 'Алган жокмун'}
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Статус подтверждён */}
+                  {order.status === 'received' && (
+                    <div className="px-5 py-3 bg-green-50 border-t">
+                      <p className="text-sm text-green-700 font-medium flex items-center gap-2">
+                        <CheckCircle size={16} /> {isRu ? 'Вы подтвердили получение этого заказа' : 'Сиз бул заказды алганыңызды ырастадыңыз'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Статус не получен */}
+                  {order.status === 'not_received' && (
+                    <div className="px-5 py-3 bg-red-50 border-t">
+                      <p className="text-sm text-red-700 font-medium flex items-center gap-2">
+                        <XCircle size={16} /> {isRu ? 'Заявка на возврат отправлена. Мы свяжемся с вами' : 'Кайтаруу өтүнүчү жөнөтүлдү. Биз сиз менен байланышабыз'}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-3 pt-3 border-t flex justify-between">
-                  <span className="font-medium text-gray-600">{t('order_total')}</span>
-                  <span className="font-bold text-primary-600">
-                    {Number(order.total).toLocaleString('ru-RU')} {t('som')}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
