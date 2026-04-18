@@ -1,18 +1,22 @@
 'use client';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
 import toast from 'react-hot-toast';
 import { Suspense } from 'react';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 function AuthForm() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('buyer');
+  const [shopName, setShopName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [inn, setInn] = useState('');
   const [city, setCity] = useState('');
@@ -30,8 +34,17 @@ function AuthForm() {
   const refCode = searchParams.get('ref');
   const isRu = lang === 'ru';
 
+  // Сохраняем реферальный код чтобы не потерять
+  if (refCode && typeof window !== 'undefined') {
+    localStorage.setItem('marketkg_ref', refCode);
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (mode === 'register' && (role === 'supplier' || role === 'agent' || role === 'driver') && inn.length !== 14) {
+      toast.error(isRu ? 'ИНН должен содержать ровно 14 цифр' : 'ИНН так 14 сандан турушу керек');
+      return;
+    }
     setLoading(true);
     try {
       if (mode === 'login') {
@@ -39,11 +52,23 @@ function AuthForm() {
         toast.success(isRu ? 'Добро пожаловать!' : 'Кош келиңиз!');
       } else {
         await register(email, password, name, phone, role, {
-          companyName, inn, city, address, whatsapp,
+          shopName, companyName, inn, city, address, whatsapp,
           category: category === 'other' ? customCategory : category,
           licenseConfirmed: role === 'supplier' ? acceptLicense : undefined,
+          agentRef: refCode || null,
         });
         toast.success(isRu ? 'Регистрация прошла успешно!' : 'Каттоо ийгиликтүү!');
+        sendTelegramNotification('new_registration', {
+          email, name, phone, role,
+          companyName: companyName || '',
+          shopName: shopName || '',
+          inn: inn || '',
+          city: city || '',
+          address: address || '',
+          whatsapp: whatsapp || '',
+          category: category === 'other' ? customCategory : category,
+          refCode: refCode || '',
+        }).catch(() => {});
       }
       router.push('/');
     } catch (err) {
@@ -241,6 +266,34 @@ function AuthForm() {
                   </div>
                 </div>
 
+                {/* Поля для покупателя */}
+                {role === 'buyer' && (
+                  <>
+                    <input
+                      type="text" value={shopName} onChange={e => setShopName(e.target.value)}
+                      placeholder={isRu ? 'Название магазина / кафе' : 'Дүкөн / кафенин аты'}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <input
+                      type="text" value={address} onChange={e => setAddress(e.target.value)}
+                      placeholder={isRu ? 'Адрес доставки' : 'Жеткирүү дареги'}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <select value={city} onChange={e => setCity(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                      <option value="">{isRu ? 'Выберите город' : 'Шаар тандаңыз'}</option>
+                      <option value="Бишкек">Бишкек</option>
+                      <option value="Ош">Ош</option>
+                      <option value="Манас">Манас</option>
+                      <option value="Каракол">Каракол</option>
+                      <option value="Токмок">Токмок</option>
+                      <option value="Нарын">Нарын</option>
+                      <option value="Баткен">Баткен</option>
+                      <option value="Талас">Талас</option>
+                    </select>
+                  </>
+                )}
+
                 {/* Дополнительные поля для поставщика */}
                 {role === 'supplier' && (
                   <>
@@ -250,12 +303,15 @@ function AuthForm() {
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
-                    <input
-                      type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder={isRu ? 'ИНН компании' : 'Компаниянын ИНН'}
-                      required maxLength={14}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                    />
+                    <div>
+                      <input
+                        type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder={isRu ? 'ИНН компании (14 цифр)' : 'Компаниянын ИНН (14 сан)'}
+                        required minLength={14} maxLength={14}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                      />
+                      <p className="text-xs text-gray-400 mt-1 px-1">{isRu ? 'Укажите ИНН из свидетельства ИП или ОСОО. Будет проверен.' : 'ИП же ОСОО күбөлүгүнөн ИНН жазыңыз. Текшерилет.'}</p>
+                    </div>
                     <input
                       type="text" value={address} onChange={e => setAddress(e.target.value)}
                       placeholder={isRu ? 'Адрес склада/офиса' : 'Кампа/офис дареги'}
@@ -272,7 +328,7 @@ function AuthForm() {
                       <option value="">{isRu ? 'Выберите город' : 'Шаар тандаңыз'}</option>
                       <option value="Бишкек">Бишкек</option>
                       <option value="Ош">Ош</option>
-                      <option value="Джалал-Абад">Джалал-Абад</option>
+                      <option value="Манас">Манас</option>
                       <option value="Каракол">Каракол</option>
                       <option value="Токмок">Токмок</option>
                       <option value="Нарын">Нарын</option>
@@ -326,12 +382,15 @@ function AuthForm() {
 
                 {/* ИНН для агента и экспедитора */}
                 {(role === 'agent' || role === 'driver') && (
-                  <input
-                    type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
-                    placeholder={isRu ? 'ИНН (для выплат)' : 'ИНН (төлөмдөр үчүн)'}
-                    required maxLength={14}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                  />
+                  <div>
+                    <input
+                      type="text" value={inn} onChange={e => setInn(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder={isRu ? 'Ваш личный ИНН (14 цифр)' : 'Жеке ИНН (14 сан)'}
+                      required minLength={14} maxLength={14}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <p className="text-xs text-gray-400 mt-1 px-1">{isRu ? 'Укажите ваш личный ИНН. Используется для начисления выплат и проверки личности.' : 'Жеке ИНН жазыңыз. Төлөмдөрдү эсептөө жана инсандыкты текшерүү үчүн колдонулат.'}</p>
+                  </div>
                 )}
               </>
             )}
@@ -341,11 +400,21 @@ function AuthForm() {
               placeholder="Email" required
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
             />
-            <input
-              type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder={isRu ? 'Пароль' : 'Сырсөз'} required minLength={6}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                placeholder={isRu ? 'Пароль' : 'Сырсөз'} required minLength={6}
+                className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                )}
+              </button>
+            </div>
 
             {mode === 'register' && (
               <div className="space-y-2 pt-1">

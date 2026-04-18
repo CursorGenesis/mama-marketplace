@@ -101,6 +101,133 @@ function writeRegistration(ss, data) {
     data.address || '',
     data.refCode || 'Прямой'
   ]);
+
+  // Покупатель с магазином/кафе — добавляем в базу контактов
+  if (data.role === 'buyer' && (data.shopName || data.companyName)) {
+    writeContactBase(ss, data, 'База клиентов');
+  }
+
+  // Поставщик — добавляем в базу поставщиков
+  if (data.role === 'supplier') {
+    writeSupplierBase(ss, data);
+  }
+}
+
+// =============================================
+// ЛИСТ "База клиентов" — только контакты
+// =============================================
+function writeContactBase(ss, data, sheetName) {
+  var region = getRegion(data.city || '');
+  var sheet = getOrCreateSheet(ss, sheetName, [
+    'Название', 'Контактное лицо', 'Телефон', 'Email', 'WhatsApp',
+    'Область', 'Город', 'Адрес', 'Вид деятельности', 'Агент', 'Дата регистрации'
+  ]);
+
+  // Проверяем дубликат по телефону
+  var lastRow = sheet.getLastRow();
+  if (lastRow >= 2) {
+    var phones = sheet.getRange(2, 3, lastRow - 1, 1).getValues();
+    for (var i = 0; i < phones.length; i++) {
+      if (phones[i][0] === (data.phone || '')) return;
+    }
+  }
+
+  var bizType = detectBusinessType(data.shopName || data.companyName || '');
+
+  sheet.appendRow([
+    data.shopName || data.companyName || '',
+    data.name || '',
+    data.phone || '',
+    data.email || '',
+    data.whatsapp || data.phone || '',
+    region,
+    data.city || '',
+    data.address || '',
+    bizType,
+    data.refCode || 'Прямой',
+    new Date()
+  ]);
+}
+
+// =============================================
+// ЛИСТ "База поставщиков" — контакты + категория
+// =============================================
+function writeSupplierBase(ss, data) {
+  var region = getRegion(data.city || '');
+  var sheet = getOrCreateSheet(ss, 'База поставщиков', [
+    'Компания', 'Контактное лицо', 'Телефон', 'Email', 'WhatsApp',
+    'ИНН', 'Область', 'Город', 'Адрес', 'Категория товаров', 'Дата регистрации'
+  ]);
+
+  // Проверяем дубликат по ИНН или телефону
+  var lastRow = sheet.getLastRow();
+  if (lastRow >= 2) {
+    var existing = sheet.getRange(2, 3, lastRow - 1, 4).getValues(); // телефон, email, whatsapp, ИНН
+    for (var i = 0; i < existing.length; i++) {
+      if (existing[i][0] === (data.phone || '') ||
+          (data.inn && sheet.getRange(i + 2, 6).getValue() === data.inn)) return;
+    }
+  }
+
+  var categoryMap = {
+    confectionery: 'Кондитерка', drinks: 'Напитки', grocery: 'Бакалея',
+    dairy: 'Молочные продукты', meat: 'Мясо и птица', fruits: 'Фрукты и овощи',
+    frozen: 'Заморозка', snacks: 'Снеки', bakery: 'Хлеб и выпечка',
+    oils: 'Масла и соусы', eggs: 'Яйца', tea_coffee: 'Чай и кофе',
+    canned: 'Консервы', spices: 'Специи', baby: 'Детское питание',
+    tobacco: 'Табак', disposable: 'Одноразовая посуда', pet_food: 'Корма',
+    alcohol: 'Алкоголь', hardware: 'Хозтовары', stationery: 'Канцтовары',
+    textile: 'Текстиль', hygiene: 'Гигиена', honey: 'Мёд и варенье',
+    dried_fruits: 'Сухофрукты и орехи', household: 'Бытовая химия', other: 'Другое'
+  };
+
+  sheet.appendRow([
+    data.companyName || data.name || '',
+    data.name || '',
+    data.phone || '',
+    data.email || '',
+    data.whatsapp || data.phone || '',
+    data.inn || '',
+    region,
+    data.city || '',
+    data.address || '',
+    categoryMap[data.category] || data.category || '',
+    new Date()
+  ]);
+}
+
+// =============================================
+// ОПРЕДЕЛЕНИЕ ОБЛАСТИ ПО ГОРОДУ
+// =============================================
+function getRegion(city) {
+  var regions = {
+    'Бишкек': 'г. Бишкек',
+    'Ош': 'Ошская область',
+    'Токмок': 'Чуйская область',
+    'Каракол': 'Иссык-Кульская область',
+    'Балыкчы': 'Иссык-Кульская область',
+    'Нарын': 'Нарынская область',
+    'Талас': 'Таласская область',
+    'Баткен': 'Баткенская область',
+    'Кызыл-Кия': 'Баткенская область',
+    'Манас': 'Чуйская область',
+  };
+  return regions[city] || '';
+}
+
+// =============================================
+// ОПРЕДЕЛЕНИЕ ВИДА ДЕЯТЕЛЬНОСТИ ПО НАЗВАНИЮ
+// =============================================
+function detectBusinessType(name) {
+  var lower = name.toLowerCase();
+  if (lower.indexOf('кафе') >= 0 || lower.indexOf('ресторан') >= 0 || lower.indexOf('столовая') >= 0) return 'Общепит';
+  if (lower.indexOf('аптек') >= 0) return 'Аптека';
+  if (lower.indexOf('супермаркет') >= 0 || lower.indexOf('гипермаркет') >= 0) return 'Супермаркет';
+  if (lower.indexOf('мини') >= 0 || lower.indexOf('маркет') >= 0 || lower.indexOf('магазин') >= 0 || lower.indexOf('дүкөн') >= 0) return 'Магазин';
+  if (lower.indexOf('оптов') >= 0 || lower.indexOf('база') >= 0 || lower.indexOf('склад') >= 0) return 'Оптовая база';
+  if (lower.indexOf('пекарн') >= 0 || lower.indexOf('кондитер') >= 0) return 'Пекарня/Кондитерская';
+  if (lower.indexOf('отель') >= 0 || lower.indexOf('гостиниц') >= 0) return 'Гостиница';
+  return 'Торговая точка';
 }
 
 // =============================================
@@ -317,6 +444,18 @@ function setupSheets() {
   getOrCreateSheet(ss, 'Возвраты', [
     'Дата', 'Номер заказа', 'Магазин', 'Поставщик', 'Сумма',
     'Комиссия возвращена', 'Причина', 'Телефон покупателя'
+  ]);
+
+  // База клиентов (только контакты)
+  getOrCreateSheet(ss, 'База клиентов', [
+    'Название', 'Контактное лицо', 'Телефон', 'Email', 'WhatsApp',
+    'Область', 'Город', 'Адрес', 'Вид деятельности', 'Агент', 'Дата регистрации'
+  ]);
+
+  // База поставщиков (только контакты)
+  getOrCreateSheet(ss, 'База поставщиков', [
+    'Компания', 'Контактное лицо', 'Телефон', 'Email', 'WhatsApp',
+    'ИНН', 'Область', 'Город', 'Адрес', 'Категория товаров', 'Дата регистрации'
   ]);
 
   // Агенты (сводная — формулы)
