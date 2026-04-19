@@ -4,21 +4,11 @@ on:
   push:
     branches: [master]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -41,11 +31,12 @@ jobs:
           NEXT_PUBLIC_TELEGRAM_ADMIN_CHAT_ID: "6067853905"
           NEXT_PUBLIC_GOOGLE_SHEET_URL: https://script.google.com/macros/s/AKfycbw4uQy2tANPHB5arZioFfS5WHN7dmhnoIZpm2nl2y-3IDWqmYf-pTbe_yZEM8Nif3o/exec
 
-      - uses: actions/configure-pages@v4
+      - name: Add .nojekyll
+        run: touch out/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: out
-
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
