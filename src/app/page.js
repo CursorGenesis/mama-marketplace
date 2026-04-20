@@ -5,7 +5,7 @@ import { CATEGORIES, SUBCATEGORIES, getProducts, getSuppliers } from '@/lib/fire
 import { useLang } from '@/context/LangContext';
 import SupplierCard from '@/components/SupplierCard';
 import ProductCard from '@/components/ProductCard';
-import { Search, MapPin, ArrowRight, Crown, Star, Users, TrendingUp, Building2 } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Crown, Star, Users, TrendingUp, Building2, ShoppingCart } from 'lucide-react';
 import CategoryIcon from '@/components/CategoryIcon';
 
 export default function HomePage() {
@@ -342,57 +342,51 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* CTA блоки: Стать поставщиком + Попасть в ТОП + Пригласи друга */}
+      {/* CTA блоки: Стань клиентом + Стань поставщиком + Стань агентом */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Стать поставщиком */}
+          {/* Стань клиентом */}
+          <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-8 text-white flex flex-col">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <ShoppingCart size={24} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">{isRu ? 'Стань клиентом' : 'Кардар бол'}</h3>
+            <p className="text-blue-100 text-sm leading-relaxed flex-1">
+              {isRu ? 'Заказывайте оптом напрямую от поставщиков. Лучшие цены, быстрая доставка по всему Кыргызстану' : 'Жеткирүүчүлөрдөн түздөн-түз оптом заказ кылыңыз. Эң жакшы баалар, бүт Кыргызстан боюнча тез жеткирүү'}
+            </p>
+            <Link href="/auth"
+              className="inline-block px-6 py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors text-sm mt-6 text-center">
+              {isRu ? 'Зарегистрироваться' : 'Катталуу'}
+            </Link>
+          </div>
+
+          {/* Стань поставщиком */}
           <div className="bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl p-8 text-white flex flex-col">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <TrendingUp size={24} />
             </div>
-            <h3 className="text-xl font-bold mb-2">{t('becomeSupplier')}</h3>
+            <h3 className="text-xl font-bold mb-2">{isRu ? 'Стань поставщиком' : 'Жеткирүүчү бол'}</h3>
             <p className="text-slate-300 text-sm leading-relaxed flex-1">
-              {t('becomeSupplierDesc')}
+              {isRu ? 'Разместите компанию на маркетплейсе и получайте заказы от покупателей по всему Кыргызстану. Первый месяц бесплатно' : 'Компанияңызды маркетплейске жайгаштырыңыз жана бүт Кыргызстан боюнча заказдарды алыңыз. Биринчи ай акысыз'}
             </p>
-            <Link
-              href="/auth"
-              className="inline-block px-6 py-3 bg-white text-slate-800 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-6 text-center"
-            >
-              {t('becomeSupplierBtn')}
+            <Link href="/auth"
+              className="inline-block px-6 py-3 bg-white text-slate-800 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-6 text-center">
+              {isRu ? 'Зарегистрироваться' : 'Катталуу'}
             </Link>
           </div>
 
-          {/* Попасть в ТОП */}
-          <div className="bg-gradient-to-br from-slate-600 to-slate-800 rounded-2xl p-8 text-white flex flex-col">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-              <Crown size={24} />
-            </div>
-            <h3 className="text-xl font-bold mb-2">{t('topPlacement')}</h3>
-            <p className="text-yellow-100 text-sm leading-relaxed flex-1">
-              {t('topPlacementDesc')}
-            </p>
-            <Link
-              href="/pricing"
-              className="inline-block px-6 py-3 bg-white text-slate-800 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-6 text-center"
-            >
-              {t('topPlacementBtn')}
-            </Link>
-          </div>
-
-          {/* Пригласить поставщика */}
+          {/* Стань агентом */}
           <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-2xl p-8 text-white flex flex-col">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-              <Building2 size={24} />
+              <Users size={24} />
             </div>
-            <h3 className="text-xl font-bold mb-2">{lang === 'kg' ? 'Жеткирүүчүнү чакыр' : 'Пригласить поставщика'}</h3>
+            <h3 className="text-xl font-bold mb-2">{isRu ? 'Стань агентом' : 'Агент бол'}</h3>
             <p className="text-green-100 text-sm leading-relaxed flex-1">
-              {lang === 'kg' ? 'Керектүү жеткирүүчүнү таппадыңызбы? Бизге айтыңыз — биз аны таап, платформага кошобуз' : 'Не нашли нужного поставщика? Расскажите нам — мы найдём его и подключим к платформе'}
+              {isRu ? 'Подключайте магазины к платформе и получайте 2% с каждого заказа. Свободный график, без вложений' : 'Дүкөндөрдү платформага туташтырып, ар бир заказдан 2% алыңыз. Эркин график, салымсыз'}
             </p>
-            <Link
-              href="/referral"
-              className="inline-block px-6 py-3 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 transition-colors text-sm mt-6 text-center"
-            >
-              {lang === 'kg' ? 'Заявка жөнөтүү' : 'Отправить заявку'}
+            <Link href="/agents"
+              className="inline-block px-6 py-3 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 transition-colors text-sm mt-6 text-center">
+              {isRu ? 'Подробнее' : 'Толугураак'}
             </Link>
           </div>
         </div>
