@@ -253,32 +253,73 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Десктоп: горизонтальная лента со стрелками */}
-        <div className="hidden md:block relative">
-          <button
-            onClick={() => { document.getElementById('cat-row').scrollBy({ left: -300, behavior: 'smooth' }); }}
-            className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button
-            onClick={() => { document.getElementById('cat-row').scrollBy({ left: 300, behavior: 'smooth' }); }}
-            className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </button>
-          <div id="cat-row" className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 px-1">
-            {CATEGORIES.map(cat => (
-              <Link key={cat.id} href={`/catalog?category=${cat.id}`}
-                className="shrink-0 flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 hover:border-slate-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group w-[100px]">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                  <CategoryIcon categoryId={cat.id} size={36} />
-                </div>
-                <span className="text-xs font-bold text-gray-800 group-hover:text-slate-700 transition-colors text-center leading-tight line-clamp-2">{catName(cat.id)}</span>
-              </Link>
-            ))}
+        {/* Десктоп — цветные карточки 8 в ряду */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-8 gap-3">
+            {CATEGORIES.slice(0, 16).map(cat => {
+              const colors = {
+                bakery: 'from-yellow-100 to-yellow-200 text-yellow-800',
+                dairy: 'from-sky-100 to-sky-200 text-sky-800',
+                meat: 'from-red-100 to-red-200 text-red-800',
+                fish: 'from-cyan-100 to-cyan-300 text-cyan-800',
+                fruits: 'from-emerald-100 to-emerald-200 text-emerald-800',
+                grocery: 'from-amber-100 to-amber-200 text-amber-800',
+                oils: 'from-lime-100 to-lime-200 text-lime-800',
+                confectionery: 'from-pink-100 to-pink-200 text-pink-800',
+                drinks: 'from-blue-100 to-blue-300 text-blue-800',
+                alcohol: 'from-purple-100 to-purple-200 text-purple-800',
+                tea_coffee: 'from-teal-100 to-teal-200 text-teal-800',
+                canned: 'from-slate-100 to-slate-200 text-slate-700',
+                spices: 'from-rose-100 to-rose-200 text-rose-800',
+                snacks: 'from-orange-100 to-orange-200 text-orange-800',
+                frozen: 'from-violet-100 to-violet-300 text-violet-800',
+                eggs: 'from-amber-50 to-amber-200 text-amber-700',
+              };
+              const c = colors[cat.id] || 'from-gray-100 to-gray-200 text-gray-700';
+              const [gradFrom, gradTo, textColor] = c.split(' ');
+              return (
+                <Link key={cat.id} href={`/catalog?category=${cat.id}`}
+                  className={`bg-gradient-to-br ${gradFrom} ${gradTo} rounded-2xl p-4 text-center hover:shadow-lg transition-all hover:scale-105`}>
+                  <div className="text-3xl mb-2">{cat.icon}</div>
+                  <div className={`text-xs font-bold leading-tight ${textColor}`}>{catName(cat.id)}</div>
+                </Link>
+              );
+            })}
           </div>
+          {CATEGORIES.length > 16 && (
+            <Link href="/catalog"
+              className="flex items-center justify-center gap-1 mt-4 py-3 text-sm font-semibold text-gray-500 hover:text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              {isRu ? `Все категории (${CATEGORIES.length})` : `Бардык категориялар (${CATEGORIES.length})`} →
+            </Link>
+          )}
         </div>
+      </section>
+
+      {/* Баннер розыгрыша */}
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+        <Link href="/raffle" className="group block relative overflow-hidden bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-2xl p-5 md:p-6 text-white hover:shadow-2xl transition-all hover:scale-[1.01]">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute text-3xl opacity-20 animate-bounce" style={{top: '10%', left: '5%', animationDelay: '0s', animationDuration: '3s'}}>🪙</div>
+            <div className="absolute text-2xl opacity-15 animate-bounce" style={{top: '60%', left: '15%', animationDelay: '0.5s', animationDuration: '2.5s'}}>🪙</div>
+            <div className="absolute text-4xl opacity-20 animate-bounce" style={{top: '20%', right: '10%', animationDelay: '1s', animationDuration: '3.5s'}}>🪙</div>
+            <div className="absolute text-2xl opacity-15 animate-bounce" style={{top: '70%', right: '20%', animationDelay: '1.5s', animationDuration: '2s'}}>🪙</div>
+          </div>
+          <div className="relative flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="text-4xl md:text-5xl animate-pulse drop-shadow-lg">🎁</div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2 py-0.5 bg-white/25 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider">🔥 {isRu ? 'Акция' : 'Акция'}</span>
+                </div>
+                <h3 className="text-base md:text-xl font-extrabold drop-shadow">{isRu ? 'Заказывай и участвуй в розыгрыше!' : 'Заказ кыл жана розыгрышка катыш!'}</h3>
+                <p className="text-xs md:text-sm opacity-90 mt-0.5">{isRu ? 'За каждые 500 сом — 1 монетка. Призы каждые 3 месяца' : 'Ар 500 сом үчүн — 1 монета. 3 айда сыйлыктар'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 bg-white text-orange-600 rounded-xl text-xs md:text-sm font-extrabold shadow-lg group-hover:bg-yellow-50 transition-colors">
+              🎁 {isRu ? 'Участвовать' : 'Катышуу'}
+            </div>
+          </div>
+        </Link>
       </section>
 
       {/* Рекомендуем / Новинки */}

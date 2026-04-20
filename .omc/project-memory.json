@@ -146,8 +146,8 @@
   "hotPaths": [
     {
       "path": "src\\app\\page.js",
-      "accessCount": 5,
-      "lastAccessed": 1776675493449,
+      "accessCount": 7,
+      "lastAccessed": 1776676620037,
       "type": "directory"
     },
     {
