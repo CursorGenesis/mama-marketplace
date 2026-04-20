@@ -150,7 +150,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">{t('byCategory')}</h2>
 
-        {/* Мобильные категории — как в Lalafo */}
+        {/* Мобильные категории — крупные цветные карточки */}
         <div className="md:hidden">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-bold text-gray-800">{isRu ? 'Категории' : 'Категориялар'}</h3>
@@ -162,32 +162,41 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="relative">
-            <button
-              onClick={() => document.getElementById('cat-mobile').scrollBy({ left: -200, behavior: 'smooth' })}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"
-            >
-              <svg className="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button
-              onClick={() => document.getElementById('cat-mobile').scrollBy({ left: 200, behavior: 'smooth' })}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center"
-            >
-              <svg className="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          <div id="cat-mobile" className="flex gap-3 overflow-x-auto pb-3 snap-x scrollbar-hide px-1">
-            {CATEGORIES.map(cat => (
-              <Link key={cat.id} href={`/catalog?category=${cat.id}`} className="shrink-0 w-[30%] snap-start">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-3 active:scale-95 transition-transform">
-                  <div className="bg-slate-50 rounded-2xl flex items-center justify-center" style={{width: 72, height: 72}}>
-                    <CategoryIcon categoryId={cat.id} size={44} />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-700 text-center leading-tight line-clamp-2">{catName(cat.id)}</span>
-                </div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-4 gap-2.5">
+            {CATEGORIES.slice(0, 8).map(cat => {
+              const colors = {
+                bakery: 'from-yellow-100 to-yellow-200 text-yellow-800',
+                dairy: 'from-sky-100 to-sky-200 text-sky-800',
+                meat: 'from-red-100 to-red-200 text-red-800',
+                fish: 'from-cyan-100 to-cyan-300 text-cyan-800',
+                fruits: 'from-emerald-100 to-emerald-200 text-emerald-800',
+                grocery: 'from-amber-100 to-amber-200 text-amber-800',
+                oils: 'from-lime-100 to-lime-200 text-lime-800',
+                confectionery: 'from-pink-100 to-pink-200 text-pink-800',
+                drinks: 'from-blue-100 to-blue-300 text-blue-800',
+                alcohol: 'from-purple-100 to-purple-200 text-purple-800',
+                tea_coffee: 'from-teal-100 to-teal-200 text-teal-800',
+                canned: 'from-slate-100 to-slate-200 text-slate-700',
+                spices: 'from-rose-100 to-rose-200 text-rose-800',
+                snacks: 'from-orange-100 to-orange-200 text-orange-800',
+                frozen: 'from-violet-100 to-violet-300 text-violet-800',
+                eggs: 'from-amber-50 to-amber-200 text-amber-700',
+              };
+              const c = colors[cat.id] || 'from-gray-100 to-gray-200 text-gray-700';
+              const [gradFrom, gradTo, textColor] = c.split(' ');
+              return (
+                <Link key={cat.id} href={`/catalog?category=${cat.id}`}
+                  className={`bg-gradient-to-br ${gradFrom} ${gradTo} rounded-2xl p-3 text-center hover:shadow-md transition-all active:scale-95`}>
+                  <div className="text-3xl mb-1">{cat.icon}</div>
+                  <div className={`text-[10px] font-bold leading-tight break-words ${textColor}`}>{catName(cat.id)}</div>
+                </Link>
+              );
+            })}
           </div>
-          </div>
+          <button onClick={() => setShowAllCats(true)}
+            className="flex items-center justify-center gap-1 mt-3 py-2.5 w-full text-sm font-semibold text-gray-500 bg-gray-50 rounded-xl active:bg-gray-100 transition-colors">
+            {isRu ? `Все категории (${CATEGORIES.length}) →` : `Бардык категориялар (${CATEGORIES.length}) →`}
+          </button>
         </div>
 
         {/* Модальное окно всех категорий */}

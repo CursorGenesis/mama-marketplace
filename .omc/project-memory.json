@@ -145,6 +145,12 @@
   },
   "hotPaths": [
     {
+      "path": "src\\app\\page.js",
+      "accessCount": 5,
+      "lastAccessed": 1776675493449,
+      "type": "directory"
+    },
+    {
       "path": "src\\app\\layout.js",
       "accessCount": 3,
       "lastAccessed": 1776673498708,
@@ -161,6 +167,12 @@
       "accessCount": 1,
       "lastAccessed": 1776673604787,
       "type": "file"
+    },
+    {
+      "path": "src\\lib\\firestore.js",
+      "accessCount": 1,
+      "lastAccessed": 1776675348855,
+      "type": "directory"
     }
   ],
   "userDirectives": []
