@@ -31,9 +31,14 @@ export default function HomePage() {
     }
   };
 
-  // Категория на текущем языке
-  const catName = (id) => t(id) || CATEGORIES.find(c => c.id === id)?.name || id;
   const isRu = lang === 'ru';
+
+  // Категория на текущем языке
+  const catName = (id) => {
+    const cat = CATEGORIES.find(c => c.id === id);
+    if (cat) return isRu ? cat.name : (cat.nameKg || cat.name);
+    return id;
+  };
 
   const getSubcats = (catId) => SUBCATEGORIES[catId]?.[lang] || SUBCATEGORIES[catId]?.ru || [];
 
