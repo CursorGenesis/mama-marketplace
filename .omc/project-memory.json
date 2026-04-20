@@ -157,6 +157,18 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\my\\page.js",
+      "accessCount": 3,
+      "lastAccessed": 1776678299622,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Header.js",
+      "accessCount": 2,
+      "lastAccessed": 1776678311858,
+      "type": "file"
+    },
+    {
       "path": "src",
       "accessCount": 1,
       "lastAccessed": 1776669711955,

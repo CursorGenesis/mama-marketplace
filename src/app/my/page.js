@@ -113,8 +113,8 @@ export default function MyPage() {
       {isAgent && renderLinks(agentLinks, isRu ? 'Агент' : 'Агент')}
       {isDriver && renderLinks(driverLinks, isRu ? 'Водитель' : 'Айдоочу')}
 
-      {/* Основные разделы (только для покупателей и агентов) */}
-      {!isSupplier && renderLinks(buyerLinks, isRu ? 'Покупки' : 'Сатып алуулар')}
+      {/* Основные разделы (только для покупателей) */}
+      {!isSupplier && !isAgent && !isDriver && !isAdmin && renderLinks(buyerLinks, isRu ? 'Покупки' : 'Сатып алуулар')}
 
       {/* Общее */}
       {renderLinks(generalLinks, isRu ? 'Информация' : 'Маалымат')}
