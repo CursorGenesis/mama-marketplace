@@ -6,7 +6,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useLang } from '@/context/LangContext';
 import { useRouter } from 'next/navigation';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onSelect }) {
   const { items, addItem, updateQuantity, removeItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { t, lang } = useLang();
@@ -40,7 +40,11 @@ export default function ProductCard({ product }) {
   };
 
   const handleClick = () => {
-    router.push(`/product/${product.id}`);
+    if (onSelect) {
+      onSelect(product);
+    } else {
+      router.push(`/product/${product.id}`);
+    }
   };
 
   return (

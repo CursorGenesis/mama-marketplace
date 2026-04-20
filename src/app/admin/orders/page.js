@@ -34,7 +34,9 @@ export default function AdminOrdersPage() {
   };
 
   const handleAssignAgent = async (orderId) => {
-    const agentName = prompt('Имя агента:');
+    const raw = prompt('Имя агента:');
+    if (!raw) return;
+    const agentName = raw.replace(/[<>"'&]/g, '').trim();
     if (!agentName) return;
     await updateOrderStatus(orderId, undefined, agentName);
     toast.success('Агент назначен');

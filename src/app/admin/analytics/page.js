@@ -28,7 +28,7 @@ const topProducts = [
 const regionData = [
   { name: 'Бишкек', orders: 68, pct: 100 },
   { name: 'Ош', orders: 25, pct: 37 },
-  { name: 'Джалал-Абад', orders: 15, pct: 22 },
+  { name: 'Манас', orders: 15, pct: 22 },
   { name: 'Каракол', orders: 11, pct: 16 },
   { name: 'Нарын', orders: 8, pct: 12 },
 ];

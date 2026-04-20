@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
+  basePath: '/mama-marketplace',
   images: {
     domains: ['firebasestorage.googleapis.com'],
     unoptimized: true,

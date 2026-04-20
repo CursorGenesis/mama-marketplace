@@ -1,8 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { useLang } from '@/context/LangContext';
 
 export default function MapView({ suppliers = [], center = [41.5, 74.5], zoom = 7, onMarkerClick }) {
+  const { lang } = useLang();
+  const isRu = lang === 'ru';
   const [MapComponent, setMapComponent] = useState(null);
 
   useEffect(() => {
@@ -58,7 +61,7 @@ export default function MapView({ suppliers = [], center = [41.5, 74.5], zoom = 
                               onClick={() => onMarkerClick(s)}
                               className="mt-2 text-sm text-primary-600 font-medium hover:underline"
                             >
-                              Подробнее &rarr;
+                              {isRu ? 'Подробнее' : 'Толугураак'} &rarr;
                             </button>
                           )}
                         </div>
@@ -79,7 +82,7 @@ export default function MapView({ suppliers = [], center = [41.5, 74.5], zoom = 
       <div className="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center">
         <div className="text-center text-gray-400">
           <MapPin size={48} className="mx-auto mb-2" />
-          <p>Загрузка карты...</p>
+          <p>{isRu ? 'Загрузка карты...' : 'Карта жүктөлүүдө...'}</p>
         </div>
       </div>
     );

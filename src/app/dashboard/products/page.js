@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useLang } from '@/context/LangContext';
 import { getProducts, createProduct, updateProduct, deleteProduct, uploadImage, CATEGORIES } from '@/lib/firestore';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -10,6 +11,8 @@ import toast from 'react-hot-toast';
 
 export default function SupplierProductsPage() {
   const { user, isSupplier } = useAuth();
+  const { lang } = useLang();
+  const isRu = lang === 'ru';
   const [supplier, setSupplier] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,40 +96,40 @@ export default function SupplierProductsPage() {
 
       if (editingId) {
         await updateProduct(editingId, productData);
-        toast.success('Товар обновлён');
+        toast.success(isRu ? 'Товар обновлён' : 'Товар жаңыланды');
       } else {
         await createProduct(productData);
-        toast.success('Товар добавлен');
+        toast.success(isRu ? 'Товар добавлен' : 'Товар кошулду');
       }
 
       resetForm();
       loadData();
     } catch (err) {
-      toast.error('Ошибка: ' + err.message);
+      toast.error((isRu ? 'Ошибка: ' : 'Ката: ') + err.message);
     }
     setSubmitting(false);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Удалить товар?')) return;
+    if (!confirm(isRu ? 'Удалить товар?' : 'Товарды жок кылуу?')) return;
     await deleteProduct(id);
-    toast.success('Товар удалён');
+    toast.success(isRu ? 'Товар удалён' : 'Товар жок кылынды');
     loadData();
   };
 
-  if (loading) return <div className="text-center py-20 text-gray-400">Загрузка...</div>;
+  if (loading) return <div className="text-center py-20 text-gray-400">{isRu ? 'Загрузка...' : 'Жүктөлүүдө...'}</div>;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Link href="/dashboard" className="flex items-center gap-1 text-primary-600 hover:text-primary-700 mb-6 font-medium">
-        <ArrowLeft size={18} /> Назад в кабинет
+        <ArrowLeft size={18} /> {isRu ? 'Назад в кабинет' : 'Кабинетке кайтуу'}
       </Link>
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Мои товары ({products.length})</h1>
+        <h1 className="text-2xl font-bold">{isRu ? 'Мои товары' : 'Менин товарларым'} ({products.length})</h1>
         <button onClick={() => { resetForm(); setShowForm(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-          <Plus size={18} /> Добавить
+          <Plus size={18} /> {isRu ? 'Добавить' : 'Кошуу'}
         </button>
       </div>
 
@@ -136,8 +139,8 @@ export default function SupplierProductsPage() {
           {/* Шапка */}
           <div className="bg-primary-50 px-6 py-4 border-b border-primary-100 flex justify-between items-center">
             <div>
-              <h2 className="font-bold text-lg text-primary-800">{editingId ? 'Редактировать товар' : '📦 Новый товар'}</h2>
-              <p className="text-xs text-primary-600">Заполните все поля по шаблону — карточка будет выглядеть профессионально</p>
+              <h2 className="font-bold text-lg text-primary-800">{editingId ? (isRu ? 'Редактировать товар' : 'Товарды өзгөртүү') : (isRu ? '📦 Новый товар' : '📦 Жаңы товар')}</h2>
+              <p className="text-xs text-primary-600">{isRu ? 'Заполните все поля по шаблону — карточка будет выглядеть профессионально' : 'Бардык талааларды толтуруңуз — карточка профессионалдуу көрүнөт'}</p>
             </div>
             <button onClick={resetForm} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
           </div>
@@ -149,28 +152,28 @@ export default function SupplierProductsPage() {
               {/* 1. Название */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  1. Название товара <span className="text-red-500">*</span>
+                  1. {isRu ? 'Название товара' : 'Товардын аталышы'} <span className="text-red-500">*</span>
                 </label>
                 <input type="text" value={form.name}
                   onChange={e => {
                     const name = e.target.value;
                     setForm(prev => ({ ...prev, name }));
                   }}
-                  placeholder="Молоко 3.2% 1л" required maxLength={80}
+                  placeholder={isRu ? 'Молоко 3.2% 1л' : 'Сүт 3.2% 1л'} required maxLength={80}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 <p className="text-xs text-gray-400 mt-1 flex items-center justify-between">
-                  <span>💡 Формат: Название + характеристика + объём. Пример: "Рис узгенский 1кг"</span>
+                  <span>{isRu ? '💡 Формат: Название + характеристика + объём. Пример: "Рис узгенский 1кг"' : '💡 Формат: Аталыш + мүнөздөмө + көлөм. Мисал: "Узген күрүчү 1кг"'}</span>
                   <span className={form.name.length > 60 ? 'text-orange-500' : ''}>{form.name.length}/80</span>
                 </p>
                 {form.name && !form.name.match(/\d/) && (
-                  <p className="text-xs text-orange-500 mt-1">⚠️ Рекомендуем указать вес или объём (например: 1кг, 0.5л, 200г)</p>
+                  <p className="text-xs text-orange-500 mt-1">{isRu ? '⚠️ Рекомендуем указать вес или объём (например: 1кг, 0.5л, 200г)' : '⚠️ Салмагын же көлөмүн көрсөтүңүз (мисалы: 1кг, 0.5л, 200г)'}</p>
                 )}
               </div>
 
               {/* 2. Категория */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  2. Категория <span className="text-red-500">*</span>
+                  2. {isRu ? 'Категория' : 'Категория'} <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                   {CATEGORIES.map(c => (
@@ -189,7 +192,7 @@ export default function SupplierProductsPage() {
               {/* 3. Цена и единица */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  3. Цена и единица измерения <span className="text-red-500">*</span>
+                  3. {isRu ? 'Цена и единица измерения' : 'Баасы жана өлчөө бирдиги'} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
@@ -209,21 +212,21 @@ export default function SupplierProductsPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">💡 Укажите цену за 1 штуку/кг/литр. Без упаковок — клиент сам выберет количество</p>
+                <p className="text-xs text-gray-400 mt-1">{isRu ? '💡 Укажите цену за 1 штуку/кг/литр. Без упаковок — клиент сам выберет количество' : '💡 1 даана/кг/литр үчүн бааны көрсөтүңүз. Кардар санын өзү тандайт'}</p>
               </div>
 
               {/* 4. Описание */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-semibold text-gray-700">
-                    4. Описание
+                    4. {isRu ? 'Описание' : 'Сүрөттөмө'}
                   </label>
                 </div>
                 <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})}
-                  placeholder="Описание товара" rows={3} maxLength={300}
+                  placeholder={isRu ? 'Описание товара' : 'Товардын сүрөттөмөсү'} rows={3} maxLength={300}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500" />
                 <p className="text-xs text-gray-400 mt-1 flex items-center justify-between">
-                  <span>Опишите товар для покупателей</span>
+                  <span>{isRu ? 'Опишите товар для покупателей' : 'Товарды сатып алуучулар үчүн сүрөттөңүз'}</span>
                   <span>{form.description.length}/300</span>
                 </p>
               </div>
@@ -232,7 +235,7 @@ export default function SupplierProductsPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-semibold text-gray-700">
-                    5. Фото товара
+                    5. {isRu ? 'Фото товара' : 'Товардын сүрөтү'}
                   </label>
                 </div>
 
@@ -241,7 +244,7 @@ export default function SupplierProductsPage() {
                   <div className="mb-3 relative">
                     <img src={form.autoImageUrl} alt="auto" className="w-full h-40 object-cover rounded-xl" />
                     <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
-                      ✨ Подобрано автоматически
+                      {isRu ? '✨ Подобрано автоматически' : '✨ Автоматтык тандалды'}
                     </div>
                     <button
                       type="button"
@@ -256,10 +259,10 @@ export default function SupplierProductsPage() {
                     className="w-full" id="product-image" />
                   {!form.imageFile && (
                     <div className="text-gray-400 text-sm mt-2">
-                      <p>📸 Рекомендации для фото:</p>
-                      <p className="text-xs mt-1">• Белый или светлый фон</p>
-                      <p className="text-xs">• Товар в центре, хорошее освещение</p>
-                      <p className="text-xs">• Квадратный формат (1:1)</p>
+                      <p>{isRu ? '📸 Рекомендации для фото:' : '📸 Сүрөт үчүн сунуштар:'}</p>
+                      <p className="text-xs mt-1">• {isRu ? 'Белый или светлый фон' : 'Ак же жарык фон'}</p>
+                      <p className="text-xs">• {isRu ? 'Товар в центре, хорошее освещение' : 'Товар борборунда, жакшы жарык'}</p>
+                      <p className="text-xs">• {isRu ? 'Квадратный формат (1:1)' : 'Квадрат формат (1:1)'}</p>
                     </div>
                   )}
                 </div>
@@ -268,30 +271,30 @@ export default function SupplierProductsPage() {
               {/* Кнопка */}
               <button type="submit" disabled={submitting || !form.name || !form.price || !form.category}
                 className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                <Save size={18} /> {submitting ? 'Сохранение...' : editingId ? 'Сохранить изменения' : 'Добавить товар'}
+                <Save size={18} /> {submitting ? (isRu ? 'Сохранение...' : 'Сакталууда...') : editingId ? (isRu ? 'Сохранить изменения' : 'Өзгөртүүлөрдү сактоо') : (isRu ? 'Добавить товар' : 'Товар кошуу')}
               </button>
 
               {/* Чеклист заполнения */}
               <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-xs font-semibold text-gray-500 mb-2">Чеклист карточки:</p>
+                <p className="text-xs font-semibold text-gray-500 mb-2">{isRu ? 'Чеклист карточки:' : 'Карточка чеклисти:'}</p>
                 <div className="grid grid-cols-2 gap-1 text-xs">
                   <span className={form.name ? 'text-green-600' : 'text-gray-400'}>
-                    {form.name ? '✅' : '⬜'} Название
+                    {form.name ? '✅' : '⬜'} {isRu ? 'Название' : 'Аталышы'}
                   </span>
                   <span className={form.category ? 'text-green-600' : 'text-gray-400'}>
-                    {form.category ? '✅' : '⬜'} Категория
+                    {form.category ? '✅' : '⬜'} {isRu ? 'Категория' : 'Категория'}
                   </span>
                   <span className={form.price ? 'text-green-600' : 'text-gray-400'}>
-                    {form.price ? '✅' : '⬜'} Цена
+                    {form.price ? '✅' : '⬜'} {isRu ? 'Цена' : 'Баасы'}
                   </span>
                   <span className={form.description ? 'text-green-600' : 'text-gray-400'}>
-                    {form.description ? '✅' : '⬜'} Описание
+                    {form.description ? '✅' : '⬜'} {isRu ? 'Описание' : 'Сүрөттөмө'}
                   </span>
                   <span className={form.name.match(/\d/) ? 'text-green-600' : 'text-gray-400'}>
-                    {form.name.match(/\d/) ? '✅' : '⬜'} Вес/объём в названии
+                    {form.name.match(/\d/) ? '✅' : '⬜'} {isRu ? 'Вес/объём в названии' : 'Аталыштагы салмак/көлөм'}
                   </span>
                   <span className={form.imageFile ? 'text-green-600' : 'text-gray-400'}>
-                    {form.imageFile ? '✅' : '⬜'} Фото
+                    {form.imageFile ? '✅' : '⬜'} {isRu ? 'Фото' : 'Сүрөт'}
                   </span>
                 </div>
               </div>
@@ -299,7 +302,7 @@ export default function SupplierProductsPage() {
 
             {/* Правая часть — превью карточки */}
             <div className="lg:w-72 bg-gray-50 p-6 border-t lg:border-t-0 lg:border-l border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 mb-3 text-center">👁 Превью карточки</p>
+              <p className="text-xs font-semibold text-gray-500 mb-3 text-center">{isRu ? '👁 Превью карточки' : '👁 Карточка алдын ала көрүү'}</p>
               <div className="bg-white rounded-xl overflow-hidden shadow-sm max-w-[220px] mx-auto">
                 <div className="aspect-square bg-gray-100 flex items-center justify-center">
                   {form.imageFile ? (
@@ -312,9 +315,9 @@ export default function SupplierProductsPage() {
                 </div>
                 <div className="p-3">
                   <h4 className="font-semibold text-gray-800 text-sm line-clamp-2 mb-1">
-                    {form.name || 'Название товара'}
+                    {form.name || (isRu ? 'Название товара' : 'Товардын аталышы')}
                   </h4>
-                  <p className="text-xs text-gray-400 mb-1">{supplier?.name || 'Ваша компания'}</p>
+                  <p className="text-xs text-gray-400 mb-1">{supplier?.name || (isRu ? 'Ваша компания' : 'Сиздин компания')}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-primary-600 font-bold">
                       {form.price ? `${Number(form.price).toLocaleString('ru-RU')} сом` : '— сом'}
@@ -322,11 +325,11 @@ export default function SupplierProductsPage() {
                     <span className="text-xs text-gray-400">/ {form.unit}</span>
                   </div>
                   <div className="mt-2 py-1.5 bg-primary-50 text-primary-600 rounded-lg text-xs font-medium text-center">
-                    В корзину
+                    {isRu ? 'В корзину' : 'Себетке'}
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-gray-400 text-center mt-3">Так карточка будет выглядеть в каталоге</p>
+              <p className="text-[10px] text-gray-400 text-center mt-3">{isRu ? 'Так карточка будет выглядеть в каталоге' : 'Карточка каталогдо ушундай көрүнөт'}</p>
             </div>
           </div>
         </div>
@@ -347,17 +350,17 @@ export default function SupplierProductsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold truncate">{p.name}</h3>
-                  {p.hidden && <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">Скрыт</span>}
+                  {p.hidden && <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">{isRu ? 'Скрыт' : 'Жашырылган'}</span>}
                 </div>
                 <p className="text-primary-600 font-bold">{Number(p.price).toLocaleString('ru-RU')} сом / {p.unit || 'шт'}</p>
                 <p className="text-xs text-gray-400">{CATEGORIES.find(c => c.id === p.category)?.name || ''}</p>
               </div>
               <div className="flex gap-1">
                 <button
-                  onClick={async () => { await updateProduct(p.id, { hidden: !p.hidden }); loadData(); toast.success(p.hidden ? 'Товар показан в каталоге' : 'Товар скрыт из каталога'); }}
+                  onClick={async () => { await updateProduct(p.id, { hidden: !p.hidden }); loadData(); toast.success(p.hidden ? (isRu ? 'Товар показан в каталоге' : 'Товар каталогдо көрсөтүлдү') : (isRu ? 'Товар скрыт из каталога' : 'Товар каталогдон жашырылды')); }}
                   className={`px-2 py-1 text-xs font-medium rounded-lg transition-colors ${p.hidden ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
                 >
-                  {p.hidden ? 'Показать' : 'Скрыть'}
+                  {p.hidden ? (isRu ? 'Показать' : 'Көрсөтүү') : (isRu ? 'Скрыть' : 'Жашыруу')}
                 </button>
                 <button onClick={() => handleEdit(p)} className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
                   <Pencil size={18} />
@@ -371,8 +374,8 @@ export default function SupplierProductsPage() {
         </div>
       ) : (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-lg mb-2">Товаров пока нет</p>
-          <p>Нажмите "Добавить" чтобы создать первый товар</p>
+          <p className="text-lg mb-2">{isRu ? 'Товаров пока нет' : 'Товарлар азырынча жок'}</p>
+          <p>{isRu ? 'Нажмите "Добавить" чтобы создать первый товар' : 'Биринчи товарды түзүү үчүн "Кошуу" баскычын басыңыз'}</p>
         </div>
       )}
     </div>

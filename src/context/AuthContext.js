@@ -21,13 +21,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const p = await getUserProfile(firebaseUser.uid);
-        setProfile(p);
-      } else {
-        setUser(null);
-        setProfile(null);
+      try {
+        if (firebaseUser) {
+          setUser(firebaseUser);
+          const p = await getUserProfile(firebaseUser.uid);
+          setProfile(p || { role: 'buyer' });
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (e) {
+        console.error('Auth profile load error:', e);
+        if (firebaseUser) {
+          setUser(firebaseUser);
+          setProfile({ role: 'buyer' });
+        }
       }
       setLoading(false);
     });
@@ -40,6 +48,10 @@ export function AuthProvider({ children }) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const profileData = { email, name, phone, role };
     if (extra.inn) profileData.inn = extra.inn;
+    if (extra.shopName) profileData.shopName = extra.shopName;
+    if (extra.city) profileData.city = extra.city;
+    if (extra.address) profileData.address = extra.address;
+    if (extra.agentRef) profileData.agentRef = extra.agentRef;
     if (role === 'supplier') {
       profileData.companyName = extra.companyName || '';
       profileData.city = extra.city || '';

@@ -1,0 +1,167 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776500712364,
+  "projectRoot": "c:\\Users\\vovas\\OneDrive\\Рабочий стол\\mama_project",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "JavaScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "jsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "14.2.15",
+        "category": "fullstack"
+      },
+      {
+        "name": "playwright",
+        "version": "1.59.1",
+        "category": "testing"
+      },
+      {
+        "name": "react",
+        "version": "18.3.1",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "18.3.1",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "out": {
+      "path": "out",
+      "purpose": "Build output",
+      "fileCount": 37,
+      "lastAccessed": 1776500712195,
+      "keyFiles": [
+        "404.html",
+        "about.html",
+        "about.txt",
+        "admin.html",
+        "admin.txt"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 0,
+      "lastAccessed": 1776500712196,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1776500712220,
+      "keyFiles": []
+    },
+    "_next": {
+      "path": "_next",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1776500712220,
+      "keyFiles": []
+    },
+    "src\\app": {
+      "path": "src\\app",
+      "purpose": "Application code",
+      "fileCount": 4,
+      "lastAccessed": 1776500712239,
+      "keyFiles": [
+        "globals.css",
+        "layout.js",
+        "not-found.js"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 16,
+      "lastAccessed": 1776500712248,
+      "keyFiles": [
+        "BottomNav.js",
+        "CategoryIcon.js",
+        "ChatWidget.js"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 6,
+      "lastAccessed": 1776500712248,
+      "keyFiles": [
+        "config.js",
+        "demoData.js",
+        "firebase.js"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src\\app\\layout.js",
+      "accessCount": 3,
+      "lastAccessed": 1776673498708,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 1,
+      "lastAccessed": 1776669711955,
+      "type": "directory"
+    },
+    {
+      "path": "next.config.js",
+      "accessCount": 1,
+      "lastAccessed": 1776673604787,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

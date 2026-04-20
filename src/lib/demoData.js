@@ -130,7 +130,7 @@ export const DEMO_SUPPLIERS = [
     name: 'JA-Snacks',
     description: 'Снеки и закуски оптом: чипсы, сухарики, орехи, семечки, сухофрукты. Импорт и собственное фасовочное производство. Низкие цены для дилеров.',
     descriptionKg: 'Снектер жана закускалар оптом: чипсы, сухарилер, жаңгактар, чечектер, кургатылган жемиштер. Импорт жана өзүбүздүн фасовка өндүрүшү.',
-    city: 'Джалал-Абад',
+    city: 'Манас',
     address: 'ул. Ленина, 32',
     phone: '+996 770 555 666',
     email: 'jasnacks@mail.kg',
@@ -378,19 +378,19 @@ export const DEMO_PRODUCTS = [
 
   // === JA-Snacks (снеки) ===
   {
-    id: 'p25', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Джалал-Абад',
+    id: 'p25', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
     name: 'Чипсы «Лэйс» 150г', price: 85, unit: 'шт', category: 'snacks',
     description: 'Чипсы Lays 150 грамм. Разные вкусы.',
     imageUrl: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800&h=800&fit=crop&q=80',
   },
   {
-    id: 'p26', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Джалал-Абад',
+    id: 'p26', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
     name: 'Орехи грецкие 200г', price: 120, unit: 'шт', category: 'snacks',
     description: 'Грецкие орехи очищенные, 200 г.',
     imageUrl: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?w=800&h=800&fit=crop&q=80',
   },
   {
-    id: 'p27', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Джалал-Абад',
+    id: 'p27', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
     name: 'Курага 200г', price: 95, unit: 'шт', category: 'snacks',
     description: 'Курага натуральная, без сахара, 200 г.',
     imageUrl: 'https://images.unsplash.com/photo-1590502593747-42a996133562?w=800&h=800&fit=crop&q=80',
@@ -484,5 +484,180 @@ export const DEMO_PRODUCTS = [
     description: 'Карамель премиум с цельным грецким орехом, 250 г.',
     imageUrl: 'https://images.unsplash.com/photo-1548907040-4baa42d10919?w=800&h=800&fit=crop&q=80',
     badge: 'recommended',
+  },
+
+  // === Хлеб и выпечка (bakery) ===
+  {
+    id: 'p50', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Хлеб белый нарезной', price: 35, unit: 'шт', category: 'bakery',
+    description: 'Хлеб пшеничный белый, нарезной, 500 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1549931319-a545753467c8?w=800&h=800&fit=crop&q=80',
+    badge: 'top', orderCount: 600,
+  },
+  {
+    id: 'p51', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Лепёшка (нан)', price: 25, unit: 'шт', category: 'bakery',
+    description: 'Традиционная кыргызская лепёшка.',
+    imageUrl: 'https://images.unsplash.com/photo-1586444248902-2367d23fcd48?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
+  },
+  {
+    id: 'p52', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Лаваш тонкий', price: 30, unit: 'шт', category: 'bakery',
+    description: 'Лаваш тонкий армянский, упаковка.',
+    imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p53', supplierId: 'sup4', supplierName: 'Sweet House KG', city: 'Ош',
+    name: 'Боорсоки 500г', price: 120, unit: 'шт', category: 'bakery',
+    description: 'Традиционные кыргызские боорсоки, 500 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1558303919-ff5709e61902?w=800&h=800&fit=crop&q=80',
+    madeInKG: true, badge: 'recommended',
+  },
+  {
+    id: 'p54', supplierId: 'sup4', supplierName: 'Sweet House KG', city: 'Ош',
+    name: 'Самса с мясом 1шт', price: 55, unit: 'шт', category: 'bakery',
+    description: 'Самса слоёная с говядиной и луком.',
+    imageUrl: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=800&h=800&fit=crop&q=80',
+  },
+
+  // === Рыба и морепродукты (fish) ===
+  {
+    id: 'p55', supplierId: 'sup6', supplierName: 'Мясной Двор', city: 'Бишкек',
+    name: 'Минтай замороженный 1кг', price: 280, unit: 'кг', category: 'fish',
+    description: 'Минтай тушка замороженный, 1 кг.',
+    imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p56', supplierId: 'sup6', supplierName: 'Мясной Двор', city: 'Бишкек',
+    name: 'Скумбрия копчёная 1шт', price: 350, unit: 'шт', category: 'fish',
+    description: 'Скумбрия холодного копчения, ~300 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&h=800&fit=crop&q=80',
+    badge: 'recommended',
+  },
+  {
+    id: 'p57', supplierId: 'sup6', supplierName: 'Мясной Двор', city: 'Бишкек',
+    name: 'Сельдь солёная 1кг', price: 320, unit: 'кг', category: 'fish',
+    description: 'Сельдь слабосолёная, целая, 1 кг.',
+    imageUrl: 'https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p58', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Шпроты в масле 240г', price: 145, unit: 'шт', category: 'fish',
+    description: 'Шпроты в масле, жестяная банка, 240 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&h=800&fit=crop&q=80',
+  },
+
+  // === Мороженое и десерты (ice_cream) ===
+  {
+    id: 'p60', supplierId: 'sup8', supplierName: 'Тоо Муз', city: 'Бишкек',
+    name: 'Мороженое пломбир стаканчик', price: 35, unit: 'шт', category: 'ice_cream',
+    description: 'Пломбир классический в вафельном стаканчике.',
+    imageUrl: 'https://images.unsplash.com/photo-1570197788417-0e82375c9be7?w=800&h=800&fit=crop&q=80',
+    badge: 'top', orderCount: 300,
+  },
+  {
+    id: 'p61', supplierId: 'sup8', supplierName: 'Тоо Муз', city: 'Бишкек',
+    name: 'Мороженое эскимо шоколадное', price: 45, unit: 'шт', category: 'ice_cream',
+    description: 'Эскимо в шоколадной глазури на палочке.',
+    imageUrl: 'https://images.unsplash.com/photo-1629385701021-fcd568a743e8?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p62', supplierId: 'sup8', supplierName: 'Тоо Муз', city: 'Бишкек',
+    name: 'Мороженое рожок', price: 55, unit: 'шт', category: 'ice_cream',
+    description: 'Мороженое в вафельном рожке с шоколадной начинкой.',
+    imageUrl: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=800&h=800&fit=crop&q=80',
+    badge: 'recommended',
+  },
+  {
+    id: 'p63', supplierId: 'sup8', supplierName: 'Тоо Муз', city: 'Бишкек',
+    name: 'Фруктовый лёд 1шт', price: 25, unit: 'шт', category: 'ice_cream',
+    description: 'Фруктовый лёд со вкусом клубники.',
+    imageUrl: 'https://images.unsplash.com/photo-1528740096961-3798add10e15?w=800&h=800&fit=crop&q=80',
+  },
+
+  // === Жвачки и леденцы (gum) ===
+  {
+    id: 'p65', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
+    name: 'Жвачка Orbit мятная 14г', price: 25, unit: 'шт', category: 'gum',
+    description: 'Жевательная резинка Orbit с мятным вкусом.',
+    imageUrl: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=800&h=800&fit=crop&q=80',
+    badge: 'top', orderCount: 400,
+  },
+  {
+    id: 'p66', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
+    name: 'Чупа-чупс 1шт', price: 15, unit: 'шт', category: 'gum',
+    description: 'Леденец на палочке Chupa Chups, разные вкусы.',
+    imageUrl: 'https://images.unsplash.com/photo-1575224526797-5730d09d781d?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p67', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
+    name: 'Маршмеллоу 200г', price: 95, unit: 'шт', category: 'gum',
+    description: 'Маршмеллоу зефирки, пакет 200 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1553452118-621e1f860f43?w=800&h=800&fit=crop&q=80',
+    badge: 'new', createdAt: '2026-04-01',
+  },
+  {
+    id: 'p68', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
+    name: 'Жевательные конфеты Mamba 24г', price: 20, unit: 'шт', category: 'gum',
+    description: 'Жевательные конфеты Mamba, фруктовые вкусы.',
+    imageUrl: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p69', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
+    name: 'Леденцы Tic Tac мятные', price: 35, unit: 'шт', category: 'gum',
+    description: 'Освежающие мятные леденцы Tic Tac, 16 г.',
+    imageUrl: 'https://images.unsplash.com/photo-1581798459219-318e76aecc7b?w=800&h=800&fit=crop&q=80',
+  },
+
+  // === Яйца (eggs) ===
+  {
+    id: 'p70', supplierId: 'sup5', supplierName: 'Ак-Суу Агро', city: 'Каракол',
+    name: 'Яйца куриные С1 30шт', price: 280, unit: 'шт', category: 'eggs',
+    description: 'Яйца куриные столовые С1, лоток 30 шт.',
+    imageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=800&h=800&fit=crop&q=80',
+    badge: 'top', orderCount: 350, madeInKG: true,
+  },
+  {
+    id: 'p71', supplierId: 'sup5', supplierName: 'Ак-Суу Агро', city: 'Каракол',
+    name: 'Яйца куриные С0 10шт', price: 120, unit: 'шт', category: 'eggs',
+    description: 'Яйца куриные отборные С0, упаковка 10 шт.',
+    imageUrl: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
+  },
+  {
+    id: 'p72', supplierId: 'sup5', supplierName: 'Ак-Суу Агро', city: 'Каракол',
+    name: 'Яйца перепелиные 20шт', price: 85, unit: 'шт', category: 'eggs',
+    description: 'Яйца перепелиные, упаковка 20 шт.',
+    imageUrl: 'https://images.unsplash.com/photo-1598965402089-897ce52e8355?w=800&h=800&fit=crop&q=80',
+  },
+
+  // === Масло и жиры (oils) ===
+  {
+    id: 'p75', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Масло подсолнечное рафин. 1л', price: 145, unit: 'шт', category: 'oils',
+    description: 'Масло подсолнечное рафинированное, 1 литр.',
+    imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&h=800&fit=crop&q=80',
+    badge: 'top', orderCount: 500,
+  },
+  {
+    id: 'p76', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Масло подсолнечное 5л', price: 650, unit: 'шт', category: 'oils',
+    description: 'Масло подсолнечное рафинированное, канистра 5 литров.',
+    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacdc948c6?w=800&h=800&fit=crop&q=80',
+    badge: 'recommended',
+  },
+  {
+    id: 'p77', supplierId: 'sup1', supplierName: 'Алтын Дан', city: 'Бишкек',
+    name: 'Масло хлопковое 1л', price: 160, unit: 'шт', category: 'oils',
+    description: 'Масло хлопковое рафинированное для плова, 1 литр.',
+    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacdc948c6?w=800&h=800&fit=crop&q=80',
+  },
+  {
+    id: 'p78', supplierId: 'sup6', supplierName: 'Мясной Двор', city: 'Бишкек',
+    name: 'Курдючный жир 1кг', price: 400, unit: 'кг', category: 'oils',
+    description: 'Курдючный жир бараний, натуральный, 1 кг.',
+    imageUrl: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&h=800&fit=crop&q=80',
+    madeInKG: true,
   },
 ];

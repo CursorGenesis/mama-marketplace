@@ -44,7 +44,7 @@ const demoSubscriptions = [
     startDate: '2026-02-25', products: 31, commission: 5,
   },
   {
-    id: 's7', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Джалал-Абад',
+    id: 's7', supplierId: 'sup7', supplierName: 'JA-Snacks', city: 'Манас',
     plan: 'start', status: 'blocked', paidUntil: '2026-03-10',
     startDate: '2026-02-10', products: 9, commission: 5,
   },

@@ -200,6 +200,27 @@ export default function AdminSuppliersPage() {
                 <h3 className="font-bold text-lg">{s.name}</h3>
                 <p className="text-sm text-gray-500">{s.city} | {s.email} | {s.phone}</p>
                 {s.whatsapp && <p className="text-sm text-gray-400">WA: {s.whatsapp}</p>}
+                {/* ИНН и верификация */}
+                {s.inn && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm text-gray-600">ИНН: <span className="font-mono font-medium">{s.inn}</span></span>
+                    {s.innVerified ? (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">Проверен</span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Не проверен</span>
+                    )}
+                    <a href={`https://salyk.kg/taxpayer-search?inn=${s.inn}`} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:text-blue-700 underline">Проверить на salyk.kg</a>
+                    {!s.innVerified && (
+                      <button onClick={async () => { await updateSupplier(s.id, { innVerified: true }); toast.success('ИНН подтверждён'); loadData(); }}
+                        className="px-2 py-0.5 bg-green-500 text-white rounded text-xs font-medium hover:bg-green-600">Подтвердить</button>
+                    )}
+                    {s.innVerified && (
+                      <button onClick={async () => { await updateSupplier(s.id, { innVerified: false }); toast.success('Верификация отменена'); loadData(); }}
+                        className="px-2 py-0.5 bg-gray-200 text-gray-500 rounded text-xs hover:bg-gray-300">Отменить</button>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1 mt-2">
                   {s.categories?.map(catId => {
                     const cat = CATEGORIES.find(c => c.id === catId);

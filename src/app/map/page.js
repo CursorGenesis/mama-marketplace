@@ -1,10 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLang } from '@/context/LangContext';
 import { getSuppliers } from '@/lib/firestore';
 import MapView from '@/components/MapView';
 
 export default function MapPage() {
+  const { lang } = useLang();
+  const isRu = lang === 'ru';
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -18,12 +21,12 @@ export default function MapPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Карта поставщиков Кыргызстана</h1>
+      <h1 className="text-2xl font-bold mb-6">{isRu ? 'Карта поставщиков Кыргызстана' : 'Кыргызстандын жеткирүүчүлөр картасы'}</h1>
 
       <div className="h-[70vh] rounded-xl overflow-hidden shadow-sm">
         {loading ? (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-            Загрузка карты...
+            {isRu ? 'Загрузка карты...' : 'Карта жүктөлүүдө...'}
           </div>
         ) : (
           <MapView

@@ -26,7 +26,7 @@ export default function SupplierLogisticsPage() {
       <Lock size={48} className="mx-auto mb-4 text-amber-400" />
       <h2 className="text-2xl font-bold mb-2">{isRu ? 'Логистика' : 'Логистика'}</h2>
       <p className="text-gray-500 mb-6">{isRu ? 'Доступно в пакете Логистика за 3 000 сом/мес' : '3 000 сом/ай Логистика пакетинде жеткиликтуу'}</p>
-      <Link href="/pricing" className="px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600">Подключить</Link>
+      <Link href="/pricing" className="px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600">{isRu ? 'Подключить' : 'Туташтыруу'}</Link>
     </div>
   );
 
@@ -78,7 +78,7 @@ export default function SupplierLogisticsPage() {
                 <div className="flex items-center gap-2 flex-wrap"><span className="font-medium text-gray-800 text-sm">{d.shop}</span><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${s.c}`}>{s.l}</span></div>
                 <div className="text-xs text-gray-400 mt-1 flex items-center gap-2 flex-wrap"><MapPin size={10}/> {d.address} <span>-</span> <Truck size={10}/> {d.driver} <span>-</span> {d.time}</div>
               </div>
-              <div className="text-right shrink-0"><div className="font-bold text-sm">{d.total.toLocaleString('ru-RU')} сом</div><div className="text-xs text-gray-400">{d.items} товаров</div></div>
+              <div className="text-right shrink-0"><div className="font-bold text-sm">{d.total.toLocaleString('ru-RU')} сом</div><div className="text-xs text-gray-400">{d.items} {isRu ? 'товаров' : 'товар'}</div></div>
             </div>
             {d.refuseReason && <div className="mt-2 ml-6 text-xs text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">{d.refuseReason}</div>}
           </div>

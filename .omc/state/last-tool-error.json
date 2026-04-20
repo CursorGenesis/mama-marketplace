@@ -1,0 +1,7 @@
+{
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"\\\\tmp\\\\jobs.json\"}",
+  "error": "File does not exist. Note: your current working directory is C:\\Users\\vovas\\OneDrive\\Рабочий стол\\mama_project.",
+  "timestamp": "2026-04-19T08:20:40.439Z",
+  "retry_count": 1
+}

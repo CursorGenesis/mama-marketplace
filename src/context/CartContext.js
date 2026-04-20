@@ -8,8 +8,12 @@ export function CartProvider({ children }) {
 
   // Загружаем корзину из localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('cart');
-    if (saved) setItems(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('cart');
+      if (saved) setItems(JSON.parse(saved));
+    } catch (e) {
+      localStorage.removeItem('cart');
+    }
   }, []);
 
   // Сохраняем при изменении
@@ -42,8 +46,8 @@ export function CartProvider({ children }) {
 
   const clearCart = () => setItems([]);
 
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalPrice = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+  const totalItems = items.reduce((sum, i) => sum + (i.quantity || 0), 0);
+  const totalPrice = items.reduce((sum, i) => sum + ((Number(i.price) || 0) * (i.quantity || 0)), 0);
 
   return (
     <CartContext.Provider value={{

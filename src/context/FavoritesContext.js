@@ -7,8 +7,12 @@ export function FavoritesProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('favorites');
-    if (saved) setFavorites(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('favorites');
+      if (saved) setFavorites(JSON.parse(saved));
+    } catch (e) {
+      localStorage.removeItem('favorites');
+    }
   }, []);
 
   useEffect(() => {
