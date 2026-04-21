@@ -11,6 +11,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import { getNextDeliveryDate, formatDeliveryDate } from '@/lib/delivery';
 
 const DeliveryMap = dynamic(() => import('@/components/DeliveryMap'), {
   ssr: false,
@@ -109,6 +110,7 @@ export default function CartPage() {
         supplierId: key,
         supplierName: item.supplierName || 'Поставщик',
         minOrder: supplier?.minOrder || 0,
+        deliverySchedule: supplier?.deliverySchedule || {},
         items: [],
         total: 0,
       };
@@ -620,6 +622,22 @@ export default function CartPage() {
                   {group.total.toLocaleString('ru-RU')} {t('som')}
                 </span>
               </div>
+              {/* Ближайшая дата доставки */}
+              {(() => {
+                const city = profile?.city || form.city || '';
+                const nextDate = getNextDeliveryDate(group.deliverySchedule, city);
+                if (!nextDate) return null;
+                return (
+                  <div className="px-5 py-2 bg-green-50 border-b border-green-100 flex items-center gap-2 text-sm">
+                    <span className="text-green-700">🚚</span>
+                    <span className="text-green-800">
+                      {lang === 'kg' ? 'Жакынкы жеткирүү:' : 'Ближайшая доставка:'}
+                      <span className="font-semibold ml-1">{formatDeliveryDate(nextDate, lang)}</span>
+                    </span>
+                  </div>
+                );
+              })()}
+
               {/* Предупреждение о минимальном заказе */}
               {group.minOrder > 0 && group.total < group.minOrder && (
                 <div className="px-5 py-2.5 bg-red-50 border-b border-red-100">

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776500712364,
+  "lastScanned": 1776740462380,
   "projectRoot": "c:\\Users\\vovas\\OneDrive\\Рабочий стол\\mama_project",
   "techStack": {
     "languages": [
@@ -71,7 +71,10 @@
       "public",
       "src"
     ],
-    "gitBranches": null
+    "gitBranches": {
+      "defaultBranch": "master",
+      "branchingStrategy": null
+    }
   },
   "customNotes": [],
   "directoryMap": {
@@ -79,7 +82,7 @@
       "path": "out",
       "purpose": "Build output",
       "fileCount": 37,
-      "lastAccessed": 1776500712195,
+      "lastAccessed": 1776740462322,
       "keyFiles": [
         "404.html",
         "about.html",
@@ -92,28 +95,28 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 0,
-      "lastAccessed": 1776500712196,
+      "lastAccessed": 1776740462323,
       "keyFiles": []
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 0,
-      "lastAccessed": 1776500712220,
+      "lastAccessed": 1776740462335,
       "keyFiles": []
     },
     "_next": {
       "path": "_next",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1776500712220,
+      "lastAccessed": 1776740462335,
       "keyFiles": []
     },
     "src\\app": {
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 4,
-      "lastAccessed": 1776500712239,
+      "lastAccessed": 1776740462337,
       "keyFiles": [
         "globals.css",
         "layout.js",
@@ -124,7 +127,7 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 16,
-      "lastAccessed": 1776500712248,
+      "lastAccessed": 1776740462337,
       "keyFiles": [
         "BottomNav.js",
         "CategoryIcon.js",
@@ -135,7 +138,7 @@
       "path": "src\\lib",
       "purpose": "Library code",
       "fileCount": 6,
-      "lastAccessed": 1776500712248,
+      "lastAccessed": 1776740462338,
       "keyFiles": [
         "config.js",
         "demoData.js",
@@ -145,46 +148,28 @@
   },
   "hotPaths": [
     {
-      "path": "src\\app\\page.js",
-      "accessCount": 16,
-      "lastAccessed": 1776677417157,
+      "path": "src\\app\\dashboard\\settings\\page.js",
+      "accessCount": 6,
+      "lastAccessed": 1776741734935,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\cart\\page.js",
+      "accessCount": 6,
+      "lastAccessed": 1776741798343,
       "type": "directory"
     },
     {
-      "path": "src\\app\\layout.js",
-      "accessCount": 3,
-      "lastAccessed": 1776673498708,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\my\\page.js",
-      "accessCount": 3,
-      "lastAccessed": 1776678299622,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\Header.js",
-      "accessCount": 2,
-      "lastAccessed": 1776678311858,
-      "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 1,
-      "lastAccessed": 1776669711955,
+      "path": "src\\lib\\demoData.js",
+      "accessCount": 4,
+      "lastAccessed": 1776741829896,
       "type": "directory"
     },
     {
-      "path": "next.config.js",
+      "path": "src\\lib\\delivery.js",
       "accessCount": 1,
-      "lastAccessed": 1776673604787,
+      "lastAccessed": 1776741750935,
       "type": "file"
-    },
-    {
-      "path": "src\\lib\\firestore.js",
-      "accessCount": 1,
-      "lastAccessed": 1776675348855,
-      "type": "directory"
     }
   ],
   "userDirectives": []

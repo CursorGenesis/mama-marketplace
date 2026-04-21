@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { updateSupplier } from '@/lib/firestore';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ArrowLeft, Save, Store, Phone, Mail, MapPin, MessageCircle, DollarSign } from 'lucide-react';
+import { ArrowLeft, Save, Store, Phone, Mail, MapPin, MessageCircle, DollarSign, Truck } from 'lucide-react';
 import { useLang } from '@/context/LangContext';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -31,6 +31,7 @@ export default function SupplierSettingsPage() {
     telegramChatId: '',
     minOrder: '',
     minOrderUnit: 'сом',
+    deliverySchedule: {},
   });
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export default function SupplierSettingsPage() {
         telegramChatId: sup.telegramChatId || '',
         minOrder: sup.minOrder || '',
         minOrderUnit: sup.minOrderUnit || 'сом',
+        deliverySchedule: sup.deliverySchedule || {},
       });
     } catch (e) {
       console.error(e);
@@ -82,6 +84,7 @@ export default function SupplierSettingsPage() {
         telegramChatId: form.telegramChatId,
         minOrder: form.minOrder ? Number(form.minOrder) : 0,
         minOrderUnit: form.minOrderUnit,
+        deliverySchedule: form.deliverySchedule || {},
       });
       toast.success(isRu ? 'Настройки сохранены!' : 'Жөндөөлөр сакталды!');
     } catch (e) {
@@ -161,6 +164,65 @@ export default function SupplierSettingsPage() {
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
           <p className="text-xs text-gray-400 mt-2">{isRu ? 'Покупатели не смогут оформить заказ на сумму меньше указанной' : 'Сатып алуучулар көрсөтүлгөн суммадан аз заказ бере алышпайт'}</p>
+        </div>
+
+        {/* График доставки */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h2 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+            <Truck size={18} /> {isRu ? 'График доставки' : 'Жеткирүү графиги'}
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            {isRu
+              ? 'Отметьте в какие дни недели вы доставляете в каждый город. Клиенты будут видеть ближайшую дату доставки автоматически.'
+              : 'Ар бир шаарга кайсы күндөрү жеткиресиз? Кардарлар жакынкы жеткирүү күнүн автоматтык көрөт.'}
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 pr-2 font-medium text-gray-600">{isRu ? 'Город' : 'Шаар'}</th>
+                  {[
+                    { k: 1, ru: 'Пн', kg: 'Дш' },
+                    { k: 2, ru: 'Вт', kg: 'Ше' },
+                    { k: 3, ru: 'Ср', kg: 'Ша' },
+                    { k: 4, ru: 'Чт', kg: 'Бш' },
+                    { k: 5, ru: 'Пт', kg: 'Жм' },
+                    { k: 6, ru: 'Сб', kg: 'Иш' },
+                    { k: 0, ru: 'Вс', kg: 'Жк' },
+                  ].map(d => (
+                    <th key={d.k} className="text-center py-2 px-1 font-medium text-gray-600 text-xs">
+                      {isRu ? d.ru : d.kg}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {['Бишкек', 'Ош', 'Манас', 'Каракол', 'Токмок', 'Нарын', 'Баткен', 'Талас', 'Балыкчы', 'Кызыл-Кия'].map(city => {
+                  const days = form.deliverySchedule[city] || [];
+                  return (
+                    <tr key={city} className="border-b border-gray-50">
+                      <td className="py-2 pr-2 text-gray-800 font-medium">{city}</td>
+                      {[1, 2, 3, 4, 5, 6, 0].map(d => {
+                        const checked = days.includes(d);
+                        return (
+                          <td key={d} className="text-center py-1">
+                            <input type="checkbox" checked={checked}
+                              onChange={e => {
+                                const current = form.deliverySchedule[city] || [];
+                                const next = e.target.checked ? [...current, d] : current.filter(x => x !== d);
+                                update('deliverySchedule', { ...form.deliverySchedule, [city]: next });
+                              }}
+                              className="w-4 h-4 accent-primary-600 cursor-pointer" />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Контакты */}

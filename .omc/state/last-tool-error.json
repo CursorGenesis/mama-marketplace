@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd \\\"/c/Users/vovas/OneDrive/Рабочий стол/mama_project\\\" && git fetch origin gh-pages && git worktree add /tmp/ghp gh-pages 2>&1 | tail -2 && cd /tmp/ghp && rm -rf * .nojekyll 2>/dev/null;...",
-  "error": "Exit code 1\nFrom https://github.com/CursorGenesis/mama-marketplace\n * branch              gh-pages   -> FETCH_HEAD\n   234d6fcc..c90302bc  gh-pages   -> origin/gh-pages\nPreparing worktree (checking out 'gh-pages')\nHEAD is now at 234d6fcc Возврат старой главной в gh-pages\nwarning: in the working copy of '_next/static/chunks/2117-dc45a06987edd0ed.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of '_next/static/chunks/8933-588d3fcad1d58814.js', LF will be r...",
-  "timestamp": "2026-04-20T08:51:17.926Z",
-  "retry_count": 1
-}
