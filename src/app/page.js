@@ -59,9 +59,14 @@ export default function HomePage() {
               <p className="text-sm md:text-lg text-slate-300 mb-4 md:mb-6">
                 {t('heroSubtitle')}
               </p>
-              <Link href="/catalog" className="inline-block px-5 py-2.5 md:px-8 md:py-3.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition-colors shadow-lg text-sm md:text-base">
-                {lang === 'kg' ? 'Каталогду ачуу' : 'Открыть каталог'} →
-              </Link>
+              <div className="flex flex-wrap gap-2 md:gap-3">
+                <Link href="/catalog" className="inline-block px-5 py-2.5 md:px-8 md:py-3.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition-colors shadow-lg text-sm md:text-base">
+                  {lang === 'kg' ? 'Каталогду ачуу' : 'Открыть каталог'} →
+                </Link>
+                <Link href="/how-it-works" className="inline-flex items-center gap-1 px-5 py-2.5 md:px-8 md:py-3.5 bg-white/10 backdrop-blur hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold transition-colors text-sm md:text-base">
+                  ▶ {lang === 'kg' ? 'Кантип иштейт' : 'Как это работает'}
+                </Link>
+              </div>
             </div>
 
             {/* Правая часть — статистика + фичи */}

@@ -172,6 +172,12 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\page.js",
+      "accessCount": 3,
+      "lastAccessed": 1776744843410,
+      "type": "file"
+    },
+    {
       "path": "src\\lib\\delivery.js",
       "accessCount": 2,
       "lastAccessed": 1776742918385,
@@ -187,12 +193,6 @@
       "path": "src\\app\\auth\\page.js",
       "accessCount": 2,
       "lastAccessed": 1776743097735,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\page.js",
-      "accessCount": 1,
-      "lastAccessed": 1776742908210,
       "type": "file"
     },
     {
@@ -247,6 +247,12 @@
       "path": "src\\lib\\telegram.js",
       "accessCount": 1,
       "lastAccessed": 1776743071022,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\how-it-works\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776744644814,
       "type": "file"
     }
   ],
