@@ -30,13 +30,18 @@ export async function sendTelegramNotification(type, data) {
 
     const commission = Math.ceil(total * 0.05);
 
+    const agentDisplay = data.agentRef
+      ? `По реф. ссылке (${data.agentRef})`
+      : 'Прямой клиент';
+
     // Сообщение для админа (вам)
     const adminMessage = `🛒 <b>Новый заказ!</b>\n\n` +
       `📦 <b>Поставщик:</b> ${data.supplierName || 'Не указан'}\n` +
       `🏪 <b>Магазин:</b> ${data.shopName || ''}\n` +
-      `👤 <b>Агент:</b> ${data.agentName || 'Прямой'}\n` +
-      `📱 <b>Телефон:</b> ${data.buyerPhone || ''}\n\n` +
-      `<b>Товары:</b>\n${itemsList}\n\n` +
+      `👤 <b>Агент:</b> ${agentDisplay}\n` +
+      `📱 <b>Телефон:</b> ${data.buyerPhone || ''}\n` +
+      (data.city ? `🏙 <b>Город:</b> ${data.city}\n` : '') +
+      `\n<b>Товары:</b>\n${itemsList}\n\n` +
       `💰 <b>Итого: ${total.toLocaleString('ru-RU')} сом</b>\n` +
       `💎 <b>Комиссия: ${commission} сом</b>`;
 

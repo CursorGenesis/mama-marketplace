@@ -148,16 +148,16 @@
   },
   "hotPaths": [
     {
+      "path": "src\\app\\cart\\page.js",
+      "accessCount": 10,
+      "lastAccessed": 1776743132136,
+      "type": "directory"
+    },
+    {
       "path": "src\\app\\dashboard\\settings\\page.js",
       "accessCount": 6,
       "lastAccessed": 1776741734935,
       "type": "file"
-    },
-    {
-      "path": "src\\app\\cart\\page.js",
-      "accessCount": 6,
-      "lastAccessed": 1776741798343,
-      "type": "directory"
     },
     {
       "path": "src\\lib\\demoData.js",
@@ -166,9 +166,87 @@
       "type": "directory"
     },
     {
+      "path": "src\\lib\\firestore.js",
+      "accessCount": 3,
+      "lastAccessed": 1776743163697,
+      "type": "file"
+    },
+    {
       "path": "src\\lib\\delivery.js",
+      "accessCount": 2,
+      "lastAccessed": 1776742918385,
+      "type": "file"
+    },
+    {
+      "path": "src\\context\\AuthContext.js",
+      "accessCount": 2,
+      "lastAccessed": 1776743091318,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\auth\\page.js",
+      "accessCount": 2,
+      "lastAccessed": 1776743097735,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\page.js",
       "accessCount": 1,
-      "lastAccessed": 1776741750935,
+      "lastAccessed": 1776742908210,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\orders\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742912903,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\dashboard\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742913116,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\my\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742913315,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\agent\\dashboard\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742913764,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\Header.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742913856,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\RoleGuard.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742917414,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\BottomNav.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742917703,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\dashboard\\orders\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776742917945,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\telegram.js",
+      "accessCount": 1,
+      "lastAccessed": 1776743071022,
       "type": "file"
     }
   ],

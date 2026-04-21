@@ -429,6 +429,7 @@ export async function createOrder(data) {
     supplierName: data.supplierName || '',
     items: data.items || [],
     totalPrice: data.totalPrice || 0,
+    total: data.totalPrice || data.total || 0,
     agentRef: data.agentRef || null,
     status: 'new',
     commission,

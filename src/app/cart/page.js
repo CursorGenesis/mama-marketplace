@@ -266,7 +266,6 @@ export default function CartPage() {
       buyerName: form.name,
       buyerPhone: form.phone,
       address: form.address,
-      agentName: profile?.agentRef || localStorage.getItem('marketkg_ref') || 'Прямой клиент',
       agentRef: profile?.agentRef || localStorage.getItem('marketkg_ref') || null,
       city: profile?.city || '',
       buyerEmail: user?.email || '',
@@ -625,8 +624,31 @@ export default function CartPage() {
               {/* Ближайшая дата доставки */}
               {(() => {
                 const city = profile?.city || form.city || '';
+                const hasSchedule = group.deliverySchedule && Object.keys(group.deliverySchedule).length > 0;
+                if (!hasSchedule) return null;
+                if (!city) {
+                  return (
+                    <div className="px-5 py-2 bg-amber-50 border-b border-amber-100 flex items-center gap-2 text-sm">
+                      <span>📍</span>
+                      <span className="text-amber-800">
+                        {lang === 'kg' ? 'Жеткирүү күнүн көрүү үчүн шаарды көрсөтүңүз' : 'Укажите город, чтобы увидеть дату доставки'}
+                      </span>
+                    </div>
+                  );
+                }
                 const nextDate = getNextDeliveryDate(group.deliverySchedule, city);
-                if (!nextDate) return null;
+                if (!nextDate) {
+                  return (
+                    <div className="px-5 py-2 bg-amber-50 border-b border-amber-100 flex items-center gap-2 text-sm">
+                      <span>⚠️</span>
+                      <span className="text-amber-800">
+                        {lang === 'kg'
+                          ? `Бул жеткирүүчү ${city} шаарына жеткирбейт — биз менен байланышыңыз`
+                          : `Этот поставщик не доставляет в ${city} — свяжитесь с нами`}
+                      </span>
+                    </div>
+                  );
+                }
                 return (
                   <div className="px-5 py-2 bg-green-50 border-b border-green-100 flex items-center gap-2 text-sm">
                     <span className="text-green-700">🚚</span>
