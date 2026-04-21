@@ -196,6 +196,12 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\how-it-works\\page.js",
+      "accessCount": 2,
+      "lastAccessed": 1776746439834,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\orders\\page.js",
       "accessCount": 1,
       "lastAccessed": 1776742912903,
@@ -247,12 +253,6 @@
       "path": "src\\lib\\telegram.js",
       "accessCount": 1,
       "lastAccessed": 1776743071022,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\how-it-works\\page.js",
-      "accessCount": 1,
-      "lastAccessed": 1776744644814,
       "type": "file"
     }
   ],
