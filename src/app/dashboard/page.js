@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
-import { Package, ShoppingCart, TrendingUp, Plus } from 'lucide-react';
+import { Package, ShoppingCart, TrendingUp, Plus, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/context/LangContext';
 
@@ -73,6 +73,21 @@ export default function DashboardPage() {
             <div>
               <h3 className="font-bold text-amber-800">{isRu ? 'Заполните профиль компании' : 'Компания профилин толтуруңуз'}</h3>
               <p className="text-sm text-amber-700">{isRu ? 'Укажите название, город, телефон и контакты чтобы клиенты могли вас найти и сделать заказ' : 'Кардарлар сизди таап, заказ бериши үчүн аталышын, шаарын, телефонун жазыңыз'}</p>
+            </div>
+          </div>
+        </Link>
+      )}
+
+      {/* Баннер — подключите Telegram уведомления (без него заказы не приходят) */}
+      {supplier && !supplier?.telegramChatId && (
+        <Link href="/dashboard/settings" className="block mb-6 bg-red-50 border-2 border-red-300 rounded-xl p-5 hover:bg-red-100 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-red-200 rounded-xl flex items-center justify-center shrink-0">
+              <Bell size={24} className="text-red-700" />
+            </div>
+            <div>
+              <h3 className="font-bold text-red-800">{isRu ? 'Подключите Telegram-уведомления' : 'Telegram билдирүүлөрүн туташтырыңыз'}</h3>
+              <p className="text-sm text-red-700">{isRu ? 'Без этого вы не узнаете о новых заказах. Займёт 1 минуту — пошаговая инструкция в настройках →' : 'Бул болбосо, жаңы заказдарды билбейсиз. 1 мүнөт керек — жөндөөлөрдө инструкция →'}</p>
             </div>
           </div>
         </Link>
