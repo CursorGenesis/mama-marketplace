@@ -5,13 +5,25 @@ import { getOrders, getSuppliers, getProducts } from '@/lib/firestore';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
 import { useRouter } from 'next/navigation';
-import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award } from 'lucide-react';
+import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
+
+const HOUR = 3600 * 1000;
+const DAY = 24 * HOUR;
+
+const getCreatedMs = (o) => {
+  const c = o?.createdAt;
+  if (!c) return 0;
+  if (c.toDate) return c.toDate().getTime();
+  if (c.seconds) return c.seconds * 1000;
+  return new Date(c).getTime();
+};
 
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState({ suppliers: 0, products: 0, orders: 0, newOrders: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,15 +46,107 @@ export default function AdminPage() {
       newOrders: orders.filter(o => o.status === 'new').length,
     });
     setRecentOrders(orders.slice(0, 10));
+    setAllOrders(orders);
     setLoading(false);
   };
+
+  // Категоризация заказов для дашборда
+  const now = Date.now();
+  const receivedWeek = allOrders.filter(o => o.status === 'received' && now - getCreatedMs(o) < 7 * DAY);
+  const receivedToday = allOrders.filter(o => o.status === 'received' && now - getCreatedMs(o) < DAY);
+  const weeklyCommission = receivedWeek.reduce((s, o) => s + (o.commission || 0), 0);
+
+  const stuckNew = allOrders.filter(o => o.status === 'new' && now - getCreatedMs(o) > 2 * HOUR);
+  const stuckPacked = allOrders.filter(o => o.status === 'packed' && now - getCreatedMs(o) > 2 * DAY);
+  const warningCount = stuckNew.length + stuckPacked.length;
+
+  const notReceived = allOrders.filter(o => o.status === 'not_received');
+  const stuckDelivering = allOrders.filter(o => o.status === 'delivering' && now - getCreatedMs(o) > 3 * DAY);
+  const urgentCount = notReceived.length + stuckDelivering.length;
 
   if (authLoading || loading) return <div className="text-center py-20 text-gray-400">Загрузка...</div>;
   if (!isAdmin) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">Админ-панель (CRM)</h1>
+      <h1 className="text-2xl font-bold mb-2">Админ-панель (CRM)</h1>
+      <p className="text-gray-500 mb-6 text-sm">Автопилот: система сама ведёт заказы. Вы — только когда проблема.</p>
+
+      {/* Дашборд «3 колонки» */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* ЗЕЛЁНАЯ — всё хорошо */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 size={22} className="text-green-600" />
+            <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Всё хорошо</span>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <div className="text-3xl font-black text-green-700">{receivedToday.length}</div>
+              <div className="text-sm text-green-700">заказов доставлено сегодня</div>
+            </div>
+            <div className="pt-2 border-t border-green-200">
+              <div className="text-lg font-bold text-green-700">{weeklyCommission.toLocaleString('ru-RU')} сом</div>
+              <div className="text-xs text-green-600">комиссия за 7 дней ({receivedWeek.length} зак.)</div>
+            </div>
+          </div>
+          <p className="text-xs text-green-600/80 mt-4 italic">Ничего делать не нужно — идёт как надо.</p>
+        </div>
+
+        {/* ЖЁЛТАЯ — внимание */}
+        <div className={`bg-gradient-to-br ${warningCount > 0 ? 'from-amber-50 to-amber-100 border-amber-200' : 'from-gray-50 to-gray-100 border-gray-200'} border rounded-2xl p-5`}>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={22} className={warningCount > 0 ? 'text-amber-600' : 'text-gray-400'} />
+            <span className={`text-xs font-bold uppercase tracking-wide ${warningCount > 0 ? 'text-amber-700' : 'text-gray-500'}`}>Внимание</span>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <div className={`text-3xl font-black ${warningCount > 0 ? 'text-amber-700' : 'text-gray-400'}`}>{warningCount}</div>
+              <div className={`text-sm ${warningCount > 0 ? 'text-amber-700' : 'text-gray-500'}`}>заказов требуют напоминания</div>
+            </div>
+            {warningCount > 0 && (
+              <div className="pt-2 border-t border-amber-200 text-xs text-amber-700 space-y-1">
+                {stuckNew.length > 0 && <div>• {stuckNew.length} не собраны &gt; 2 часов</div>}
+                {stuckPacked.length > 0 && <div>• {stuckPacked.length} собраны, но не отправлены &gt; 2 дней</div>}
+              </div>
+            )}
+          </div>
+          {warningCount > 0 ? (
+            <Link href="/admin/orders" className="mt-4 inline-block w-full text-center px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-semibold transition-colors">
+              Открыть заказы
+            </Link>
+          ) : (
+            <p className="text-xs text-gray-500 mt-4 italic">Нет заказов, требующих внимания.</p>
+          )}
+        </div>
+
+        {/* КРАСНАЯ — срочно */}
+        <div className={`bg-gradient-to-br ${urgentCount > 0 ? 'from-red-50 to-red-100 border-red-200' : 'from-gray-50 to-gray-100 border-gray-200'} border rounded-2xl p-5`}>
+          <div className="flex items-center gap-2 mb-3">
+            <XOctagon size={22} className={urgentCount > 0 ? 'text-red-600' : 'text-gray-400'} />
+            <span className={`text-xs font-bold uppercase tracking-wide ${urgentCount > 0 ? 'text-red-700' : 'text-gray-500'}`}>Срочно</span>
+          </div>
+          <div className="space-y-2">
+            <div>
+              <div className={`text-3xl font-black ${urgentCount > 0 ? 'text-red-700' : 'text-gray-400'}`}>{urgentCount}</div>
+              <div className={`text-sm ${urgentCount > 0 ? 'text-red-700' : 'text-gray-500'}`}>нужна ваша помощь</div>
+            </div>
+            {urgentCount > 0 && (
+              <div className="pt-2 border-t border-red-200 text-xs text-red-700 space-y-1">
+                {notReceived.length > 0 && <div>• {notReceived.length} клиент НЕ получил заказ</div>}
+                {stuckDelivering.length > 0 && <div>• {stuckDelivering.length} в доставке &gt; 3 дней</div>}
+              </div>
+            )}
+          </div>
+          {urgentCount > 0 ? (
+            <Link href="/admin/orders" className="mt-4 inline-block w-full text-center px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition-colors">
+              Разобраться сейчас
+            </Link>
+          ) : (
+            <p className="text-xs text-gray-500 mt-4 italic">Всё спокойно. Никаких проблем.</p>
+          )}
+        </div>
+      </div>
 
       {/* Статистика */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

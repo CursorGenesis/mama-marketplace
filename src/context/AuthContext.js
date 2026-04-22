@@ -59,6 +59,7 @@ export function AuthProvider({ children }) {
       profileData.whatsapp = extra.whatsapp || '';
       profileData.category = extra.category || '';
       if (extra.licenseConfirmed) profileData.licenseConfirmed = true;
+      if (extra.deliverySchedule) profileData.deliverySchedule = extra.deliverySchedule;
     }
     await createUserProfile(cred.user.uid, profileData);
     const p = await getUserProfile(cred.user.uid);

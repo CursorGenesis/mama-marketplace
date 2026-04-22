@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/context/LangContext';
-import { CreditCard, Search, AlertTriangle, CheckCircle, XCircle, Clock, Crown, Building2, Package, Rocket } from 'lucide-react';
+import { CreditCard, Search, AlertTriangle, CheckCircle, XCircle, Clock, Crown, Building2, Package, Rocket, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 const planConfig = {
   start: { name: 'Старт', nameKg: 'Старт', price: 1000, icon: '🌱', color: 'bg-gray-100 text-gray-700' },
@@ -108,6 +109,9 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Link href="/admin" className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 mb-4 font-medium">
+        <ArrowLeft size={18} /> {isRu ? 'Назад в админку' : 'Админге кайтуу'}
+      </Link>
       <h1 className="text-2xl font-bold mb-6">{isRu ? 'Подписки поставщиков' : 'Жеткирүүчүлөрдүн жазылуулары'}</h1>
 
       {/* Статистика */}

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/context/LangContext';
-import { Truck, Search, CheckCircle, XCircle, Clock, Package, MapPin, Phone, User } from 'lucide-react';
+import { Truck, Search, CheckCircle, XCircle, Clock, Package, MapPin, Phone, User, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 const demoDeliveries = [
   {
@@ -94,6 +95,9 @@ export default function AdminLogisticsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Link href="/admin" className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 mb-4 font-medium">
+        <ArrowLeft size={18} /> {isRu ? 'Назад в админку' : 'Админге кайтуу'}
+      </Link>
       <h1 className="text-2xl font-bold mb-6">{isRu ? 'Логистика и доставки' : 'Логистика жана жеткирүү'}</h1>
 
       {/* Статистика */}

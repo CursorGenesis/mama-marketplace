@@ -26,6 +26,7 @@ function AuthForm() {
   const [customCategory, setCustomCategory] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptLicense, setAcceptLicense] = useState(false);
+  const [deliverAllKg, setDeliverAllKg] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, register, loginWithGoogle, loginWithApple } = useAuth();
   const { t, lang } = useLang();
@@ -51,11 +52,16 @@ function AuthForm() {
         await login(email, password);
         toast.success(isRu ? 'Добро пожаловать!' : 'Кош келиңиз!');
       } else {
+        const KG_CITIES = ['Бишкек', 'Ош', 'Манас', 'Каракол', 'Токмок', 'Нарын', 'Баткен', 'Талас', 'Балыкчы', 'Кызыл-Кия'];
+        const deliverySchedule = role === 'supplier' && deliverAllKg
+          ? Object.fromEntries(KG_CITIES.map(c => [c, [1, 2, 3, 4, 5]]))
+          : undefined;
         await register(email, password, name, phone, role, {
           shopName, companyName, inn, city, address, whatsapp,
           category: category === 'other' ? customCategory : category,
           licenseConfirmed: role === 'supplier' ? acceptLicense : undefined,
           agentRef: refCode || null,
+          deliverySchedule,
         });
         toast.success(isRu ? 'Регистрация прошла успешно!' : 'Каттоо ийгиликтүү!');
         sendTelegramNotification('new_registration', {
@@ -115,14 +121,14 @@ function AuthForm() {
 
   const handleWhatsApp = () => {
     const text = isRu
-      ? 'Здравствуйте! Хочу войти в MarketKG. Мой телефон: '
-      : 'Саламатсызбы! MarketKG ге кирүүнү каалайм. Менин телефоном: ';
+      ? 'Здравствуйте! Хочу войти в Arzaman.kg. Мой телефон: '
+      : 'Саламатсызбы! Arzaman.kg ге кирүүнү каалайм. Менин телефоном: ';
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     toast.success(isRu ? 'Отправьте сообщение в WhatsApp для входа' : 'Кирүү үчүн WhatsApp га кабар жөнөтүңүз');
   };
 
   const handleTelegram = () => {
-    window.open('https://t.me/MarketKG_bot', '_blank');
+    window.open('https://t.me/Arzaman.kg_bot', '_blank');
     toast.success(isRu ? 'Напишите боту в Telegram для входа' : 'Кирүү үчүн Telegram ботуна жазыңыз');
   };
 
@@ -140,7 +146,7 @@ function AuthForm() {
                 ? (isRu ? 'Вход' : 'Кирүү')
                 : (isRu ? 'Регистрация' : 'Каттоо')}
             </h1>
-            <p className="text-gray-500 mt-1 text-sm">MarketKG — {isRu ? 'маркетплейс поставщиков' : 'жеткирүүчүлөр маркетплейси'}</p>
+            <p className="text-gray-500 mt-1 text-sm">Arzaman.kg — {isRu ? 'маркетплейс поставщиков' : 'жеткирүүчүлөр маркетплейси'}</p>
           </div>
 
           {/* Реферальный код */}
@@ -322,21 +328,31 @@ function AuthForm() {
                       placeholder={isRu ? 'WhatsApp номер +996...' : 'WhatsApp номер +996...'}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
-                    <select value={city} onChange={e => setCity(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                      <option value="">{isRu ? 'Выберите город' : 'Шаар тандаңыз'}</option>
-                      <option value="Бишкек">Бишкек</option>
-                      <option value="Ош">Ош</option>
-                      <option value="Манас">Манас</option>
-                      <option value="Каракол">Каракол</option>
-                      <option value="Токмок">Токмок</option>
-                      <option value="Нарын">Нарын</option>
-                      <option value="Баткен">Баткен</option>
-                      <option value="Талас">Талас</option>
-                      <option value="Балыкчы">Балыкчы</option>
-                      <option value="Кызыл-Кия">Кызыл-Кия</option>
-                    </select>
+                    <div>
+                      <select value={city} onChange={e => setCity(e.target.value)}
+                        required
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                        <option value="">{isRu ? 'Город (склад/офис)' : 'Шаар (кампа/офис)'}</option>
+                        <option value="Бишкек">Бишкек</option>
+                        <option value="Ош">Ош</option>
+                        <option value="Манас">Манас</option>
+                        <option value="Каракол">Каракол</option>
+                        <option value="Токмок">Токмок</option>
+                        <option value="Нарын">Нарын</option>
+                        <option value="Баткен">Баткен</option>
+                        <option value="Талас">Талас</option>
+                        <option value="Балыкчы">Балыкчы</option>
+                        <option value="Кызыл-Кия">Кызыл-Кия</option>
+                      </select>
+                      <label className="flex items-start gap-2 cursor-pointer mt-2 px-1">
+                        <input type="checkbox" checked={deliverAllKg} onChange={e => setDeliverAllKg(e.target.checked)} className="mt-0.5 w-4 h-4 accent-green-500 shrink-0" />
+                        <span className="text-xs text-gray-600">
+                          {isRu
+                            ? 'Доставляем по всему Кыргызстану (пн–пт). График по городам можно уточнить в кабинете.'
+                            : 'Кыргызстан боюнча жеткиребиз (дш–жм). Шаарлар боюнча график кабинетте тактала алат.'}
+                        </span>
+                      </label>
+                    </div>
                     <select value={category} onChange={e => setCategory(e.target.value)}
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
@@ -464,8 +480,8 @@ function AuthForm() {
         {/* Подсказка */}
         <p className="text-center text-xs text-gray-400 mt-4">
           {isRu
-            ? 'Входя, вы соглашаетесь с условиями использования MarketKG'
-            : 'Кирүү менен MarketKG колдонуу шарттарына макулдугуңузду билдиресиз'}
+            ? 'Входя, вы соглашаетесь с условиями использования Arzaman.kg'
+            : 'Кирүү менен Arzaman.kg колдонуу шарттарына макулдугуңузду билдиресиз'}
         </p>
       </div>
     </div>

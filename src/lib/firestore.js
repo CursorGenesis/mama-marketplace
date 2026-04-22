@@ -131,10 +131,21 @@ export const CITIES = [
 // =============================================
 //  ПОСТАВЩИКИ
 // =============================================
+// Поставщик доставляет в город, если:
+// - в deliverySchedule[city] есть хотя бы один день, ИЛИ
+// - расписания нет вовсе (backwards compat) — считаем, что работает только в своём city
+const deliversTo = (supplier, city) => {
+  const schedule = supplier?.deliverySchedule;
+  if (schedule && Object.keys(schedule).length > 0) {
+    return (schedule[city]?.length || 0) > 0;
+  }
+  return supplier?.city === city;
+};
+
 export async function getSuppliers(filters = {}) {
   if (IS_DEMO) {
     let result = [...DEMO_SUPPLIERS];
-    if (filters.city) result = result.filter(s => s.city === filters.city);
+    if (filters.city) result = result.filter(s => deliversTo(s, filters.city));
     if (filters.category) result = result.filter(s => s.categories?.includes(filters.category));
     return result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
   }
@@ -146,7 +157,6 @@ export async function getSuppliers(filters = {}) {
     if (checkSnap.docs.length > 0) {
       let q = collection(db, 'suppliers');
       const constraints = [];
-      if (filters.city) constraints.push(where('city', '==', filters.city));
       if (filters.category) constraints.push(where('categories', 'array-contains', filters.category));
 
       q = constraints.length > 0
@@ -154,14 +164,16 @@ export async function getSuppliers(filters = {}) {
         : query(q, orderBy('rating', 'desc'));
 
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let result = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (filters.city) result = result.filter(s => deliversTo(s, filters.city));
+      return result;
     }
   } catch (e) {
     console.log('Firebase suppliers fallback to demo:', e.message);
   }
 
   let result = [...DEMO_SUPPLIERS];
-  if (filters.city) result = result.filter(s => s.city === filters.city);
+  if (filters.city) result = result.filter(s => deliversTo(s, filters.city));
   if (filters.category) result = result.filter(s => s.categories?.includes(filters.category));
   return result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 }
@@ -283,7 +295,10 @@ export async function getProducts(filters = {}) {
     if (!filters.includeHidden) result = result.filter(p => !p.hidden);
     if (filters.supplierId) result = result.filter(p => p.supplierId === filters.supplierId);
     if (filters.category) result = result.filter(p => p.category === filters.category);
-    if (filters.city) result = result.filter(p => p.city === filters.city);
+    if (filters.city) {
+      const allowedIds = new Set(DEMO_SUPPLIERS.filter(s => deliversTo(s, filters.city)).map(s => s.id));
+      result = result.filter(p => allowedIds.has(p.supplierId));
+    }
     return result;
   }
 
@@ -293,18 +308,22 @@ export async function getProducts(filters = {}) {
     const checkSnap = await getDocs(checkQ);
 
     if (checkSnap.docs.length > 0) {
-      // В Firebase есть товары — фильтруем там
+      // Фильтры по supplier/category — через Firestore; city — после получения по deliverySchedule поставщика
       let constraints = [];
       if (filters.supplierId) constraints.push(where('supplierId', '==', filters.supplierId));
       if (filters.category) constraints.push(where('category', '==', filters.category));
-      if (filters.city) constraints.push(where('city', '==', filters.city));
 
       const q = constraints.length > 0
         ? query(collection(db, 'products'), ...constraints, orderBy('createdAt', 'desc'))
         : query(collection(db, 'products'), orderBy('createdAt', 'desc'));
 
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      let result = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (filters.city) {
+        const allowedIds = new Set((await getSuppliers({ city: filters.city })).map(s => s.id));
+        result = result.filter(p => allowedIds.has(p.supplierId));
+      }
+      return result;
     }
   } catch (e) {
     console.log('Firebase products fallback to demo:', e.message);
@@ -315,7 +334,10 @@ export async function getProducts(filters = {}) {
   if (!filters.includeHidden) result = result.filter(p => !p.hidden);
   if (filters.supplierId) result = result.filter(p => p.supplierId === filters.supplierId);
   if (filters.category) result = result.filter(p => p.category === filters.category);
-  if (filters.city) result = result.filter(p => p.city === filters.city);
+  if (filters.city) {
+    const allowedIds = new Set(DEMO_SUPPLIERS.filter(s => deliversTo(s, filters.city)).map(s => s.id));
+    result = result.filter(p => allowedIds.has(p.supplierId));
+  }
   return result;
 }
 

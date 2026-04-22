@@ -189,7 +189,7 @@ export default function CartPage() {
       return;
     }
 
-    let text = `*Заявка с MarketKG*\n\n`;
+    let text = `*Заявка с Arzaman.kg*\n\n`;
     text += `*Покупатель:* ${form.name}\n`;
     if (form.shopName) text += `*Магазин:* ${form.shopName}\n`;
     text += `*Телефон:* ${form.phone}\n`;

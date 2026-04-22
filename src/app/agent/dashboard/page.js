@@ -58,8 +58,8 @@ function AgentDashboardContent() {
     : `https://cursorgenesis.github.io/mama-marketplace/auth?ref=${agentCode}`;
 
   const refMessage = isRu
-    ? `Привет! Зарегистрируйтесь на MarketKG — B2B маркетплейс поставщиков Кыргызстана. Заказывайте товары оптом по лучшим ценам!\n\nРегистрация: ${refLink}`
-    : `Саламатсызбы! MarketKG — Кыргызстандын B2B жеткирүүчүлөр маркетплейсине катталыңыз. Товарларды оптом эң жакшы баада заказ кылыңыз!\n\nКаттоо: ${refLink}`;
+    ? `Привет! Зарегистрируйтесь на Arzaman.kg — B2B маркетплейс поставщиков Кыргызстана. Заказывайте товары оптом по лучшим ценам!\n\nРегистрация: ${refLink}`
+    : `Саламатсызбы! Arzaman.kg — Кыргызстандын B2B жеткирүүчүлөр маркетплейсине катталыңыз. Товарларды оптом эң жакшы баада заказ кылыңыз!\n\nКаттоо: ${refLink}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(refLink);
@@ -73,7 +73,7 @@ function AgentDashboardContent() {
   };
 
   const handleShareTelegram = () => {
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(isRu ? 'Зарегистрируйтесь на MarketKG!' : 'MarketKG ге катталыңыз!')}`, '_blank');
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(isRu ? 'Зарегистрируйтесь на Arzaman.kg!' : 'Arzaman.kg ге катталыңыз!')}`, '_blank');
   };
 
   return (

@@ -10,8 +10,9 @@ import { ShoppingCart, Menu, X, User, MapPin, Shield, Bell, BarChart3, UserCircl
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const isHome = pathname === '/';
   const isCatalog = pathname === '/catalog' || pathname?.startsWith('/catalog');
-  const hideSearch = pathname === '/my' || pathname === '/auth' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/agent') || pathname?.startsWith('/admin');
+  const hideSearch = isHome || pathname === '/my' || pathname === '/auth' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/agent') || pathname?.startsWith('/admin');
   const { user, profile, isAdmin, isSupplier, logout } = useAuth();
   const isAgent = profile?.role === 'agent';
   const isDriver = profile?.role === 'driver';
@@ -47,15 +48,44 @@ export default function Header() {
             {/* Лого */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-slate-800 font-black text-sm">M</span>
+                <span className="text-slate-800 font-black text-sm">A</span>
               </div>
-              <span className="font-bold text-lg text-white hidden sm:block">MarketKG</span>
+              <span className="font-bold text-lg text-white hidden sm:block">Arzaman.kg</span>
             </Link>
 
-            {/* Каталог */}
-            <Link href="/catalog" className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors">
-              <Menu size={18} />{lang === 'kg' ? 'Каталог' : 'Каталог'}
-            </Link>
+            {/* Каталог — скрыт на главной */}
+            {!isHome && (
+              <Link href="/catalog" className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors">
+                <Menu size={18} />{lang === 'kg' ? 'Каталог' : 'Каталог'}
+              </Link>
+            )}
+
+            {/* Переключатель ролей — только на главной для гостей */}
+            {isHome && !user && (
+              <nav className="hidden md:flex items-center flex-1 justify-center">
+                <Link
+                  href="/how-it-works?role=client"
+                  className="flex items-center gap-2 px-5 py-2 text-white/80 hover:text-white text-sm font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+                >
+                  <UserCircle size={16} />
+                  {lang === 'kg' ? 'Сатып алуучу' : 'Клиент'}
+                </Link>
+                <Link
+                  href="/how-it-works?role=supplier"
+                  className="flex items-center gap-2 px-5 py-2 text-white/80 hover:text-white text-sm font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+                >
+                  <Building2 size={16} />
+                  {lang === 'kg' ? 'Жеткирүүчү' : 'Поставщик'}
+                </Link>
+                <Link
+                  href="/how-it-works?role=agent"
+                  className="flex items-center gap-2 px-5 py-2 text-white/80 hover:text-white text-sm font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+                >
+                  <Users size={16} />
+                  {lang === 'kg' ? 'Агент' : 'Агент'}
+                </Link>
+              </nav>
+            )}
 
             {/* Поиск */}
             {hideSearch ? null : isCatalog ? (
@@ -93,7 +123,7 @@ export default function Header() {
             )}
 
             {/* Правая часть */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
               {/* Язык */}
               <button
                 onClick={() => switchLang(lang === 'ru' ? 'kg' : 'ru')}
@@ -107,22 +137,35 @@ export default function Header() {
                 {lang === 'ru' ? 'RU' : 'KG'}
               </button>
 
-              {/* Уведомления */}
-              <Link href="/notifications" className="relative p-2 text-white/80 hover:text-white transition-colors hidden sm:block">
-                <Bell size={20} />
-                {/* TODO: подключить реальный счётчик уведомлений */}
-              </Link>
+              {/* Уведомления — скрыто на главной */}
+              {!isHome && (
+                <Link href="/notifications" className="relative p-2 text-white/80 hover:text-white transition-colors hidden sm:block">
+                  <Bell size={20} />
+                </Link>
+              )}
 
-              {/* Корзина — скрыта на мобильном (есть в нижней навигации) */}
-              <Link href="/cart" className="relative p-2 text-white/80 hover:text-white transition-colors hidden sm:block">
-                <ShoppingCart size={20} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{totalItems}</span>
-                )}
-              </Link>
+              {/* Корзина — скрыта на главной и на мобильном */}
+              {!isHome && (
+                <Link href="/cart" className="relative p-2 text-white/80 hover:text-white transition-colors hidden sm:block">
+                  <ShoppingCart size={20} />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{totalItems}</span>
+                  )}
+                </Link>
+              )}
+
+              {/* На главной для гостей — кнопка Войти */}
+              {isHome && !user && (
+                <Link
+                  href="/auth"
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold text-sm transition-colors"
+                >
+                  {lang === 'kg' ? 'Кирүү' : 'Войти'}
+                </Link>
+              )}
 
               {/* Профиль */}
-              {(
+              {!(isHome && !user) && (
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
@@ -138,11 +181,11 @@ export default function Header() {
                   {profileOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
-                      <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50">
+                      <div className="absolute right-0 top-full mt-2 w-56 sm:w-60 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
                         {/* Имя и роль */}
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="font-bold text-gray-800 text-sm">{profile?.name || user?.email || (lang === 'kg' ? 'Демо колдонуучу' : 'Демо пользователь')}</p>
-                          <p className="text-xs text-gray-400">
+                        <div className="px-4 py-2.5 border-b border-gray-100">
+                          <p className="font-bold text-gray-900 text-sm truncate">{profile?.name || user?.email || (lang === 'kg' ? 'Демо колдонуучу' : 'Демо пользователь')}</p>
+                          <p className="text-xs text-gray-500">
                             {isAdmin ? (lang === 'kg' ? 'Администратор' : 'Администратор') : isSupplier ? (lang === 'kg' ? 'Жеткирүүчү' : 'Поставщик') : isAgent ? (lang === 'kg' ? 'Агент' : 'Агент') : isDriver ? (lang === 'kg' ? 'Экспедитор' : 'Экспедитор') : (lang === 'kg' ? 'Сатып алуучу' : 'Покупатель')}
                           </p>
                         </div>
@@ -150,13 +193,13 @@ export default function Header() {
                         {/* Ссылки для клиента */}
                         {(!isAdmin && !isSupplier && !isAgent && !isDriver || !user) && (
                           <>
-                            <Link href="/my" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/my" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <UserCircle size={18} className="text-gray-400" /> {lang === 'kg' ? 'Менин кабинетим' : 'Мой кабинет'}
                             </Link>
-                            <Link href="/orders" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/orders" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <ClipboardList size={18} className="text-gray-400" /> {lang === 'kg' ? 'Буйрутмаларым' : 'Мои заказы'}
                             </Link>
-                            <Link href="/notifications" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/notifications" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Bell size={18} className="text-gray-400" /> {t('notifications')}
                             </Link>
                           </>
@@ -165,16 +208,16 @@ export default function Header() {
                         {/* Ссылки для поставщика */}
                         {isSupplier && (
                           <>
-                            <Link href="/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <BarChart3 size={18} className="text-gray-400" /> {lang === 'kg' ? 'Жеткирүүчү кабинети' : 'Кабинет поставщика'}
                             </Link>
-                            <Link href="/dashboard/products" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/dashboard/products" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Package size={18} className="text-gray-400" /> {lang === 'kg' ? 'Менин товарларым' : 'Мои товары'}
                             </Link>
-                            <Link href="/dashboard/orders" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/dashboard/orders" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <ClipboardList size={18} className="text-gray-400" /> {lang === 'kg' ? 'Заказдар тарыхы' : 'История заказов'}
                             </Link>
-                            <Link href="/pricing" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/pricing" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <DollarSign size={18} className="text-gray-400" /> {lang === 'kg' ? 'Тарифтер' : 'Тарифы'}
                             </Link>
                           </>
@@ -183,13 +226,13 @@ export default function Header() {
                         {/* Ссылки для агента */}
                         {isAgent && (
                           <>
-                            <Link href="/agent/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/agent/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Users size={18} className="text-green-400" /> {lang === 'kg' ? 'Агент кабинети' : 'Кабинет агента'}
                             </Link>
-                            <Link href="/agent/order" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/agent/order" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <ClipboardList size={18} className="text-green-400" /> {lang === 'kg' ? 'Заказ түзүү' : 'Создать заказ'}
                             </Link>
-                            <Link href="/agent/shops" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/agent/shops" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Building2 size={18} className="text-green-400" /> {lang === 'kg' ? 'Менин дүкөндөрүм' : 'Мои магазины'}
                             </Link>
                           </>
@@ -198,7 +241,7 @@ export default function Header() {
                         {/* Ссылки для экспедитора */}
                         {isDriver && (
                           <>
-                            <Link href="/driver/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/driver/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Truck size={18} className="text-cyan-400" /> {lang === 'kg' ? 'Менин жеткирүүлөрүм' : 'Мои доставки'}
                             </Link>
                           </>
@@ -207,16 +250,16 @@ export default function Header() {
                         {/* Ссылки для админа */}
                         {isAdmin && (
                           <>
-                            <Link href="/admin" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/admin" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Shield size={18} className="text-orange-400" /> {lang === 'kg' ? 'Админ панель' : 'Админ-панель'}
                             </Link>
-                            <Link href="/admin/analytics" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/admin/analytics" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <BarChart3 size={18} className="text-purple-400" /> {lang === 'kg' ? 'Аналитика' : 'Аналитика'}
                             </Link>
-                            <Link href="/admin/commissions" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/admin/commissions" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <DollarSign size={18} className="text-green-400" /> {lang === 'kg' ? 'Комиссиялар' : 'Комиссии'}
                             </Link>
-                            <Link href="/admin/badges" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                            <Link href="/admin/badges" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <Award size={18} className="text-amber-400" /> {lang === 'kg' ? 'Бейджилер' : 'Бейджи'}
                             </Link>
                           </>
@@ -225,7 +268,7 @@ export default function Header() {
                         {/* Выйти */}
                         <div className="border-t border-gray-100 mt-1 pt-1">
                           <button onClick={() => { logout(); setProfileOpen(false); window.location.href = '/mama-marketplace/'; }}
-                            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
                             <LogOut size={18} /> {t('logout')}
                           </button>
                         </div>
@@ -237,6 +280,33 @@ export default function Header() {
 
             </div>
           </div>
+
+          {/* Мобильный переключатель ролей — только на главной для гостей */}
+          {isHome && !user && (
+            <nav className="md:hidden flex items-center justify-around border-t border-white/10">
+              <Link
+                href="/how-it-works?role=client"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-white/80 hover:text-white text-xs font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+              >
+                <UserCircle size={14} />
+                {lang === 'kg' ? 'Сатып алуучу' : 'Клиент'}
+              </Link>
+              <Link
+                href="/how-it-works?role=supplier"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-white/80 hover:text-white text-xs font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+              >
+                <Building2 size={14} />
+                {lang === 'kg' ? 'Жеткирүүчү' : 'Поставщик'}
+              </Link>
+              <Link
+                href="/how-it-works?role=agent"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-white/80 hover:text-white text-xs font-medium border-b-2 border-transparent hover:border-white/60 transition-colors"
+              >
+                <Users size={14} />
+                {lang === 'kg' ? 'Агент' : 'Агент'}
+              </Link>
+            </nav>
+          )}
         </div>
       </div>
 

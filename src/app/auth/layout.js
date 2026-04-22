@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Вход и регистрация — MarketKG',
-  description: 'Войдите или зарегистрируйтесь на MarketKG. Покупатели и поставщики продуктов питания Кыргызстана.',
+  title: 'Вход и регистрация — Arzaman.kg',
+  description: 'Войдите или зарегистрируйтесь на Arzaman.kg. Покупатели и поставщики продуктов питания Кыргызстана.',
 };
 
 export default function Layout({ children }) {

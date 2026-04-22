@@ -11,7 +11,7 @@ const PRIZES = [
   { id: 1, name: 'iPhone 17', nameKg: 'iPhone 17', icon: '📱', quantity: 1, tier: 'grand', description: 'Гран-при розыгрыша', descriptionKg: 'Розыгрыштын гран-приси' },
   { id: 2, name: 'Наушники беспроводные', nameKg: 'Зымсыз кулакчындар', icon: '🎧', quantity: 10, tier: 'main', description: 'JBL / Samsung', descriptionKg: 'JBL / Samsung' },
   { id: 3, name: 'Повербанк 20 000 mAh', nameKg: 'Повербанк 20 000 mAh', icon: '🔋', quantity: 15, tier: 'main', description: 'Быстрая зарядка', descriptionKg: 'Тез кубаттоо' },
-  { id: 4, name: 'Термокружка + ежедневник', nameKg: 'Термокружка + күндөлүк', icon: '☕', quantity: 20, tier: 'bonus', description: 'Брендированный набор MarketKG', descriptionKg: 'MarketKG бренддик набор' },
+  { id: 4, name: 'Термокружка + ежедневник', nameKg: 'Термокружка + күндөлүк', icon: '☕', quantity: 20, tier: 'bonus', description: 'Брендированный набор Arzaman.kg', descriptionKg: 'Arzaman.kg бренддик набор' },
   { id: 5, name: 'Флешка 64 ГБ', nameKg: 'Флешка 64 ГБ', icon: '💾', quantity: 20, tier: 'bonus', description: 'USB 3.0', descriptionKg: 'USB 3.0' },
 ];
 

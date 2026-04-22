@@ -1,12 +1,15 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CATEGORIES, SUBCATEGORIES, getProducts, getSuppliers } from '@/lib/firestore';
+import { CATEGORIES, SUBCATEGORIES, getProducts, getSuppliers, getOrders } from '@/lib/firestore';
 import { useLang } from '@/context/LangContext';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import SupplierCard from '@/components/SupplierCard';
 import ProductCard from '@/components/ProductCard';
-import { Search, MapPin, ArrowRight, Crown, Star, Users, TrendingUp, Building2, ShoppingCart } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Crown, Star, Users, TrendingUp, Building2, ShoppingCart, RotateCcw, Package, Sparkles } from 'lucide-react';
 import CategoryIcon from '@/components/CategoryIcon';
+import toast from 'react-hot-toast';
 
 export default function HomePage() {
   const [suppliers, setSuppliers] = useState([]);
@@ -14,9 +17,15 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllCats, setShowAllCats] = useState(false);
   const [openCatId, setOpenCatId] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const { t, lang } = useLang();
+  const { user, profile, isAdmin, isSupplier } = useAuth();
+  const isAgent = profile?.role === 'agent';
+  const isDriver = profile?.role === 'driver';
+  const isBuyer = mounted && user && !isAdmin && !isSupplier && !isAgent && !isDriver;
 
   useEffect(() => {
+    setMounted(true);
     getSuppliers().then(s => setSuppliers(s));
     getProducts().then(p => setProducts(p));
   }, []);
@@ -41,6 +50,19 @@ export default function HomePage() {
   };
 
   const getSubcats = (catId) => SUBCATEGORIES[catId]?.[lang] || SUBCATEGORIES[catId]?.ru || [];
+
+  // Персональная главная для залогиненного клиента
+  if (isBuyer) {
+    return <PersonalClientHome
+      profile={profile}
+      user={user}
+      suppliers={suppliers}
+      products={products}
+      isRu={isRu}
+      lang={lang}
+      t={t}
+    />;
+  }
 
   return (
     <div>
@@ -128,33 +150,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ТОП поставщики (платное размещение) */}
-      {featuredSuppliers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-8 md:py-14">
-          <div className="flex items-center justify-between mb-4 md:mb-8">
-            <h2 className="text-xl md:text-4xl font-bold flex items-center gap-2 text-gray-900">
-              <Crown size={28} className="text-yellow-500" />
-              {t('topSuppliers')}
-            </h2>
-            <Link href="/catalog?tab=suppliers" className="flex items-center gap-1 text-slate-700 hover:text-slate-700 font-medium text-sm md:text-base">
-              {t('allSuppliersBtn')} <ArrowRight size={18} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featuredSuppliers.map(s => (
-              <div key={s.id} className="relative">
-                {/* Бейдж ТОП */}
-                <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                  <Crown size={12} /> {t('topBadge')}
-                </div>
-                <div className="ring-2 ring-yellow-400/50 rounded-xl">
-                  <SupplierCard supplier={s} />
-                </div>
+      {/* Баннер «Как сделать заказ» — демо-тур */}
+      <section className="max-w-7xl mx-auto px-4 pt-6 md:pt-10">
+        <Link href="/tour" className="group block relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-4 md:p-6 text-white hover:shadow-2xl transition-all hover:scale-[1.01]">
+          <div className="flex items-center gap-3 md:gap-5 flex-wrap">
+            <div className="text-4xl md:text-5xl animate-pulse">📱</div>
+            <div className="flex-1 min-w-[180px]">
+              <div className="inline-block px-2 py-0.5 bg-white/25 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1">
+                ▶ {isRu ? 'Демо' : 'Демо'}
               </div>
-            ))}
+              <h3 className="text-base md:text-xl font-extrabold mb-0.5">
+                {isRu ? 'Как сделать заказ за 2 минуты' : '2 мүнөттө заказ берүү'}
+              </h3>
+              <p className="text-xs md:text-sm opacity-90">
+                {isRu ? 'Пошаговое демо — от регистрации до доставки' : 'Кадам-кадам демо — каттоодон жеткирүүгө чейин'}
+              </p>
+            </div>
+            <div className="px-4 py-2 md:px-6 md:py-3 bg-white text-purple-600 rounded-xl text-xs md:text-sm font-extrabold shadow-lg group-hover:bg-pink-50 transition-colors">
+              ▶ {isRu ? 'Смотреть' : 'Көрүү'}
+            </div>
           </div>
-        </section>
-      )}
+        </Link>
+      </section>
 
       {/* Категории — крупные карточки на десктопе, лента на мобильном */}
       <section className="max-w-7xl mx-auto px-4 py-8 md:py-12">
@@ -305,6 +322,53 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Рекомендуем / Новинки */}
+      <FeaturedProducts products={products} lang={lang} />
+
+      {/* ТОП поставщики (платное размещение) */}
+      {featuredSuppliers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-8 md:py-14">
+          <div className="flex items-center justify-between mb-4 md:mb-8">
+            <h2 className="text-xl md:text-4xl font-bold flex items-center gap-2 text-gray-900">
+              <Crown size={28} className="text-yellow-500" />
+              {t('topSuppliers')}
+            </h2>
+            <Link href="/catalog?tab=suppliers" className="flex items-center gap-1 text-slate-700 hover:text-slate-700 font-medium text-sm md:text-base">
+              {t('allSuppliersBtn')} <ArrowRight size={18} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featuredSuppliers.map(s => (
+              <div key={s.id} className="relative">
+                <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                  <Crown size={12} /> {t('topBadge')}
+                </div>
+                <div className="ring-2 ring-yellow-400/50 rounded-xl">
+                  <SupplierCard supplier={s} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Все поставщики */}
+      {regularSuppliers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-8 md:py-14">
+          <div className="flex items-center justify-between mb-4 md:mb-8">
+            <h2 className="text-xl md:text-4xl font-bold flex items-center gap-2 text-gray-900">
+              <Users size={28} className="text-slate-700" />
+              {t('newOnPlatform')}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {regularSuppliers.map(s => (
+              <SupplierCard key={s.id} supplier={s} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Баннер розыгрыша */}
       <section className="max-w-7xl mx-auto px-4 py-4 md:py-6">
         <Link href="/raffle" className="group block relative overflow-hidden bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-2xl p-5 md:p-6 text-white hover:shadow-2xl transition-all hover:scale-[1.01]">
@@ -331,26 +395,6 @@ export default function HomePage() {
           </div>
         </Link>
       </section>
-
-      {/* Рекомендуем / Новинки */}
-      <FeaturedProducts products={products} lang={lang} />
-
-      {/* Все поставщики */}
-      {regularSuppliers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-8 md:py-14">
-          <div className="flex items-center justify-between mb-4 md:mb-8">
-            <h2 className="text-xl md:text-4xl font-bold flex items-center gap-2 text-gray-900">
-              <Users size={28} className="text-slate-700" />
-              {t('newOnPlatform')}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {regularSuppliers.map(s => (
-              <SupplierCard key={s.id} supplier={s} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* CTA блоки: Стань клиентом + Стань поставщиком + Стань агентом */}
       <section className="max-w-7xl mx-auto px-4 py-12">
@@ -402,23 +446,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Карта */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="bg-gray-900 rounded-2xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">{t('suppliersMap')}</h2>
-            <p className="text-gray-400">
-              {t('suppliersMapDesc')}
-            </p>
-          </div>
-          <Link
-            href="/map"
-            className="px-8 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors flex items-center gap-2"
-          >
-            <MapPin size={20} /> {t('openMap')}
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }
@@ -482,4 +509,242 @@ function FeaturedProducts({ products, lang }) {
   );
 }
 
+// ПЕРСОНАЛЬНАЯ ГЛАВНАЯ для залогиненного клиента
+function PersonalClientHome({ profile, user, suppliers, products, isRu, lang, t }) {
+  const { addItem } = useCart();
+  const [lastOrder, setLastOrder] = useState(null);
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [frequentProducts, setFrequentProducts] = useState([]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    getOrders({ buyerId: user.uid }).then(orders => {
+      if (!orders || orders.length === 0) return;
+      setLastOrder(orders[0]);
+      const active = orders.filter(o =>
+        !['received', 'cancelled', 'not_received'].includes(o.status)
+      );
+      setActiveOrders(active);
+
+      // Подсчёт частоты товаров по всем заказам
+      const itemCount = {};
+      orders.forEach(o => {
+        (o.items || []).forEach(item => {
+          const id = item.id || item.productId;
+          if (id) itemCount[id] = (itemCount[id] || 0) + (item.quantity || 1);
+        });
+      });
+      const sortedIds = Object.entries(itemCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([id]) => id);
+      const frequent = sortedIds
+        .map(id => products.find(p => p.id === id))
+        .filter(Boolean);
+      setFrequentProducts(frequent);
+    });
+  }, [user?.uid, products]);
+
+  const repeatOrder = () => {
+    if (!lastOrder?.items?.length) return;
+    lastOrder.items.forEach(item => {
+      addItem(item, item.quantity || 1);
+    });
+    toast.success(isRu ? 'Товары добавлены в корзину' : 'Товарлар себетке кошулду');
+    setTimeout(() => { window.location.href = '/mama-marketplace/cart'; }, 600);
+  };
+
+  const featuredSuppliers = suppliers.filter(s => s.featured);
+  const name = profile?.name || user?.email?.split('@')[0] || (isRu ? 'Друг' : 'Дос');
+  const coins = profile?.coins || 0;
+  const nextCoinGoal = Math.ceil(coins / 10) * 10 + 10;
+
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      {/* Приветствие */}
+      <section className="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-10">
+          <h1 className="text-2xl md:text-4xl font-bold mb-1">
+            {isRu ? `С возвращением, ${name}!` : `Кош келдиңиз, ${name}!`}
+          </h1>
+          <p className="text-slate-300 text-sm md:text-base">
+            {isRu ? 'Готовы к новому заказу?' : 'Жаңы буйрутмага даярсызбы?'}
+          </p>
+
+          {/* Статус активных заказов */}
+          {activeOrders.length > 0 && (
+            <div className="mt-4 inline-flex items-center gap-3 bg-white/10 backdrop-blur rounded-xl px-4 py-3">
+              <div className="text-2xl">🚚</div>
+              <div>
+                <div className="text-sm font-semibold">
+                  {isRu
+                    ? `У вас ${activeOrders.length} активных заказов`
+                    : `Сизде ${activeOrders.length} активдүү буйрутма`}
+                </div>
+                <Link href="/orders" className="text-xs text-slate-300 hover:text-white">
+                  {isRu ? 'Посмотреть статус →' : 'Статусту көрүү →'}
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Последний заказ — повторить */}
+      {lastOrder && (
+        <section className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+          <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <RotateCcw size={20} className="text-green-600" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900 text-lg">
+                    {isRu ? 'Ваш последний заказ' : 'Акыркы буйрутмаңыз'}
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    {isRu ? 'От' : ''} {lastOrder.supplierName || '—'} · {(lastOrder.items || []).length} {isRu ? 'товаров' : 'товар'} · {Number(lastOrder.total || lastOrder.totalPrice || 0).toLocaleString('ru-RU')} сом
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={repeatOrder}
+                className="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <RotateCcw size={16} /> {isRu ? 'Повторить заказ' : 'Кайталоо'}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-xs text-gray-600">
+              {(lastOrder.items || []).slice(0, 5).map((item, i) => (
+                <span key={i} className="bg-gray-50 rounded-md px-2 py-1">
+                  {item.name} × {item.quantity}
+                </span>
+              ))}
+              {(lastOrder.items || []).length > 5 && (
+                <span className="text-gray-400 px-2 py-1">
+                  +{(lastOrder.items || []).length - 5} {isRu ? 'ещё' : 'дагы'}
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Частые товары */}
+      {frequentProducts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Package size={24} className="text-slate-700" />
+              {isRu ? 'Ваши частые товары' : 'Тез-тез алган товарлар'}
+            </h2>
+            <Link href="/orders" className="text-sm text-slate-700 font-medium">
+              {isRu ? 'История →' : 'Тарых →'}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+            {frequentProducts.map(p => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ТОП поставщики (платное размещение) */}
+      {featuredSuppliers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-6 md:py-10">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-gray-900">
+              <Crown size={26} className="text-yellow-500" />
+              {t('topSuppliers')}
+            </h2>
+            <Link href="/catalog?tab=suppliers" className="flex items-center gap-1 text-slate-700 font-medium text-sm">
+              {t('allSuppliersBtn')} <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featuredSuppliers.map(s => (
+              <div key={s.id} className="relative">
+                <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                  <Crown size={12} /> {t('topBadge')}
+                </div>
+                <div className="ring-2 ring-yellow-400/50 rounded-xl">
+                  <SupplierCard supplier={s} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Розыгрыш с прогрессом коинов */}
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+        <Link href="/raffle" className="block relative overflow-hidden bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-2xl p-5 md:p-6 text-white hover:shadow-2xl transition-all">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="text-5xl animate-pulse">🎁</div>
+            <div className="flex-1 min-w-[200px]">
+              <h3 className="text-base md:text-lg font-extrabold mb-1">
+                {isRu ? `У вас ${coins} монеток` : `Сизде ${coins} монета`}
+              </h3>
+              <p className="text-xs md:text-sm opacity-90">
+                {isRu
+                  ? `До следующего уровня: ${Math.max(0, nextCoinGoal - coins)} монеток`
+                  : `Кийинки деңгээлге чейин: ${Math.max(0, nextCoinGoal - coins)} монета`}
+              </p>
+            </div>
+            <div className="px-5 py-2.5 bg-white text-orange-600 rounded-xl font-bold text-sm shadow-lg">
+              {isRu ? 'К розыгрышу →' : 'Розыгрышка →'}
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* Каталог — внизу */}
+      <section className="max-w-7xl mx-auto px-4 py-6 md:py-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Sparkles size={24} className="text-slate-700" />
+            {isRu ? 'Хотите что-то новое?' : 'Жаңы нерсе издейсизби?'}
+          </h2>
+          <Link href="/catalog" className="text-sm text-slate-700 font-medium">
+            {isRu ? 'Весь каталог →' : 'Бардык каталог →'}
+          </Link>
+        </div>
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-2.5 md:gap-3">
+          {CATEGORIES.slice(0, 8).map(cat => {
+            const colors = {
+              bakery: 'from-yellow-100 to-yellow-200 text-yellow-800',
+              dairy: 'from-sky-100 to-sky-200 text-sky-800',
+              meat: 'from-red-100 to-red-200 text-red-800',
+              fish: 'from-cyan-100 to-cyan-300 text-cyan-800',
+              fruits: 'from-emerald-100 to-emerald-200 text-emerald-800',
+              grocery: 'from-amber-100 to-amber-200 text-amber-800',
+              oils: 'from-lime-100 to-lime-200 text-lime-800',
+              confectionery: 'from-pink-100 to-pink-200 text-pink-800',
+              drinks: 'from-blue-100 to-blue-300 text-blue-800',
+              alcohol: 'from-purple-100 to-purple-200 text-purple-800',
+              tea_coffee: 'from-teal-100 to-teal-200 text-teal-800',
+              canned: 'from-slate-100 to-slate-200 text-slate-700',
+              spices: 'from-rose-100 to-rose-200 text-rose-800',
+              snacks: 'from-orange-100 to-orange-200 text-orange-800',
+              frozen: 'from-violet-100 to-violet-300 text-violet-800',
+              eggs: 'from-amber-50 to-amber-200 text-amber-700',
+            };
+            const c = colors[cat.id] || 'from-gray-100 to-gray-200 text-gray-700';
+            const [gradFrom, gradTo, textColor] = c.split(' ');
+            const name = isRu ? cat.name : (cat.nameKg || cat.name);
+            return (
+              <Link key={cat.id} href={`/catalog?category=${cat.id}`}
+                className={`bg-gradient-to-br ${gradFrom} ${gradTo} rounded-2xl p-3 text-center hover:shadow-md transition-all active:scale-95`}>
+                <div className="text-2xl md:text-3xl mb-1">{cat.icon}</div>
+                <div className={`text-[10px] md:text-xs font-bold leading-tight break-words ${textColor}`}>{name}</div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
 

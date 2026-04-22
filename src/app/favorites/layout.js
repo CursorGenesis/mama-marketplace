@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Избранное — MarketKG',
-  description: 'Ваши сохранённые товары на MarketKG.',
+  title: 'Избранное — Arzaman.kg',
+  description: 'Ваши сохранённые товары на Arzaman.kg.',
 };
 
 export default function Layout({ children }) {

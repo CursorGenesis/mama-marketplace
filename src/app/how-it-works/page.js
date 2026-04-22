@@ -76,7 +76,19 @@ export default function HowItWorksPage() {
   const { lang } = useLang();
   const isRu = lang === 'ru';
   const [role, setRole] = useState('client');
+  const [roleLocked, setRoleLocked] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+
+  // Читаем роль из URL ?role=client|supplier|agent — скрываем переключатель если задана
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlRole = params.get('role');
+    if (urlRole && ['client', 'supplier', 'agent'].includes(urlRole)) {
+      setRole(urlRole);
+      setRoleLocked(true);
+    }
+  }, []);
 
   const current = CONTENT[role];
   const steps = current.steps[isRu ? 'ru' : 'kg'];
@@ -137,25 +149,27 @@ export default function HowItWorksPage() {
             </p>
           </RevealBlock>
 
-          {/* Переключатель ролей */}
-          <RevealBlock delay={300}>
-            <div className="inline-flex bg-white/10 backdrop-blur-lg rounded-2xl p-2 shadow-2xl flex-wrap gap-1 justify-center">
-              {ROLES.map(r => (
-                <button key={r.id} onClick={() => setRole(r.id)}
-                  className={`relative px-4 md:px-6 py-3 rounded-xl text-sm md:text-base font-semibold transition-all ${
-                    role === r.id
-                      ? 'bg-white text-slate-900 shadow-lg scale-105'
-                      : 'text-white hover:bg-white/10'
-                  }`}>
-                  <span className="text-lg mr-1.5">{r.emoji}</span>
-                  {isRu ? r.labelRu : r.labelKg}
-                  {role === r.id && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </RevealBlock>
+          {/* Переключатель ролей — скрыт если роль задана через URL */}
+          {!roleLocked && (
+            <RevealBlock delay={300}>
+              <div className="inline-flex bg-white/10 backdrop-blur-lg rounded-2xl p-2 shadow-2xl flex-wrap gap-1 justify-center">
+                {ROLES.map(r => (
+                  <button key={r.id} onClick={() => setRole(r.id)}
+                    className={`relative px-4 md:px-6 py-3 rounded-xl text-sm md:text-base font-semibold transition-all ${
+                      role === r.id
+                        ? 'bg-white text-slate-900 shadow-lg scale-105'
+                        : 'text-white hover:bg-white/10'
+                    }`}>
+                    <span className="text-lg mr-1.5">{r.emoji}</span>
+                    {isRu ? r.labelRu : r.labelKg}
+                    {role === r.id && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </RevealBlock>
+          )}
         </div>
       </section>
 

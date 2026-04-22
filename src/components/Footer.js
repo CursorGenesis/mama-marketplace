@@ -13,19 +13,20 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-white font-bold text-lg mb-3">MarketKG</h3>
+            <h3 className="text-white font-bold text-lg mb-3">Arzaman.kg</h3>
             <p className="text-sm leading-relaxed">
               {t('footerDesc')}
             </p>
             <div className="mt-4 space-y-2 text-sm">
               <p>{isRu ? 'Бишкек, Кыргызстан' : 'Бишкек, Кыргызстан'}</p>
-              <p>info@marketkg.com</p>
+              <p>info@arzaman.kg</p>
             </div>
           </div>
           <div>
             <h4 className="text-white font-semibold mb-3">{isRu ? 'Покупателям' : 'Сатып алуучуларга'}</h4>
             <div className="space-y-2 text-sm">
               <Link href="/catalog" className="block hover:text-white transition-colors">{t('catalog')}</Link>
+              <Link href="/tour" className="block hover:text-white transition-colors">📱 {isRu ? 'Как пользоваться' : 'Кантип колдонуу'}</Link>
               <Link href="/map" className="block hover:text-white transition-colors">{t('suppliersMap')}</Link>
               <Link href="/orders" className="block hover:text-white transition-colors">{t('my_orders')}</Link>
               <Link href="/raffle" className="block hover:text-yellow-400 transition-colors">🪙 {isRu ? 'Розыгрыш призов' : 'Сыйлык розыгрышы'}</Link>
@@ -61,14 +62,14 @@ export default function Footer() {
               ? 'Платформа не является продавцом товаров. Все сделки заключаются напрямую между Покупателем и Поставщиком. Поставщики несут ответственность за наличие лицензий и соблюдение законодательства КР.'
               : 'Платформа товарларды сатуучу эмес. Бардык бүтүмдөр Сатып алуучу менен Жеткирүүчүнүн ортосунда түздөн-түз түзүлөт. Жеткирүүчүлөр лицензиялар жана КР мыйзамдарын сактоо үчүн жоопкерчилик тартышат.'}
           </p>
-          <span>&copy; {new Date().getFullYear()} MarketKG. {t('allRights')}</span>
+          <span>&copy; {new Date().getFullYear()} Arzaman.kg. {t('allRights')}</span>
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 const url = 'https://cursorgenesis.github.io/mama-marketplace/';
                 const text = isRu
-                  ? `MarketKG — B2B маркетплейс поставщиков Кыргызстана. Находите поставщиков, сравнивайте цены, заказывайте оптом!\n\n${url}`
-                  : `MarketKG — Кыргызстандын B2B жеткирүүчүлөр маркетплейси.\n\n${url}`;
+                  ? `Arzaman.kg — B2B маркетплейс поставщиков Кыргызстана. Находите поставщиков, сравнивайте цены, заказывайте оптом!\n\n${url}`
+                  : `Arzaman.kg — Кыргызстандын B2B жеткирүүчүлөр маркетплейси.\n\n${url}`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
               }}
               className="flex items-center gap-1.5 text-gray-400 hover:text-green-400 transition-colors"
@@ -79,7 +80,7 @@ export default function Footer() {
             <button
               onClick={() => {
                 const url = 'https://cursorgenesis.github.io/mama-marketplace/';
-                const text = isRu ? 'MarketKG — B2B маркетплейс поставщиков Кыргызстана!' : 'MarketKG — Кыргызстандын B2B маркетплейси!';
+                const text = isRu ? 'Arzaman.kg — B2B маркетплейс поставщиков Кыргызстана!' : 'Arzaman.kg — Кыргызстандын B2B маркетплейси!';
                 window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
               }}
               className="flex items-center gap-1.5 text-gray-400 hover:text-blue-400 transition-colors"
@@ -91,8 +92,8 @@ export default function Footer() {
               onClick={() => {
                 const url = 'https://cursorgenesis.github.io/mama-marketplace/';
                 const text = isRu
-                  ? `MarketKG — B2B маркетплейс поставщиков Кыргызстана.\n${url}`
-                  : `MarketKG — Кыргызстандын B2B маркетплейси.\n${url}`;
+                  ? `Arzaman.kg — B2B маркетплейс поставщиков Кыргызстана.\n${url}`
+                  : `Arzaman.kg — Кыргызстандын B2B маркетплейси.\n${url}`;
                 navigator.clipboard.writeText(text);
                 toast.success(isRu ? 'Ссылка скопирована!' : 'Шилтеме көчүрүлдү!');
               }}

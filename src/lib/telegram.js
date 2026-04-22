@@ -65,6 +65,17 @@ export async function sendTelegramNotification(type, data) {
       await sendMessage(data.supplierChatId, supplierMessage);
     }
 
+    // Сообщение покупателю — подтверждение приёма заказа
+    if (data.buyerChatId) {
+      const buyerMessage = `✅ <b>Ваш заказ принят!</b>\n\n` +
+        `📦 <b>Поставщик:</b> ${data.supplierName || ''}\n` +
+        (data.expectedDelivery ? `🚚 <b>Ожидаемая доставка:</b> ${data.expectedDelivery}\n` : '') +
+        `\n<b>Товары:</b>\n${itemsList}\n\n` +
+        `💰 <b>Итого: ${total.toLocaleString('ru-RU')} сом</b>\n\n` +
+        `📲 Мы пришлём сообщение когда заказ будет собран и отправлен.`;
+      await sendMessage(data.buyerChatId, buyerMessage);
+    }
+
     // Сохраняем в Google Таблицу с расширенными данными
     const agentCommission = data.agentRef ? Math.ceil(total * 0.02) : 0;
     const coins = Math.floor(total / 500);
@@ -138,6 +149,31 @@ export async function sendTelegramNotification(type, data) {
 
     if (ADMIN_CHAT_ID) {
       await sendMessage(ADMIN_CHAT_ID, message);
+    }
+
+    // Сообщение покупателю — дружелюбные уведомления
+    if (data.buyerChatId) {
+      const buyerMessages = {
+        packed: `📦 <b>Ваш заказ собран!</b>\n\n` +
+          `Заказ №${data.orderId || ''} от ${data.supplierName || ''} готов к отправке.\n` +
+          `Мы сообщим когда экспедитор выедет к вам.`,
+        delivering: `🚚 <b>Экспедитор выехал с вашим заказом!</b>\n\n` +
+          `Заказ №${data.orderId || ''} от ${data.supplierName || ''}\n` +
+          (data.driverPhone ? `📞 Контакт экспедитора: ${data.driverPhone}\n` : '') +
+          `\nКогда получите — подтвердите в ответе на это сообщение: ✅ Получил / ❌ Не получил`,
+        received: `✅ <b>Спасибо, что подтвердили получение!</b>\n\n` +
+          `Заказ №${data.orderId || ''} закрыт.\n` +
+          (data.coins ? `💎 Вам начислено ${data.coins} монеток.\n` : '') +
+          `Будем рады видеть вас снова!`,
+        cancelled: `❌ <b>Заказ отменён</b>\n\n` +
+          `Заказ №${data.orderId || ''} был отменён.\n` +
+          (data.reason ? `Причина: ${data.reason}\n` : '') +
+          `Если у вас вопросы — свяжитесь с нами.`,
+      };
+      const buyerMessage = buyerMessages[data.status];
+      if (buyerMessage) {
+        await sendMessage(data.buyerChatId, buyerMessage);
+      }
     }
 
     // Обновляем статус в Google Таблице

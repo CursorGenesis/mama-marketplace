@@ -16,7 +16,7 @@ export default function ReferralPage() {
   const refLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth?ref=${refCode}`;
 
   // Готовое сообщение для поставщика
-  const messageRu = `Здравствуйте! Приглашаю вас на MarketKG — B2B маркетплейс поставщиков Кыргызстана.
+  const messageRu = `Здравствуйте! Приглашаю вас на Arzaman.kg — B2B маркетплейс поставщиков Кыргызстана.
 
 ✅ Бесплатная регистрация
 ✅ Готовые клиенты по всей стране
@@ -29,7 +29,7 @@ export default function ReferralPage() {
 
 Регистрация: ${refLink}`;
 
-  const messageKg = `Саламатсызбы! Сизди MarketKG га чакырамын — Кыргызстандын B2B жеткирүүчүлөр маркетплейси.
+  const messageKg = `Саламатсызбы! Сизди Arzaman.kg га чакырамын — Кыргызстандын B2B жеткирүүчүлөр маркетплейси.
 
 ✅ Акысыз каттоо
 ✅ Бүт өлкө боюнча даяр кардарлар
@@ -61,7 +61,7 @@ export default function ReferralPage() {
 
   const handleNativeShare = () => {
     if (navigator.share) {
-      navigator.share({ title: 'MarketKG', text: message, url: refLink });
+      navigator.share({ title: 'Arzaman.kg', text: message, url: refLink });
     } else {
       handleCopy(message);
     }
