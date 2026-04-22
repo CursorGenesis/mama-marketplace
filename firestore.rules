@@ -2,50 +2,110 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Пользователи — читать свой профиль, писать только свой
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
+    // Хелперы
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Поставщики — читать все, писать только админ и владелец
+    function isSupplierOwner(supplierId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/suppliers/$(supplierId)).data.email == request.auth.token.email;
+    }
+
+    // Какие ключи меняются в update
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // =========================
+    //  ПОЛЬЗОВАТЕЛИ
+    // =========================
+    // Читать/создавать — только свой профиль. Админ — всё.
+    // Обновлять свой профиль можно, НО НЕЛЬЗЯ менять роль (это защита от самозванцев-админов).
+    // Поля coins/earnings/totalOrders/coinStatus нужны для серверной логики updateOrderStatus —
+    // временно разрешаем их менять (технический долг, вынести в Cloud Functions).
+    match /users/{userId} {
+      allow read:   if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.role in ['buyer', 'supplier', 'agent', 'driver'];
+      allow update: if isAdmin()
+        || (request.auth != null && request.auth.uid == userId
+            && !changedKeys().hasAny(['role']))
+        || (request.auth != null
+            && changedKeys().hasOnly(['coins', 'earnings', 'totalOrders', 'coinStatus']));
+    }
+
+    // =========================
+    //  ПОСТАВЩИКИ
+    // =========================
+    // Читать — все (каталог публичен).
+    // Создавать — любой авторизованный (при регистрации поставщика).
+    // Обновлять:
+    //   - админ — всё;
+    //   - владелец поставщика (email совпадает) — всё, КРОМЕ финансовых полей;
+    //   - любой авторизованный — только поле `balance` (нужно для списания комиссий при заказе).
+    // Удалять — только админ.
     match /suppliers/{supplierId} {
-      allow read: if true;
+      allow read:   if true;
       allow create: if request.auth != null;
-      allow update: if request.auth != null && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         resource.data.email == request.auth.token.email);
-      allow delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      
-      // Отзывы — читать все, писать авторизованные
+      allow update: if isAdmin()
+        || (resource.data.email == request.auth.token.email
+            && !changedKeys().hasAny(['balance', 'deposit', 'commissionRate', 'blocked']))
+        || changedKeys().hasOnly(['balance']);
+      allow delete: if isAdmin();
+
+      // Отзывы — читать все, создавать авторизованные
       match /reviews/{reviewId} {
-        allow read: if true;
+        allow read:   if true;
+        allow create: if request.auth != null;
+      }
+
+      // История транзакций поставщика — читать владелец/админ, писать никто из клиента
+      match /transactions/{txId} {
+        allow read:   if isAdmin() || isSupplierOwner(supplierId);
         allow create: if request.auth != null;
       }
     }
 
-    // Товары — читать все, писать владелец и админ
+    // =========================
+    //  ТОВАРЫ
+    // =========================
+    // Читать — все.
+    // Создавать/обновлять/удалять — только поставщик или админ.
     match /products/{productId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supplier');
+      allow read:   if true;
+      allow create: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['supplier', 'admin'];
+      allow update, delete: if request.auth != null
+        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supplier'
+            || isAdmin());
     }
 
-    // Заказы — читать свои, создавать авторизованные, обновлять участники
+    // =========================
+    //  ЗАКАЗЫ
+    // =========================
+    // Читать — только участники (покупатель, поставщик заказа) или админ.
+    //   Это ЗАКРЫВАЕТ утечку телефонов, адресов и PII клиентов.
+    // Создавать — любой авторизованный.
+    // Обновлять — участники (смена статуса) или админ.
     match /orders/{orderId} {
-      allow read: if request.auth != null &&
-        (resource.data.buyerId == request.auth.uid ||
-         resource.data.supplierId != null ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow read: if request.auth != null && (
+        resource.data.buyerId == request.auth.uid
+        || isSupplierOwner(resource.data.supplierId)
+        || isAdmin()
+      );
       allow create: if request.auth != null;
-      allow update: if request.auth != null;
+      allow update: if request.auth != null && (
+        resource.data.buyerId == request.auth.uid
+        || isSupplierOwner(resource.data.supplierId)
+        || isAdmin()
+      );
     }
 
-    // Всё остальное — запрещено
+    // =========================
+    //  ВСЁ ОСТАЛЬНОЕ — запрещено
+    // =========================
     match /{document=**} {
       allow read, write: if false;
     }
