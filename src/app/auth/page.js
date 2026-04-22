@@ -99,7 +99,14 @@ function AuthForm() {
       router.push('/');
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
-        toast.error(isRu ? 'Ошибка входа через Google' : 'Google аркылуу кирүүдө ката');
+        const msg = err.code === 'auth/unauthorized-domain'
+          ? (isRu ? 'Домен не авторизован в Firebase. Добавьте его в Authentication → Settings → Authorized domains.' : 'Домен Firebase-те авторизацияланган эмес.')
+          : err.code === 'auth/operation-not-allowed'
+          ? (isRu ? 'Google-вход не включён в Firebase. Включите в Authentication → Sign-in method.' : 'Firebase-те Google кирүү күйгүзүлгөн эмес.')
+          : err.code === 'auth/popup-blocked'
+          ? (isRu ? 'Браузер заблокировал всплывающее окно. Разрешите popup и попробуйте снова.' : 'Браузер popup бөгөттөдү.')
+          : `${isRu ? 'Ошибка Google' : 'Google катасы'}: ${err.code || err.message}`;
+        toast.error(msg);
       }
     }
     setLoading(false);
