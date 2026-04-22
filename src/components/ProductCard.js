@@ -1,18 +1,15 @@
 'use client';
-import { ShoppingCart, Plus, Minus, Check, Share2, Heart } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Check, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCart } from '@/context/CartContext';
-import { useFavorites } from '@/context/FavoritesContext';
 import { useLang } from '@/context/LangContext';
 import { useRouter } from 'next/navigation';
 
 export default function ProductCard({ product, onSelect }) {
   const { items, addItem, updateQuantity, removeItem } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
   const { t, lang } = useLang();
   const router = useRouter();
   const isRu = lang === 'ru';
-  const liked = isFavorite(product.id);
 
   // Сколько этого товара уже в корзине
   const cartItem = items.find(i => i.id === product.id);
@@ -92,20 +89,8 @@ export default function ProductCard({ product, onSelect }) {
             )}
           </div>
 
-          {/* Избранное + Поделиться */}
+          {/* Поделиться */}
           <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(product);
-                toast.success(liked
-                  ? (isRu ? 'Убрано из избранного' : 'Тандалмадан алынды')
-                  : (isRu ? 'Добавлено в избранное' : 'Тандалмага кошулду'));
-              }}
-              className="w-7 h-7 bg-white/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-sm"
-            >
-              <Heart size={14} className={liked ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

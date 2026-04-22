@@ -4,16 +4,14 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getProduct, getProducts, getSupplier } from '@/lib/firestore';
 import { useCart } from '@/context/CartContext';
-import { useFavorites } from '@/context/FavoritesContext';
 import { useLang } from '@/context/LangContext';
 import ProductCard from '@/components/ProductCard';
-import { ArrowLeft, ShoppingCart, Plus, Minus, Heart, MapPin, Star, MessageCircle, Share2, Check } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Plus, Minus, MapPin, Star, MessageCircle, Share2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProductPage() {
   const { id } = useParams();
   const { items, addItem, updateQuantity, removeItem } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
   const { t, lang } = useLang();
   const isRu = lang === 'ru';
 
@@ -51,7 +49,6 @@ export default function ProductPage() {
 
   const cartItem = items.find(i => i.id === product.id);
   const inCart = cartItem ? cartItem.quantity : 0;
-  const liked = isFavorite(product.id);
 
   const handleAdd = () => {
     addItem(product, 1);
@@ -123,10 +120,6 @@ export default function ProductPage() {
 
           {/* Кнопки справа */}
           <div className="absolute top-4 right-4 flex flex-col gap-2">
-            <button onClick={() => { toggleFavorite(product); toast.success(liked ? (isRu ? 'Убрано из избранного' : 'Тандалмадан алынды') : (isRu ? 'В избранном' : 'Тандалмада')); }}
-              className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
-              <Heart size={20} className={liked ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-            </button>
             <button onClick={handleShare}
               className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
               <Share2 size={18} className="text-gray-500" />

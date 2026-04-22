@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
 import Link from 'next/link';
 import {
-  User, ShoppingBag, Heart, Settings, LogOut, ChevronRight,
+  User, ShoppingBag, Settings, LogOut, ChevronRight,
   Store, Package, TrendingUp, Users, Award, MapPin, FileText,
   HelpCircle, MessageCircle, DollarSign, Truck, ClipboardList
 } from 'lucide-react';
@@ -34,7 +34,6 @@ export default function MyPage() {
   // Меню для покупателя
   const buyerLinks = [
     { href: '/orders', icon: ClipboardList, label: isRu ? 'Мои заказы' : 'Менин заказдарым', color: 'text-blue-600 bg-blue-50' },
-    { href: '/favorites', icon: Heart, label: isRu ? 'Избранное' : 'Тандалмалар', color: 'text-red-500 bg-red-50' },
     { href: '/raffle', icon: Award, label: isRu ? 'Розыгрыш призов' : 'Сыйлык розыгрышы', color: 'text-amber-600 bg-amber-50', extra: profile?.coins ? `${profile.coins} 🪙` : null },
     { href: '/notifications', icon: MessageCircle, label: isRu ? 'Уведомления' : 'Билдирүүлөр', color: 'text-purple-600 bg-purple-50' },
   ];
