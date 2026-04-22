@@ -6,6 +6,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   OAuthProvider,
   signOut,
@@ -20,6 +22,21 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Обработка возврата после signInWithRedirect (мобильные)
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        const existing = await getUserProfile(result.user.uid);
+        if (!existing) {
+          await createUserProfile(result.user.uid, {
+            email: result.user.email,
+            name: result.user.displayName || '',
+            phone: result.user.phoneNumber || '',
+            role: 'buyer',
+          });
+        }
+      }
+    }).catch(() => {});
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
@@ -69,8 +86,15 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // Redirect уходит на страницу Google и вернётся обратно — остальное обработает getRedirectResult в useEffect
+      await signInWithRedirect(auth, provider);
+      return; // redirect прерывает выполнение
+    }
+
     const cred = await signInWithPopup(auth, provider);
-    // Создаём профиль если первый вход
     const existing = await getUserProfile(cred.user.uid);
     if (!existing) {
       await createUserProfile(cred.user.uid, {
