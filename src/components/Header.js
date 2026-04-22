@@ -12,7 +12,7 @@ export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === '/';
   const isCatalog = pathname === '/catalog' || pathname?.startsWith('/catalog');
-  const hideSearch = isHome || pathname === '/my' || pathname === '/auth' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/agent') || pathname?.startsWith('/admin');
+  const hideSearch = isHome || pathname === '/my' || pathname === '/auth' || pathname === '/how-it-works' || pathname === '/tour' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/agent') || pathname?.startsWith('/admin');
   const { user, profile, isAdmin, isSupplier, logout } = useAuth();
   const isAgent = profile?.role === 'agent';
   const isDriver = profile?.role === 'driver';
