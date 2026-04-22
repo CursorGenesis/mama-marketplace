@@ -78,6 +78,16 @@ function CatalogContent() {
   const [city, setCity] = useState('');
   const [sortBy, setSortBy] = useState('popular');
   const [onlyKG, setOnlyKG] = useState(false);
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+
+  const placeholders = isRu
+    ? ['Найти товар...', 'Найти поставщика...']
+    : ['Товар издөө...', 'Жеткирүүчү издөө...'];
+
+  useEffect(() => {
+    const id = setInterval(() => setPlaceholderIdx(i => (i + 1) % placeholders.length), 2500);
+    return () => clearInterval(id);
+  }, [isRu]);
 
   useEffect(() => { loadData(); }, [category, city]);
 
@@ -141,7 +151,7 @@ function CatalogContent() {
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder={isRu ? 'Найти товар...' : 'Товар издөө...'}
+            placeholder={placeholders[placeholderIdx]}
             className="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent" />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
