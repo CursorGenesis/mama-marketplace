@@ -208,6 +208,18 @@ export default function CartPage() {
   const handleSubmitToSupplier = async (group) => {
     if (!validateOrder()) return;
 
+    // Сохраняем данные в профиль если не заполнены (защита: в след. раз телефон подставится автоматически)
+    if (user && updateProfile) {
+      const updates = {};
+      if (form.shopName && !profile?.shopName) updates.shopName = form.shopName;
+      if (form.address && !profile?.address) updates.address = form.address;
+      if (form.phone && !profile?.phone) updates.phone = form.phone;
+      if (form.name && !profile?.name) updates.name = form.name;
+      if (Object.keys(updates).length > 0) {
+        updateProfile(updates).catch(() => {});
+      }
+    }
+
     setSubmitting(prev => ({ ...prev, [group.supplierId]: true }));
 
     const orderNumber = 'MKG-' + Date.now().toString(36).toUpperCase();

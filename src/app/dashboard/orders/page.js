@@ -63,6 +63,14 @@ export default function SupplierOrdersPage() {
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
+  // Сколько заказов у каждого клиента (у этого поставщика). Если 1 — это первый заказ, метим "Новый клиент"
+  const buyerKey = (o) => o.buyerEmail || o.buyerId || o.buyerPhone || '';
+  const ordersByBuyer = orders.reduce((acc, o) => {
+    const key = buyerKey(o);
+    if (key) acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
   // Счётчики для фильтров
   const counts = {
     all: orders.length,
@@ -245,8 +253,13 @@ ${target.map((order, idx) => {
             <div key={order.id} className={`bg-white rounded-xl p-5 shadow-sm ${order.status === 'new' ? 'border-l-4 border-red-400' : ''}`}>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
                 <div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold">{order.buyerName || (isRu ? 'Покупатель' : 'Сатып алуучу')}</h3>
+                    {ordersByBuyer[buyerKey(order)] === 1 && (
+                      <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" title={isRu ? 'Первый заказ от этого клиента — рекомендуем позвонить для подтверждения' : ''}>
+                        ⚠ {isRu ? 'Новый клиент' : 'Жаңы кардар'}
+                      </span>
+                    )}
                     <OrderStatusBadge status={order.status} />
                   </div>
                   <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-gray-500">
