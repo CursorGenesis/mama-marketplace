@@ -345,11 +345,13 @@ export default function CartPage() {
       }).catch(() => {});
     }
 
-    // Сохраняем каждый заказ в Firebase (по поставщикам)
+    // Сохраняем каждый заказ в Firebase (по поставщикам). Трекаем что прошло, что упало —
+    // иначе при частичном сбое клиент жмёт повторно и получает дубли.
     const agentRef = profile?.agentRef || localStorage.getItem('marketkg_ref') || null;
 
     const supplierChatIds = {};
-    let allSaved = true;
+    const succeeded = [];
+    const failed = [];
     for (const group of supplierGroups) {
       try {
         const result = await createOrder({
@@ -371,20 +373,22 @@ export default function CartPage() {
           agentRef,
         });
         if (result?.supplierChatId) supplierChatIds[group.supplierId] = result.supplierChatId;
+        succeeded.push(group);
       } catch (e) {
         console.error('Order save error:', e);
-        allSaved = false;
+        failed.push(group);
       }
     }
 
-    if (!allSaved) {
-      toast.error(lang === 'kg' ? 'Кээ бир заказдар сакталган жок, кайра аракет кылыңыз' : 'Некоторые заказы не сохранились, попробуйте ещё раз');
+    // Всё упало — ничего не трогаем, корзина остаётся
+    if (succeeded.length === 0) {
+      toast.error(lang === 'kg' ? 'Заказдар сакталган жок, кайра аракет кылыңыз' : 'Заказы не сохранились, попробуйте ещё раз');
       setSubmitting({});
       return;
     }
 
-    // Telegram уведомления + Google Sheets
-    for (const group of supplierGroups) {
+    // Уведомления только по успешным
+    for (const group of succeeded) {
       sendTelegramNotification('new_order', {
         orderNumber: receipt.orderNumber,
         supplierName: group.supplierName,
@@ -402,15 +406,38 @@ export default function CartPage() {
       }).catch(() => {});
     }
 
-    // Сохраняем заказ в историю для умных рекомендаций
-    saveOrderToHistory(items);
+    // Удаляем из корзины только товары успешных заказов — не все сразу
+    const succeededSupplierIds = new Set(succeeded.map(g => g.supplierId));
+    const soldItems = items.filter(i => succeededSupplierIds.has(i.supplierId));
+    soldItems.forEach(item => removeItem(item.id));
+    saveOrderToHistory(soldItems);
 
-    const names = supplierGroups.map(g => g.supplierName);
-    setOrderReceipt(receipt);
-    clearCart();
-    setSentSuppliers(names);
+    if (failed.length > 0) {
+      // Часть упала — показываем конкретику, клиент видит что осталось в корзине
+      const failedNames = failed.map(g => g.supplierName).join(', ');
+      toast.error(lang === 'kg'
+        ? `${succeeded.length} жиберилди, ${failed.length} жиберилген жок: ${failedNames}. Кайра аракет кылыңыз.`
+        : `Отправлено ${succeeded.length}, не удалось ${failed.length}: ${failedNames}. Попробуйте ещё раз.`);
+      setSubmitting({});
+      return;
+    }
+
+    // Все успешно — показываем чек
+    const successReceipt = {
+      ...receipt,
+      suppliers: succeeded.map(g => ({
+        name: g.supplierName,
+        items: g.items.map(item => ({
+          name: item.name, quantity: item.quantity, price: item.price,
+          unit: item.unit || 'шт', total: item.price * item.quantity,
+        })),
+        subtotal: g.total,
+      })),
+    };
+    setOrderReceipt(successReceipt);
+    setSentSuppliers(succeeded.map(g => g.supplierName));
     setSubmitting({});
-    toast.success(`Заявки отправлены ${names.length} поставщикам!`);
+    toast.success(`${lang === 'kg' ? 'Заявкалар жиберилди' : 'Заявки отправлены'}: ${succeeded.length}`);
   };
 
   // Экран чека после отправки

@@ -310,7 +310,7 @@ ${target.map((order, idx) => {
               </div>
 
               {/* Кнопки действий */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {order.status === 'new' && (
                   <button onClick={() => handleStatusChange(order.id, 'packed', order)}
                     className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-semibold hover:bg-yellow-600 transition-colors">
@@ -322,6 +322,22 @@ ${target.map((order, idx) => {
                     className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors">
                     <Truck size={16} /> {isRu ? 'В доставке' : 'Жеткирүүдө'}
                   </button>
+                )}
+                {order.status === 'delivering' && (
+                  <>
+                    <button onClick={() => handleStatusChange(order.id, 'received', order)}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">
+                      <CheckCircle size={16} /> {isRu ? 'Получено' : 'Алынды'}
+                    </button>
+                    <button onClick={() => {
+                      if (confirm(isRu ? 'Клиент отказался от заказа? Это отменит начисление комиссий и монеток.' : 'Кардар заказдан баш тартабы? Бул комиссияларды жокко чыгарат.')) {
+                        handleStatusChange(order.id, 'not_received', order);
+                      }
+                    }}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 border border-red-200 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors">
+                      {isRu ? 'Не получено' : 'Алынган жок'}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
