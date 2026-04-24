@@ -82,15 +82,19 @@ export default function SupplierOrdersPage() {
 
   // Печать накладных
   const printInvoices = () => {
-    const toPrint = filtered.filter(o => o.status === 'packed' || (filter === 'all' && o.status === 'packed'));
     const target = filter === 'packed' ? filtered : orders.filter(o => o.status === 'packed');
     if (target.length === 0) {
       toast.error(isRu ? 'Нет собранных заказов для печати' : 'Басып чыгаруу үчүн чогултулган заказдар жок');
       return;
     }
 
+    // Экранируем HTML в пользовательских данных — защита от XSS через имя клиента / товар.
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+
     const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>${isRu ? 'Накладные' : 'Жүк каттар'}</title>
+<html><head><meta charset="utf-8"><title>${esc(isRu ? 'Накладные' : 'Жүк каттар')}</title>
 <style>
   body { font-family: Arial, sans-serif; font-size: 12px; }
   .invoice { page-break-after: always; padding: 20px; }
@@ -104,34 +108,34 @@ export default function SupplierOrdersPage() {
   .footer { margin-top: 30px; display: flex; justify-content: space-between; }
   .sign { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; font-size: 11px; }
 </style></head><body>
-${target.map((order, idx) => {
+${target.map((order) => {
       const date = order.createdAt?.toDate
         ? order.createdAt.toDate().toLocaleDateString('ru-RU')
         : new Date().toLocaleDateString('ru-RU');
       const num = order.id.slice(0, 8).toUpperCase();
       return `<div class="invoice">
-  <h2>${isRu ? 'Накладная' : 'Жүк кат'} №${num}</h2>
+  <h2>${esc(isRu ? 'Накладная' : 'Жүк кат')} №${esc(num)}</h2>
   <div class="info">
-    <div>${isRu ? 'Дата' : 'Дата'}: ${date}</div>
-    <div>${isRu ? 'Покупатель' : 'Сатып алуучу'}: ${order.buyerName || '—'}</div>
-    <div>${isRu ? 'Телефон' : 'Телефон'}: ${order.buyerPhone || '—'}</div>
-    <div>${isRu ? 'Адрес' : 'Дарек'}: ${order.buyerAddress || order.address || '—'}</div>
+    <div>${esc(isRu ? 'Дата' : 'Дата')}: ${esc(date)}</div>
+    <div>${esc(isRu ? 'Покупатель' : 'Сатып алуучу')}: ${esc(order.buyerName || '—')}</div>
+    <div>${esc(isRu ? 'Телефон' : 'Телефон')}: ${esc(order.buyerPhone || '—')}</div>
+    <div>${esc(isRu ? 'Адрес' : 'Дарек')}: ${esc(order.buyerAddress || order.address || '—')}</div>
   </div>
   <table>
     <thead><tr>
-      <th>№</th><th>${isRu ? 'Наименование' : 'Аталышы'}</th><th>${isRu ? 'Ед.' : 'Бир.'}</th>
-      <th>${isRu ? 'Кол-во' : 'Саны'}</th><th>${isRu ? 'Цена' : 'Баа'}</th><th>${isRu ? 'Сумма' : 'Сумма'}</th>
+      <th>№</th><th>${esc(isRu ? 'Наименование' : 'Аталышы')}</th><th>${esc(isRu ? 'Ед.' : 'Бир.')}</th>
+      <th>${esc(isRu ? 'Кол-во' : 'Саны')}</th><th>${esc(isRu ? 'Цена' : 'Баа')}</th><th>${esc(isRu ? 'Сумма' : 'Сумма')}</th>
     </tr></thead>
     <tbody>${(order.items || []).map((item, i) =>
-      `<tr><td>${i + 1}</td><td>${item.name}</td><td>${item.unit || 'шт'}</td>
-      <td>${item.quantity}</td><td>${Number(item.price).toLocaleString('ru-RU')}</td>
-      <td>${(item.price * item.quantity).toLocaleString('ru-RU')}</td></tr>`
+      `<tr><td>${i + 1}</td><td>${esc(item.name)}</td><td>${esc(item.unit || 'шт')}</td>
+      <td>${esc(item.quantity)}</td><td>${esc(Number(item.price).toLocaleString('ru-RU'))}</td>
+      <td>${esc((item.price * item.quantity).toLocaleString('ru-RU'))}</td></tr>`
     ).join('')}</tbody>
   </table>
-  <div class="total">${isRu ? 'Итого' : 'Жалпы'}: ${order.total?.toLocaleString('ru-RU')} сом</div>
+  <div class="total">${esc(isRu ? 'Итого' : 'Жалпы')}: ${esc(order.total?.toLocaleString('ru-RU'))} сом</div>
   <div class="footer">
-    <div class="sign">${isRu ? 'Отпустил' : 'Берген'}</div>
-    <div class="sign">${isRu ? 'Получил' : 'Алган'}</div>
+    <div class="sign">${esc(isRu ? 'Отпустил' : 'Берген')}</div>
+    <div class="sign">${esc(isRu ? 'Получил' : 'Алган')}</div>
   </div>
 </div>`;
     }).join('')}

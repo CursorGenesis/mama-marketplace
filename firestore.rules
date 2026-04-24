@@ -29,11 +29,23 @@ service cloud.firestore {
       allow read:   if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow create: if request.auth != null && request.auth.uid == userId
                        && request.resource.data.role in ['buyer', 'supplier', 'agent', 'driver'];
+      // Правила update:
+      //  1. Админ — может всё.
+      //  2. Сам пользователь — свой профиль, но НЕ может менять роль.
+      //  3. Любой авторизованный — ТОЛЬКО финансовые поля (coins/earnings) и ТОЛЬКО с лимитом:
+      //     +/- 500 coins за раз (= один крупный заказ на 250 000 сом), +/- 100 000 сом earnings.
+      //     Это временное ослабление для клиентской логики updateOrderStatus.
+      //     Атака всё ещё возможна циклом, но замедлена в сотни раз и отследима в логах Firebase.
+      //     Полное решение — перенос в Cloud Functions (см. техдолг).
       allow update: if isAdmin()
         || (request.auth != null && request.auth.uid == userId
             && !changedKeys().hasAny(['role']))
         || (request.auth != null
-            && changedKeys().hasOnly(['coins', 'earnings', 'totalOrders', 'coinStatus']));
+            && changedKeys().hasOnly(['coins', 'earnings', 'totalOrders', 'coinStatus'])
+            && request.resource.data.get('coins', 0) - resource.data.get('coins', 0) >= -500
+            && request.resource.data.get('coins', 0) - resource.data.get('coins', 0) <= 500
+            && request.resource.data.get('earnings', 0) - resource.data.get('earnings', 0) >= -100000
+            && request.resource.data.get('earnings', 0) - resource.data.get('earnings', 0) <= 100000);
     }
 
     // =========================
@@ -49,10 +61,18 @@ service cloud.firestore {
     match /suppliers/{supplierId} {
       allow read:   if true;
       allow create: if request.auth != null;
+      // Правила update:
+      //  1. Админ — может всё.
+      //  2. Владелец поставщика (email совпадает) — всё кроме финансовых полей.
+      //  3. Любой авторизованный — ТОЛЬКО поле balance и ТОЛЬКО с лимитом +/- 1 млн сом за раз.
+      //     Это для клиентской логики deductFromBalance/addToBalance (комиссия при заказе).
+      //     Полное решение — перенос в Cloud Functions (см. техдолг).
       allow update: if isAdmin()
         || (resource.data.email == request.auth.token.email
             && !changedKeys().hasAny(['balance', 'deposit', 'commissionRate', 'blocked']))
-        || changedKeys().hasOnly(['balance']);
+        || (changedKeys().hasOnly(['balance'])
+            && request.resource.data.get('balance', 0) - resource.data.get('balance', 0) >= -1000000
+            && request.resource.data.get('balance', 0) - resource.data.get('balance', 0) <= 1000000);
       allow delete: if isAdmin();
 
       // Отзывы — читать все, создавать авторизованные

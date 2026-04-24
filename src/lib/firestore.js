@@ -487,57 +487,10 @@ export async function createOrder(data) {
     }
   }
 
-  // Начисляем монетки клиенту (1 монетка за каждые 500 сом)
-  if (data.buyerId && data.totalPrice) {
-    try {
-      const coins = Math.floor(data.totalPrice / 500);
-      if (coins > 0) {
-        const buyerRef = doc(db, 'users', data.buyerId);
-        await runTransaction(db, async (transaction) => {
-          const buyerSnap = await transaction.get(buyerRef);
-          const currentCoins = buyerSnap.exists() ? (buyerSnap.data().coins || 0) : 0;
-          const totalOrders = buyerSnap.exists() ? (buyerSnap.data().totalOrders || 0) : 0;
-          const newCoins = currentCoins + coins;
-          // Статус: bronze < 20, silver < 50, gold >= 50
-          const status = newCoins >= 50 ? 'gold' : newCoins >= 20 ? 'silver' : 'bronze';
-          transaction.update(buyerRef, {
-            coins: newCoins,
-            coinStatus: status,
-            totalOrders: totalOrders + 1,
-          });
-        });
-      }
-    } catch (e) {
-      console.error('Coins error:', e);
-    }
-  }
-
-  // Начисляем агенту комиссию 1% если клиент пришёл по реферальной ссылке
-  if (data.agentRef && data.totalPrice) {
-    try {
-      const agentCommission = Math.ceil(data.totalPrice * 0.01);
-      // Ищем агента по коду
-      const agentQuery = query(collection(db, 'users'), where('role', '==', 'agent'));
-      const agentSnap = await getDocs(agentQuery);
-      const agent = agentSnap.docs.find(d => {
-        const uid = d.id;
-        const code = 'AGT-' + uid.slice(0, 4).toUpperCase();
-        return code === data.agentRef;
-      });
-      if (agent) {
-        const agentRef = doc(db, 'users', agent.id);
-        await runTransaction(db, async (transaction) => {
-          const snap = await transaction.get(agentRef);
-          const currentEarnings = snap.exists() ? (snap.data().earnings || 0) : 0;
-          transaction.update(agentRef, {
-            earnings: currentEarnings + agentCommission,
-          });
-        });
-      }
-    } catch (e) {
-      console.error('Agent commission error:', e);
-    }
-  }
+  // Монетки клиенту и комиссия агенту НЕ начисляются при создании заказа.
+  // Они начисляются только после подтверждения получения заказа (status='received')
+  // в функции updateOrderStatus — чтобы не платить за отменённые заказы.
+  // Реальная сумма монеток и комиссии агента рассчитывается там же на основе order.totalPrice.
 
   return { orderRef, supplierChatId };
 }
@@ -557,21 +510,69 @@ export async function getOrders(filters = {}) {
 }
 
 export async function updateOrderStatus(id, status, agentId = null) {
-  const data = { status };
-  if (agentId) data.agentId = agentId;
-  await updateDoc(doc(db, 'orders', id), data);
+  // Читаем заказ ДО смены статуса — чтобы все начисления/откаты прошли на правильных данных
+  const orderSnap = await getDoc(doc(db, 'orders', id));
+  if (!orderSnap.exists()) {
+    throw new Error('Order not found');
+  }
+  const order = orderSnap.data();
+  const totalPrice = Number(order.totalPrice || order.total || 0);
 
-  // При возврате (not_received) — откатываем комиссию агента, монетки покупателя, комиссию поставщика
+  // =============================================
+  // НАЧИСЛЕНИЯ при подтверждении получения
+  // =============================================
+  if (status === 'received' && !order.coinsAwarded && totalPrice > 0) {
+    // Монетки клиенту — начисляются ТОЛЬКО после подтверждения получения
+    if (order.buyerId) {
+      try {
+        const coins = Math.floor(totalPrice / 500);
+        if (coins > 0) {
+          const buyerRef = doc(db, 'users', order.buyerId);
+          await runTransaction(db, async (transaction) => {
+            const snap = await transaction.get(buyerRef);
+            if (!snap.exists()) return;
+            const currentCoins = snap.data().coins || 0;
+            const totalOrders = snap.data().totalOrders || 0;
+            const newCoins = currentCoins + coins;
+            const coinStatus = newCoins >= 50 ? 'gold' : newCoins >= 20 ? 'silver' : 'bronze';
+            transaction.update(buyerRef, {
+              coins: newCoins,
+              coinStatus,
+              totalOrders: totalOrders + 1,
+            });
+          });
+        }
+      } catch (e) {
+        console.warn('Coins award failed:', e.code || e.message);
+      }
+    }
+    // Комиссия агента начисляется админским batch-процессом (см. project_pending_bugfixes.md пакет D).
+    // Здесь только помечаем что заказ требует начисления.
+  }
+
+  // =============================================
+  // ОТКАТ при отказе (not_received)
+  // Важно: сначала делаем возвраты, потом меняем статус, чтобы при сбое статус НЕ изменился
+  // =============================================
   if (status === 'not_received') {
-    try {
-      const orderSnap = await getDoc(doc(db, 'orders', id));
-      if (!orderSnap.exists()) return;
-      const order = orderSnap.data();
-      const totalPrice = Number(order.totalPrice || order.total || 0);
-      if (totalPrice <= 0) return;
+    // 1. Возврат комиссии поставщику — используем commission из заказа (а не пересчёт!)
+    if (order.supplierId && order.commission && order.commission > 0) {
+      try {
+        await addToBalance(
+          order.supplierId,
+          order.commission,
+          `Возврат комиссии за отменённый заказ #${id.slice(0, 6)}`,
+          'refund'
+        );
+      } catch (e) {
+        console.warn('Supplier refund failed:', e.code || e.message);
+        throw new Error('Не удалось вернуть комиссию поставщику — статус не изменён');
+      }
+    }
 
-      // 1. Откат монеток покупателя
-      if (order.buyerId) {
+    // 2. Откат монеток клиента — только если они были начислены (coinsAwarded)
+    if (order.buyerId && order.coinsAwarded) {
+      try {
         const coins = Math.floor(totalPrice / 500);
         if (coins > 0) {
           const buyerRef = doc(db, 'users', order.buyerId);
@@ -584,52 +585,24 @@ export async function updateOrderStatus(id, status, agentId = null) {
             transaction.update(buyerRef, { coins: newCoins, coinStatus });
           });
         }
+      } catch (e) {
+        console.warn('Coins refund failed:', e.code || e.message);
       }
-
-      // 2. Откат комиссии агента (1%)
-      if (order.agentRef) {
-        const agentCommission = Math.ceil(totalPrice * 0.01);
-        const agentQuery = query(collection(db, 'users'), where('role', '==', 'agent'));
-        const agentSnap = await getDocs(agentQuery);
-        const agent = agentSnap.docs.find(d => {
-          const code = 'AGT-' + d.id.slice(0, 4).toUpperCase();
-          return code === order.agentRef;
-        });
-        if (agent) {
-          const agentDocRef = doc(db, 'users', agent.id);
-          await runTransaction(db, async (transaction) => {
-            const snap = await transaction.get(agentDocRef);
-            if (!snap.exists()) return;
-            const currentEarnings = snap.data().earnings || 0;
-            transaction.update(agentDocRef, {
-              earnings: Math.max(0, currentEarnings - agentCommission),
-            });
-          });
-        }
-      }
-
-      // 3. Возврат комиссии 5% поставщику
-      if (order.supplierId) {
-        const supplierRef = doc(db, 'suppliers', order.supplierId);
-        const supplierSnap = await getDoc(supplierRef);
-        if (supplierSnap.exists()) {
-          const commissionRate = supplierSnap.data().commissionRate || 0.05;
-          const commission = Math.ceil(totalPrice * commissionRate);
-          await runTransaction(db, async (transaction) => {
-            const snap = await transaction.get(supplierRef);
-            if (!snap.exists()) return;
-            const currentBalance = snap.data().balance || 0;
-            transaction.update(supplierRef, { balance: currentBalance + commission });
-          });
-        }
-      }
-
-      // Помечаем заказ как возвращённый
-      await updateDoc(doc(db, 'orders', id), { refunded: true, refundedAt: new Date() });
-    } catch (e) {
-      console.error('Refund rollback error:', e);
     }
+    // Откат комиссии агенту делается админским batch-процессом (см. пакет D).
   }
+
+  // =============================================
+  // Смена статуса — ТОЛЬКО если все финансовые операции прошли
+  // =============================================
+  const updateData = { status };
+  if (agentId) updateData.agentId = agentId;
+  if (status === 'received') updateData.coinsAwarded = true;
+  if (status === 'not_received') {
+    updateData.refunded = true;
+    updateData.refundedAt = new Date();
+  }
+  await updateDoc(doc(db, 'orders', id), updateData);
 }
 
 // =============================================

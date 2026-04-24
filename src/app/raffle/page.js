@@ -43,13 +43,15 @@ export default function RafflePage() {
   const [showRules, setShowRules] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
+  // Дата следующего квартального розыгрыша — ОДНА для всех клиентов, не «+45 дней от визита».
+  // Меняется админом раз в квартал в коде (или в будущем через админку).
+  const RAFFLE_DATE = new Date('2026-06-30T20:00:00+06:00');
+
   useEffect(() => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 45);
     const timer = setInterval(() => {
       const now = new Date();
-      const diff = targetDate - now;
-      if (diff <= 0) { clearInterval(timer); return; }
+      const diff = RAFFLE_DATE - now;
+      if (diff <= 0) { clearInterval(timer); setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return; }
       setTimeLeft({
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
