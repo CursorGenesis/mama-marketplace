@@ -496,7 +496,7 @@ const MockCoins = (isRu) => (
       <div className="text-amber-800 font-semibold">{isRu ? 'Ваш баланс' : 'Балансыңыз'}</div>
       <div className="text-2xl font-bold text-amber-600">15 🪙</div>
     </div>
-    <div className="text-[10px] text-gray-500">{isRu ? 'Розыгрыш iPhone через 30 дней!' : 'iPhone розыгрышы 30 күндөн кийин!'}</div>
+    <div className="text-[10px] text-gray-500">{isRu ? 'Розыгрыш скидок через 30 дней!' : 'Арзандатуу розыгрышы 30 күндөн кийин!'}</div>
   </div>
 );
 

@@ -8,11 +8,10 @@ const DEMO_COINS = 23;
 const DEMO_STATUS = 'silver';
 
 const PRIZES = [
-  { id: 1, name: 'iPhone 17', nameKg: 'iPhone 17', icon: '📱', quantity: 1, tier: 'grand', description: 'Гран-при розыгрыша', descriptionKg: 'Розыгрыштын гран-приси' },
-  { id: 2, name: 'Наушники беспроводные', nameKg: 'Зымсыз кулакчындар', icon: '🎧', quantity: 10, tier: 'main', description: 'JBL / Samsung', descriptionKg: 'JBL / Samsung' },
-  { id: 3, name: 'Повербанк 20 000 mAh', nameKg: 'Повербанк 20 000 mAh', icon: '🔋', quantity: 15, tier: 'main', description: 'Быстрая зарядка', descriptionKg: 'Тез кубаттоо' },
-  { id: 4, name: 'Термокружка + ежедневник', nameKg: 'Термокружка + күндөлүк', icon: '☕', quantity: 20, tier: 'bonus', description: 'Брендированный набор Arzaman.kg', descriptionKg: 'Arzaman.kg бренддик набор' },
-  { id: 5, name: 'Флешка 64 ГБ', nameKg: 'Флешка 64 ГБ', icon: '💾', quantity: 20, tier: 'bonus', description: 'USB 3.0', descriptionKg: 'USB 3.0' },
+  { id: 1, name: 'Скидка 10% на 3 месяца', nameKg: '3 айга 10% арзандатуу', icon: '🎁', quantity: 1, tier: 'grand', description: 'До 20 000 сом скидки • макс 2 000 сом за заказ', descriptionKg: '20 000 сомго чейин • ар бир заказда 2 000 сомго чейин' },
+  { id: 2, name: 'Скидка 10% на 1 месяц', nameKg: '1 айга 10% арзандатуу', icon: '💸', quantity: 3, tier: 'main', description: 'До 5 000 сом скидки', descriptionKg: '5 000 сомго чейин арзандатуу' },
+  { id: 3, name: 'Бонус 2 000 сом на заказ', nameKg: '2 000 сом заказ бонусу', icon: '🪙', quantity: 5, tier: 'main', description: 'Единоразовая скидка на следующий заказ', descriptionKg: 'Кийинки заказга бир жолку арзандатуу' },
+  { id: 4, name: 'Бонус 500 сом на заказ', nameKg: '500 сом заказ бонусу', icon: '🎟️', quantity: 10, tier: 'bonus', description: 'Единоразовая скидка на следующий заказ', descriptionKg: 'Кийинки заказга бир жолку арзандатуу' },
 ];
 
 const EARN_RULES = [
@@ -28,11 +27,11 @@ const EARN_RULES = [
 ];
 
 const DEMO_WINNERS = [
-  { name: 'Мини-маркет "Алтын"', city: 'Бишкек', prize: 'iPhone 16', prizeIcon: '📱', date: '2026-01' },
-  { name: 'Магазин "Береке"', city: 'Ош', prize: 'Наушники JBL', prizeIcon: '🎧', date: '2026-01' },
-  { name: 'Кафе "Достук"', city: 'Бишкек', prize: 'Повербанк', prizeIcon: '🔋', date: '2026-01' },
-  { name: 'Супермаркет "Народный"', city: 'Каракол', prize: 'Термокружка', prizeIcon: '☕', date: '2026-01' },
-  { name: 'Мини-маркет "Айжан"', city: 'Бишкек', prize: 'Флешка 64 ГБ', prizeIcon: '💾', date: '2026-01' },
+  { name: 'Мини-маркет "Алтын"', city: 'Бишкек', prize: 'Скидка 10% на 3 месяца', prizeIcon: '🎁', date: '2026-01' },
+  { name: 'Магазин "Береке"', city: 'Ош', prize: 'Скидка 10% на 1 месяц', prizeIcon: '💸', date: '2026-01' },
+  { name: 'Кафе "Достук"', city: 'Бишкек', prize: 'Бонус 2 000 сом', prizeIcon: '🪙', date: '2026-01' },
+  { name: 'Супермаркет "Народный"', city: 'Каракол', prize: 'Бонус 500 сом', prizeIcon: '🎟️', date: '2026-01' },
+  { name: 'Мини-маркет "Айжан"', city: 'Бишкек', prize: 'Бонус 500 сом', prizeIcon: '🎟️', date: '2026-01' },
 ];
 
 export default function RafflePage() {
@@ -73,8 +72,8 @@ export default function RafflePage() {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium mb-4">
           <Gift size={16} /> {isRu ? 'Акция' : 'Акция'}
         </div>
-        <h1 className="text-3xl font-bold mb-2">{isRu ? 'Собери монетки — выиграй iPhone!' : 'Монеталарды чогулт — iPhone ут!'}</h1>
-        <p className="text-gray-500">{isRu ? 'Заказывайте, копите монетки и участвуйте в розыгрыше призов' : 'Заказ кылыңыз, монета чогултуңуз жана розыгрышка катышыңыз'}</p>
+        <h1 className="text-3xl font-bold mb-2">{isRu ? 'Собери монетки — выиграй скидки!' : 'Монеталарды чогулт — арзандатуу ут!'}</h1>
+        <p className="text-gray-500">{isRu ? 'Заказывайте, копите монетки и участвуйте в розыгрыше скидок на будущие заказы' : 'Заказ кылыңыз, монета чогултуңуз жана келечектеги заказдарга арзандатуу розыгрышына катышыңыз'}</p>
       </div>
 
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white text-center mb-6">
@@ -92,7 +91,7 @@ export default function RafflePage() {
             </div>
           ))}
         </div>
-        <p className="text-xs opacity-60 mt-3">{isRu ? 'Розыгрыш раз в 3 месяца • 66 победителей' : 'Розыгрыш 3 айда 1 жолу • 66 жеңүүчү'}</p>
+        <p className="text-xs opacity-60 mt-3">{isRu ? 'Розыгрыш раз в 3 месяца • 19 победителей' : 'Розыгрыш 3 айда 1 жолу • 19 жеңүүчү'}</p>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
