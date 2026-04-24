@@ -5,7 +5,9 @@ import { getOrders, getSuppliers, getProducts } from '@/lib/firestore';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
 import { useRouter } from 'next/navigation';
-import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
+import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award, CheckCircle2, AlertTriangle, XOctagon, FileSpreadsheet } from 'lucide-react';
+
+const ADMIN_SHEET_URL = process.env.NEXT_PUBLIC_ADMIN_SHEET_URL;
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
@@ -69,8 +71,18 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2">Админ-панель (CRM)</h1>
-      <p className="text-gray-500 mb-6 text-sm">Автопилот: система сама ведёт заказы. Вы — только когда проблема.</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Админ-панель (CRM)</h1>
+          <p className="text-gray-500 text-sm">Автопилот: система сама ведёт заказы. Вы — только когда проблема.</p>
+        </div>
+        {ADMIN_SHEET_URL && (
+          <a href={ADMIN_SHEET_URL} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors shadow-sm">
+            <FileSpreadsheet size={18} /> Таблица учёта
+          </a>
+        )}
+      </div>
 
       {/* Дашборд «3 колонки» */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
