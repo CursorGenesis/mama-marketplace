@@ -19,11 +19,14 @@ const EARN_RULES = [
   { action: 'Первый заказ на платформе', actionKg: 'Платформадагы биринчи заказ', coins: '+5', icon: '🎉' },
   { action: '5-й заказ', actionKg: '5-заказ', coins: '+3', icon: '⭐' },
   { action: '10-й заказ', actionKg: '10-заказ', coins: '+5', icon: '🏆' },
-  { action: 'Приглашение магазина (проверенного)', actionKg: 'Дүкөн чакыруу (текшерилген)', coins: '+10', icon: '🤝' },
   { action: 'Заказы 4 недели подряд', actionKg: '4 жума катары менен заказ', coins: 'x2 на неделю', icon: '🔥' },
-  { action: 'План 50 000 сом/мес', actionKg: 'План 50 000 сом/ай', coins: '+15', icon: '📊' },
-  { action: 'План 100 000 сом/мес', actionKg: 'План 100 000 сом/ай', coins: '+30', icon: '📈' },
-  { action: 'План 200 000 сом/мес', actionKg: 'План 200 000 сом/ай', coins: '+50 + Золото', icon: '👑' },
+];
+
+const TICKET_TIERS = [
+  { min: 100, max: 299, tickets: 1, orderAmount: '50 000 сом/мес', orderAmountKg: '50 000 сом/ай' },
+  { min: 300, max: 499, tickets: 3, orderAmount: '150 000 сом/мес', orderAmountKg: '150 000 сом/ай' },
+  { min: 500, max: 999, tickets: 5, orderAmount: '250 000 сом/мес', orderAmountKg: '250 000 сом/ай' },
+  { min: 1000, max: null, tickets: 10, orderAmount: '500 000+ сом/мес', orderAmountKg: '500 000+ сом/ай' },
 ];
 
 const DEMO_WINNERS = [
@@ -103,7 +106,11 @@ export default function RafflePage() {
         </div>
         <div className="flex items-center gap-4 mb-3">
           <div className="text-4xl font-bold text-yellow-500">{DEMO_COINS}</div>
-          <div className="text-sm text-gray-500">{isRu ? 'монеток = шансов в розыгрыше' : 'монета = розыгрыштагы мүмкүнчүлүк'}</div>
+          <div className="text-sm text-gray-500">
+            {DEMO_COINS >= 100
+              ? (isRu ? `монеток за этот месяц → ${DEMO_COINS >= 1000 ? 10 : DEMO_COINS >= 500 ? 5 : DEMO_COINS >= 300 ? 3 : 1} билетов в розыгрыше 🎫` : `бул айдагы монета → ${DEMO_COINS >= 1000 ? 10 : DEMO_COINS >= 500 ? 5 : DEMO_COINS >= 300 ? 3 : 1} билет`)
+              : (isRu ? `монеток за этот месяц. До участия ещё ${100 - DEMO_COINS}` : `бул айдагы монета. Катышууга дагы ${100 - DEMO_COINS}`)}
+          </div>
         </div>
         {nextStatus && (
           <div>
@@ -117,6 +124,44 @@ export default function RafflePage() {
             <p className="text-xs text-gray-400 mt-1">{isRu ? `Ещё ${status.next - DEMO_COINS} до ${nextStatus.label}` : `${nextStatus.label} үчүн дагы ${status.next - DEMO_COINS}`}</p>
           </div>
         )}
+      </div>
+
+      {/* Градация билетов — чем больше монеток в месяц, тем больше билетов в розыгрыше */}
+      <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
+        <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          🎫 {isRu ? 'Шкала билетов' : 'Билет шкаласы'}
+        </h2>
+        <p className="text-xs text-gray-500 mb-4">
+          {isRu
+            ? 'Чем больше монеток за месяц — тем больше билетов. Билеты за 3 месяца суммируются и участвуют в розыгрыше.'
+            : 'Ар бир айда канча көп монета — ошончо көп билет. 3 айдын билеттери кошулуп, розыгрышка катышат.'}
+        </p>
+        <div className="space-y-2">
+          {TICKET_TIERS.map((tier, i) => {
+            const inTier = DEMO_COINS >= tier.min && (tier.max === null || DEMO_COINS <= tier.max);
+            return (
+              <div key={i} className={`flex items-center justify-between p-3 rounded-xl border-2 transition-colors ${inTier ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-transparent'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`text-2xl font-bold ${inTier ? 'text-yellow-600' : 'text-gray-400'}`}>
+                    {tier.min}{tier.max ? `-${tier.max}` : '+'}
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-700">{isRu ? 'монеток/мес' : 'монета/ай'}</div>
+                    <div className="text-xs text-gray-400">{isRu ? tier.orderAmount : tier.orderAmountKg}</div>
+                  </div>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-sm font-bold ${inTier ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  {tier.tickets} 🎫
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3 p-3 bg-blue-50 rounded-xl text-xs text-blue-700">
+          💡 {isRu
+            ? 'Пример: 200 монеток в январе (1 билет) + 400 в феврале (3 билета) + 600 в марте (5 билетов) = 9 билетов в квартальном розыгрыше.'
+            : 'Мисал: январда 200 монета (1 билет) + февралда 400 (3 билет) + мартта 600 (5 билет) = 9 билет.'}
+        </div>
       </div>
 
       <div className="mb-6">
@@ -231,7 +276,7 @@ export default function RafflePage() {
         <Link href="/catalog" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg">
           🛒 {isRu ? 'Заказать и получить монетки' : 'Заказ кылуу жана монета алуу'}
         </Link>
-        <p className="text-xs text-gray-400 mt-3">{isRu ? 'Минимум 10 монеток для участия в розыгрыше' : 'Розыгрышка катышуу үчүн кеминде 10 монета'}</p>
+        <p className="text-xs text-gray-400 mt-3">{isRu ? 'Минимум 100 монеток за месяц для участия в розыгрыше' : 'Розыгрышка катышуу үчүн ар бир айда 100 монета'}</p>
       </div>
     </div>
   );
