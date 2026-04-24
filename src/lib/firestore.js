@@ -512,10 +512,10 @@ export async function createOrder(data) {
     }
   }
 
-  // Начисляем агенту комиссию 2% если клиент пришёл по реферальной ссылке
+  // Начисляем агенту комиссию 1% если клиент пришёл по реферальной ссылке
   if (data.agentRef && data.totalPrice) {
     try {
-      const agentCommission = Math.ceil(data.totalPrice * 0.02);
+      const agentCommission = Math.ceil(data.totalPrice * 0.01);
       // Ищем агента по коду
       const agentQuery = query(collection(db, 'users'), where('role', '==', 'agent'));
       const agentSnap = await getDocs(agentQuery);
@@ -586,9 +586,9 @@ export async function updateOrderStatus(id, status, agentId = null) {
         }
       }
 
-      // 2. Откат комиссии агента (2%)
+      // 2. Откат комиссии агента (1%)
       if (order.agentRef) {
-        const agentCommission = Math.ceil(totalPrice * 0.02);
+        const agentCommission = Math.ceil(totalPrice * 0.01);
         const agentQuery = query(collection(db, 'users'), where('role', '==', 'agent'));
         const agentSnap = await getDocs(agentQuery);
         const agent = agentSnap.docs.find(d => {

@@ -572,7 +572,7 @@ const MockShops = (isRu) => (
     {['Береке', 'Ырыс', 'Достук'].map((s, i) => (
       <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-2 py-1.5">
         <span>🏪 {s}</span>
-        <span className="text-green-600 font-bold">+2%</span>
+        <span className="text-green-600 font-bold">+1%</span>
       </div>
     ))}
   </div>
@@ -716,13 +716,13 @@ const CONTENT = {
     },
     solutions: {
       ru: [
-        'Ходишь по тем же точкам — получаешь +2% сверху',
+        'Ходишь по тем же точкам — получаешь +1% сверху',
         'Работа через телефон — всё просто',
         'Без вложений, без офиса, свободный график',
         'Доход растёт пока магазины заказывают через тебя',
       ],
       kg: [
-        'Ошол эле дүкөндөргө — +2% аласыз',
+        'Ошол эле дүкөндөргө — +1% аласыз',
         'Телефон аркылуу иш — баары жөнөкөй',
         'Салымсыз, офисcиз, эркин график',
         'Дүкөндөр сиз аркылуу заказ кылганча киреше өсөт',
@@ -733,19 +733,19 @@ const CONTENT = {
         { icon: '📝', title: 'Регистрация', desc: 'Укажите ИНН — нужен для выплат', mock: MockRegister },
         { icon: '🔗', title: 'Ваша ссылка', desc: 'Уникальная реферальная ссылка в кабинете', mock: MockLink },
         { icon: '🤝', title: 'Подключите магазины', desc: 'Отправляйте ссылку — магазины регистрируются через вас', mock: MockShops },
-        { icon: '🛒', title: 'Магазин заказывает', desc: 'Каждый заказ через платформу = +2% вам', mock: MockTelegram },
+        { icon: '🛒', title: 'Магазин заказывает', desc: 'Каждый заказ через платформу = +1% вам', mock: MockTelegram },
         { icon: '💰', title: 'Получайте выплаты', desc: 'Заработок копится и автоматически выплачивается', mock: MockMoney },
       ],
       kg: [
         { icon: '📝', title: 'Каттоо', desc: 'ИНН — төлөмдөр үчүн керек', mock: MockRegister },
         { icon: '🔗', title: 'Шилтемеңиз', desc: 'Уникалдуу реф шилтеме', mock: MockLink },
         { icon: '🤝', title: 'Дүкөндөрдү туташтырыңыз', desc: 'Шилтемени жөнөтүңүз', mock: MockShops },
-        { icon: '🛒', title: 'Дүкөн заказ кылат', desc: 'Ар бир заказ = +2% сизге', mock: MockTelegram },
+        { icon: '🛒', title: 'Дүкөн заказ кылат', desc: 'Ар бир заказ = +1% сизге', mock: MockTelegram },
         { icon: '💰', title: 'Төлөмдөр', desc: 'Киреше чогулуп автоматтык төлөнөт', mock: MockMoney },
       ],
     },
     numbers: [
-      { value: '2%', labelRu: 'С каждого заказа', labelKg: 'Ар бир заказдан' },
+      { value: '1%', labelRu: 'С каждого заказа', labelKg: 'Ар бир заказдан' },
       { value: '0 сом', labelRu: 'Вложений', labelKg: 'Салым' },
       { value: '24/7', labelRu: 'Свой график', labelKg: 'Өз графиги' },
       { value: '∞', labelRu: 'Магазинов', labelKg: 'Дүкөндөр' },

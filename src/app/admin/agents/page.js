@@ -281,7 +281,7 @@ export default function AdminAgentsPage() {
                       ))}
                       {/* Итого по агенту */}
                       <div className="bg-green-50 rounded-lg p-3 flex justify-between text-sm font-semibold">
-                        <span className="text-green-700">{isRu ? 'Итого комиссия агента (2%)' : 'Агент комиссиясы (2%)'}</span>
+                        <span className="text-green-700">{isRu ? 'Итого комиссия агента (1%)' : 'Агент комиссиясы (1%)'}</span>
                         <span className="text-green-700">{agent.earnings.toLocaleString('ru-RU')} сом</span>
                       </div>
                     </div>

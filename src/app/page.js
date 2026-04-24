@@ -436,7 +436,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-bold mb-2">{isRu ? 'Стань агентом' : 'Агент бол'}</h3>
             <p className="text-green-100 text-sm leading-relaxed flex-1">
-              {isRu ? 'Подключайте магазины к платформе и получайте 2% с каждого заказа. Свободный график, без вложений' : 'Дүкөндөрдү платформага туташтырып, ар бир заказдан 2% алыңыз. Эркин график, салымсыз'}
+              {isRu ? 'Подключайте магазины к платформе и получайте 1% с каждого заказа. Свободный график, без вложений' : 'Дүкөндөрдү платформага туташтырып, ар бир заказдан 1% алыңыз. Эркин график, салымсыз'}
             </p>
             <Link href="/agents"
               className="inline-block px-6 py-3 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 transition-colors text-sm mt-6 text-center">

@@ -77,7 +77,7 @@ export async function sendTelegramNotification(type, data) {
     }
 
     // Сохраняем в Google Таблицу с расширенными данными
-    const agentCommission = data.agentRef ? Math.ceil(total * 0.02) : 0;
+    const agentCommission = data.agentRef ? Math.ceil(total * 0.01) : 0;
     const coins = Math.floor(total / 500);
     sendToGoogleSheet({
       type: 'order',

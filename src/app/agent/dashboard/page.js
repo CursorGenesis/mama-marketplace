@@ -40,7 +40,7 @@ function AgentDashboardContent() {
   const agentCode = user ? 'AGT-' + (user.uid || '').slice(0, 4).toUpperCase() : 'AGT-DEMO';
   const totalOrders = demoRecentOrders.length;
   const totalRevenue = demoRecentOrders.reduce((s, o) => s + o.total, 0);
-  const earnings = Math.round(totalRevenue * 0.02);
+  const earnings = Math.round(totalRevenue * 0.01);
 
   const statusLabel = (status) => {
     const map = {
