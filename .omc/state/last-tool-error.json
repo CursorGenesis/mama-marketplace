@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls \\\"c:/Users/vovas/OneDrive/Рабочий стол/mama_project/.github/workflows\\\" 2>&1; echo \\\"---\\\"; ls \\\"c:/Users/vovas/OneDrive/Рабочий стол/mama_project/.nojekyll\\\" 2>&1; ls \\\"c:/Users/vovas/...",
+  "error": "Exit code 2\n---\nls: cannot access 'c:/Users/vovas/OneDrive/Рабо�'$'\\207''ий �'$'\\201''�'$'\\202''ол/mama_project/.nojekyll': No such file or directory\nls: cannot access 'c:/Users/vovas/OneDrive/Рабо�'$'\\207''ий �'$'\\201''�'$'\\202''ол/mama_project/out/.nojekyll': No such file or directory",
+  "timestamp": "2026-04-27T12:29:37.327Z",
+  "retry_count": 1
+}
