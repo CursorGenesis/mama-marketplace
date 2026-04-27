@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useLang } from '@/context/LangContext';
-import { Gift, Trophy, Clock, Star, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Gift, Trophy, Clock, Star, Users, ChevronDown, ChevronUp, LogIn } from 'lucide-react';
 import Link from 'next/link';
 
-const DEMO_COINS = 23;
-const DEMO_STATUS = 'silver';
+// Пороги статусов — должны совпадать с логикой в src/lib/firestore.js
+const computeStatus = (coins) => coins >= 150 ? 'gold' : coins >= 50 ? 'silver' : 'bronze';
 
 const PRIZES = [
   { id: 1, name: 'Скидка 10% на 3 месяца', nameKg: '3 айга 10% арзандатуу', icon: '🎁', quantity: 1, tier: 'grand', description: 'До 20 000 сом скидки • макс 2 000 сом за заказ', descriptionKg: '20 000 сомго чейин • ар бир заказда 2 000 сомго чейин' },
@@ -14,12 +15,10 @@ const PRIZES = [
   { id: 4, name: 'Бонус 500 сом на заказ', nameKg: '500 сом заказ бонусу', icon: '🎟️', quantity: 10, tier: 'bonus', description: 'Единоразовая скидка на следующий заказ', descriptionKg: 'Кийинки заказга бир жолку арзандатуу' },
 ];
 
+// Правила начисления — должны точно соответствовать коду в src/lib/firestore.js (updateOrderStatus → 'received').
+// Ничего не выдумывать: пользователь увидит обещание — система обязана его выполнить.
 const EARN_RULES = [
-  { action: 'Каждые 500 сом в заказе', actionKg: 'Заказдагы ар бир 500 сом', coins: '+1', icon: '🛒' },
-  { action: 'Первый заказ на платформе', actionKg: 'Платформадагы биринчи заказ', coins: '+5', icon: '🎉' },
-  { action: '5-й заказ', actionKg: '5-заказ', coins: '+3', icon: '⭐' },
-  { action: '10-й заказ', actionKg: '10-заказ', coins: '+5', icon: '🏆' },
-  { action: 'Заказы 4 недели подряд', actionKg: '4 жума катары менен заказ', coins: 'x2 на неделю', icon: '🔥' },
+  { action: 'Каждые 500 сом в заказе (после получения)', actionKg: 'Заказдагы ар бир 500 сом (алгандан кийин)', coins: '+1', icon: '🛒' },
 ];
 
 const TICKET_TIERS = [
@@ -29,19 +28,16 @@ const TICKET_TIERS = [
   { min: 1000, max: null, tickets: 10, orderAmount: '500 000+ сом/мес', orderAmountKg: '500 000+ сом/ай' },
 ];
 
-const DEMO_WINNERS = [
-  { name: 'Мини-маркет "Алтын"', city: 'Бишкек', prize: 'Скидка 10% на 3 месяца', prizeIcon: '🎁', date: '2026-01' },
-  { name: 'Магазин "Береке"', city: 'Ош', prize: 'Скидка 10% на 1 месяц', prizeIcon: '💸', date: '2026-01' },
-  { name: 'Кафе "Достук"', city: 'Бишкек', prize: 'Бонус 2 000 сом', prizeIcon: '🪙', date: '2026-01' },
-  { name: 'Супермаркет "Народный"', city: 'Каракол', prize: 'Бонус 500 сом', prizeIcon: '🎟️', date: '2026-01' },
-  { name: 'Мини-маркет "Айжан"', city: 'Бишкек', prize: 'Бонус 500 сом', prizeIcon: '🎟️', date: '2026-01' },
-];
-
 export default function RafflePage() {
   const { lang } = useLang();
   const isRu = lang === 'ru';
+  const { user, profile } = useAuth();
   const [showRules, setShowRules] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  // Реальные коины пользователя из его профиля. Если не залогинен — 0.
+  const userCoins = Number(profile?.coins) || 0;
+  const userStatus = profile?.coinStatus || computeStatus(userCoins);
 
   // Дата следующего квартального розыгрыша — ОДНА для всех клиентов, не «+45 дней от визита».
   // Меняется админом раз в квартал в коде (или в будущем через админку).
@@ -67,9 +63,9 @@ export default function RafflePage() {
     silver: { label: isRu ? 'Серебро' : 'Күмүш', color: 'from-gray-400 to-gray-500', icon: '🥈', next: 150 },
     gold: { label: isRu ? 'Золото' : 'Алтын', color: 'from-yellow-400 to-yellow-500', icon: '🥇', next: null },
   };
-  const status = statusConfig[DEMO_STATUS];
-  const nextStatus = DEMO_STATUS === 'bronze' ? statusConfig.silver : DEMO_STATUS === 'silver' ? statusConfig.gold : null;
-  const progress = nextStatus ? (DEMO_COINS / status.next) * 100 : 100;
+  const status = statusConfig[userStatus];
+  const nextStatus = userStatus === 'bronze' ? statusConfig.silver : userStatus === 'silver' ? statusConfig.gold : null;
+  const progress = nextStatus ? (userCoins / status.next) * 100 : 100;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -99,6 +95,24 @@ export default function RafflePage() {
         <p className="text-xs opacity-60 mt-3">{isRu ? 'Розыгрыш раз в 3 месяца • 19 победителей' : 'Розыгрыш 3 айда 1 жолу • 19 жеңүүчү'}</p>
       </div>
 
+      {/* Незалогиненный пользователь — приглашение войти */}
+      {!user && (
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 mb-6 text-white">
+          <div className="flex items-center gap-3 mb-2">
+            <LogIn size={24} />
+            <h2 className="font-bold text-lg">{isRu ? 'Войдите чтобы начать копить' : 'Чогултуу үчүн кириңиз'}</h2>
+          </div>
+          <p className="text-sm opacity-90 mb-3">
+            {isRu
+              ? 'Без аккаунта монетки не сохраняются. Войдите или зарегистрируйтесь — это бесплатно.'
+              : 'Аккаунтсуз монета сакталбайт. Кириңиз же катталыңыз — акысыз.'}
+          </p>
+          <Link href="/auth" className="inline-flex items-center gap-2 px-5 py-2 bg-white text-blue-600 rounded-xl font-semibold text-sm hover:bg-blue-50 transition-colors">
+            {isRu ? 'Войти / Зарегистрироваться' : 'Кирүү / Катталуу'} →
+          </Link>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-gray-800 flex items-center gap-2">🪙 {isRu ? 'Мои монетки' : 'Менин монеталарым'}</h2>
@@ -107,11 +121,11 @@ export default function RafflePage() {
           </div>
         </div>
         <div className="flex items-center gap-4 mb-3">
-          <div className="text-4xl font-bold text-yellow-500">{DEMO_COINS}</div>
+          <div className="text-4xl font-bold text-yellow-500">{userCoins}</div>
           <div className="text-sm text-gray-500">
-            {DEMO_COINS >= 100
-              ? (isRu ? `монеток за этот месяц → ${DEMO_COINS >= 1000 ? 10 : DEMO_COINS >= 500 ? 5 : DEMO_COINS >= 300 ? 3 : 1} билетов в розыгрыше 🎫` : `бул айдагы монета → ${DEMO_COINS >= 1000 ? 10 : DEMO_COINS >= 500 ? 5 : DEMO_COINS >= 300 ? 3 : 1} билет`)
-              : (isRu ? `монеток за этот месяц. До участия ещё ${100 - DEMO_COINS}` : `бул айдагы монета. Катышууга дагы ${100 - DEMO_COINS}`)}
+            {userCoins >= 100
+              ? (isRu ? `монеток за этот месяц → ${userCoins >= 1000 ? 10 : userCoins >= 500 ? 5 : userCoins >= 300 ? 3 : 1} билетов в розыгрыше 🎫` : `бул айдагы монета → ${userCoins >= 1000 ? 10 : userCoins >= 500 ? 5 : userCoins >= 300 ? 3 : 1} билет`)
+              : (isRu ? `монеток за этот месяц. До участия ещё ${100 - userCoins}` : `бул айдагы монета. Катышууга дагы ${100 - userCoins}`)}
           </div>
         </div>
         {nextStatus && (
@@ -123,7 +137,7 @@ export default function RafflePage() {
             <div className="w-full bg-gray-100 rounded-full h-2.5">
               <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2.5 rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
             </div>
-            <p className="text-xs text-gray-400 mt-1">{isRu ? `Ещё ${status.next - DEMO_COINS} до ${nextStatus.label}` : `${nextStatus.label} үчүн дагы ${status.next - DEMO_COINS}`}</p>
+            <p className="text-xs text-gray-400 mt-1">{isRu ? `Ещё ${status.next - userCoins} до ${nextStatus.label}` : `${nextStatus.label} үчүн дагы ${status.next - userCoins}`}</p>
           </div>
         )}
       </div>
@@ -140,7 +154,7 @@ export default function RafflePage() {
         </p>
         <div className="space-y-2">
           {TICKET_TIERS.map((tier, i) => {
-            const inTier = DEMO_COINS >= tier.min && (tier.max === null || DEMO_COINS <= tier.max);
+            const inTier = userCoins >= tier.min && (tier.max === null || userCoins <= tier.max);
             return (
               <div key={i} className={`flex items-center justify-between p-3 rounded-xl border-2 transition-colors ${inTier ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-transparent'}`}>
                 <div className="flex items-center gap-3">
@@ -232,9 +246,9 @@ export default function RafflePage() {
         </h2>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: '🥉', name: isRu ? 'Бронза' : 'Коло', range: '0-49', color: 'bg-amber-50 border-amber-200', active: DEMO_STATUS === 'bronze' },
-            { icon: '🥈', name: isRu ? 'Серебро' : 'Күмүш', range: '50-149', color: 'bg-gray-50 border-gray-300', active: DEMO_STATUS === 'silver' },
-            { icon: '🥇', name: isRu ? 'Золото' : 'Алтын', range: '150+', color: 'bg-yellow-50 border-yellow-300', active: DEMO_STATUS === 'gold' },
+            { icon: '🥉', name: isRu ? 'Бронза' : 'Коло', range: '0-49', color: 'bg-amber-50 border-amber-200', active: userStatus === 'bronze' },
+            { icon: '🥈', name: isRu ? 'Серебро' : 'Күмүш', range: '50-149', color: 'bg-gray-50 border-gray-300', active: userStatus === 'silver' },
+            { icon: '🥇', name: isRu ? 'Золото' : 'Алтын', range: '150+', color: 'bg-yellow-50 border-yellow-300', active: userStatus === 'gold' },
           ].map((s, i) => (
             <div key={i} className={`text-center p-3 rounded-xl border-2 ${s.color} ${s.active ? 'ring-2 ring-yellow-400' : ''}`}>
               <div className="text-2xl mb-1">{s.icon}</div>
@@ -246,22 +260,17 @@ export default function RafflePage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
-        <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Trophy size={20} className="text-green-500" /> {isRu ? 'Победители прошлого розыгрыша' : 'Өткөн розыгрыштын жеңүүчүлөрү'}
+      {/* Заглушка — первый розыгрыш ещё не проводился (30.06.2026). После него сюда подгрузим реальных победителей. */}
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-5 mb-6 text-center">
+        <Trophy size={32} className="text-yellow-500 mx-auto mb-2" />
+        <h2 className="font-bold text-gray-800 mb-1">
+          {isRu ? 'Розыгрыш ещё не проводился' : 'Розыгрыш дагы өткөн эмес'}
         </h2>
-        <div className="space-y-2">
-          {DEMO_WINNERS.map((w, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-              <div className="text-xl">{w.prizeIcon}</div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-800 text-sm">{w.name}</div>
-                <div className="text-xs text-gray-400">{w.city}</div>
-              </div>
-              <div className="text-sm font-medium text-gray-600">{w.prize}</div>
-            </div>
-          ))}
-        </div>
+        <p className="text-sm text-gray-600">
+          {isRu
+            ? 'Стань первым победителем — копи монетки уже сейчас!'
+            : 'Биринчи жеңүүчү бол — азыр эле монета чогулт!'}
+        </p>
       </div>
 
       {/* Важное условие */}

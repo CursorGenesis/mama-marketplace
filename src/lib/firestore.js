@@ -534,7 +534,7 @@ export async function updateOrderStatus(id, status, agentId = null) {
             const currentCoins = snap.data().coins || 0;
             const totalOrders = snap.data().totalOrders || 0;
             const newCoins = currentCoins + coins;
-            const coinStatus = newCoins >= 50 ? 'gold' : newCoins >= 20 ? 'silver' : 'bronze';
+            const coinStatus = newCoins >= 150 ? 'gold' : newCoins >= 50 ? 'silver' : 'bronze';
             transaction.update(buyerRef, {
               coins: newCoins,
               coinStatus,
@@ -581,7 +581,7 @@ export async function updateOrderStatus(id, status, agentId = null) {
             if (!snap.exists()) return;
             const currentCoins = snap.data().coins || 0;
             const newCoins = Math.max(0, currentCoins - coins);
-            const coinStatus = newCoins >= 50 ? 'gold' : newCoins >= 20 ? 'silver' : 'bronze';
+            const coinStatus = newCoins >= 150 ? 'gold' : newCoins >= 50 ? 'silver' : 'bronze';
             transaction.update(buyerRef, { coins: newCoins, coinStatus });
           });
         }
