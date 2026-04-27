@@ -350,6 +350,7 @@ export default function CartPage() {
     const agentRef = profile?.agentRef || localStorage.getItem('marketkg_ref') || null;
 
     const supplierChatIds = {};
+    let buyerChatId = null;
     const succeeded = [];
     const failed = [];
     for (const group of supplierGroups) {
@@ -373,6 +374,7 @@ export default function CartPage() {
           agentRef,
         });
         if (result?.supplierChatId) supplierChatIds[group.supplierId] = result.supplierChatId;
+        if (result?.buyerChatId && !buyerChatId) buyerChatId = result.buyerChatId;
         succeeded.push(group);
       } catch (e) {
         console.error('Order save error:', e);
@@ -394,6 +396,9 @@ export default function CartPage() {
         supplierName: group.supplierName,
         supplierId: group.supplierId,
         supplierChatId: supplierChatIds[group.supplierId] || null,
+        // buyerChatId — если покупатель подключил свой Telegram в профиле,
+        // ему придёт подтверждение приёма заказа и потом уведомления о статусе.
+        buyerChatId: buyerChatId,
         shopName: form.shopName,
         buyerName: form.name,
         buyerPhone: form.phone,

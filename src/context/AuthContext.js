@@ -137,8 +137,16 @@ export function AuthProvider({ children }) {
     setProfile(p);
   };
 
+  // Поддержка нескольких админов через comma-separated список в env.
+  // Например NEXT_PUBLIC_ADMIN_EMAIL="alla@gmail.com,backup@gmail.com".
+  // Это снимает операционный риск «один админ → отпуск/болезнь = парализованная платформа».
+  // Для полного доступа в Firestore Rules второму админу нужно ещё проставить role:'admin' в его профиле.
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
   const isAdmin = profile?.role === 'admin' ||
-    user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    (user?.email ? adminEmails.includes(user.email.toLowerCase()) : false);
   const isSupplier = profile?.role === 'supplier';
 
   return (

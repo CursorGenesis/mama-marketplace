@@ -10,6 +10,26 @@ import { DEMO_SUPPLIERS, DEMO_PRODUCTS } from './demoData';
 const IS_DEMO = !process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'demo-key';
 
+// Трекер ошибок Firestore — раньше падения тихо подменялись DEMO-данными,
+// и админ узнавал о проблеме когда поставщик звонил "где мои товары".
+// Теперь admin/page.js читает window.__firestoreErrors и показывает алерт.
+function trackFirestoreError(operation, error) {
+  console.warn(`Firestore [${operation}] fallback:`, error?.message || error);
+  if (typeof window !== 'undefined') {
+    window.__firestoreErrors = window.__firestoreErrors || [];
+    window.__firestoreErrors.push({
+      operation,
+      message: error?.message || String(error),
+      code: error?.code || '',
+      time: new Date().toISOString(),
+    });
+    // Keep last 20
+    if (window.__firestoreErrors.length > 20) {
+      window.__firestoreErrors = window.__firestoreErrors.slice(-20);
+    }
+  }
+}
+
 // =============================================
 //  КАТЕГОРИИ
 // =============================================
@@ -169,7 +189,7 @@ export async function getSuppliers(filters = {}) {
       return result;
     }
   } catch (e) {
-    console.warn('Firebase suppliers fallback to demo:', e.message);
+    trackFirestoreError('getSuppliers', e);
   }
 
   let result = [...DEMO_SUPPLIERS];
@@ -185,7 +205,7 @@ export async function getSupplier(id) {
     const snap = await getDoc(doc(db, 'suppliers', id));
     if (snap.exists()) return { id: snap.id, ...snap.data() };
   } catch (e) {
-    console.warn('Firebase getSupplier fallback to demo:', e.message);
+    trackFirestoreError('getSupplier', e);
   }
   return DEMO_SUPPLIERS.find(s => s.id === id) || null;
 }
@@ -326,7 +346,7 @@ export async function getProducts(filters = {}) {
       return result;
     }
   } catch (e) {
-    console.warn('Firebase products fallback to demo:', e.message);
+    trackFirestoreError('getProducts', e);
   }
 
   // Фоллбэк на демо-данные
@@ -348,7 +368,7 @@ export async function getProduct(id) {
     const snap = await getDoc(doc(db, 'products', id));
     if (snap.exists()) return { id: snap.id, ...snap.data() };
   } catch (e) {
-    console.warn('Firebase getProduct fallback to demo:', e.message);
+    trackFirestoreError('getProduct', e);
   }
   // Фоллбэк на демо
   return DEMO_PRODUCTS.find(p => p.id === id) || null;
@@ -392,7 +412,7 @@ export async function getPromotions(filters = {}) {
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(p => !p.endDate || new Date(p.endDate) >= now);
   } catch (e) {
-    console.warn('Firebase promotions error:', e.message);
+    trackFirestoreError('getPromotions', e);
     return [];
   }
 }
@@ -435,6 +455,20 @@ export async function createOrder(data) {
       commission = Math.ceil(data.totalPrice * commissionRate);
     } catch (e) {
       console.error('Error reading supplier:', e);
+    }
+  }
+
+  // Подтягиваем telegramChatId покупателя из его профиля чтобы потом отправить ему
+  // подтверждение и уведомления о статусе заказа в Telegram.
+  let buyerChatId = null;
+  if (data.buyerId) {
+    try {
+      const buyerDoc = await getDoc(doc(db, 'users', data.buyerId));
+      if (buyerDoc.exists()) {
+        buyerChatId = buyerDoc.data().telegramChatId || null;
+      }
+    } catch {
+      // Не критично — просто покупатель не получит Telegram-уведомления
     }
   }
 
@@ -492,7 +526,7 @@ export async function createOrder(data) {
   // в функции updateOrderStatus — чтобы не платить за отменённые заказы.
   // Реальная сумма монеток и комиссии агента рассчитывается там же на основе order.totalPrice.
 
-  return { orderRef, supplierChatId };
+  return { orderRef, supplierChatId, buyerChatId };
 }
 
 export async function getOrders(filters = {}) {

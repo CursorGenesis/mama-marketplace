@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   User, ShoppingBag, Settings, LogOut, ChevronRight,
   Store, Package, TrendingUp, Users, Award, MapPin, FileText,
-  HelpCircle, MessageCircle, DollarSign, Truck, ClipboardList
+  HelpCircle, MessageCircle, DollarSign, Truck, ClipboardList, Send
 } from 'lucide-react';
 
 export default function MyPage() {
@@ -36,6 +36,13 @@ export default function MyPage() {
     { href: '/orders', icon: ClipboardList, label: isRu ? 'Мои заказы' : 'Менин заказдарым', color: 'text-blue-600 bg-blue-50' },
     { href: '/raffle', icon: Award, label: isRu ? 'Розыгрыш призов' : 'Сыйлык розыгрышы', color: 'text-amber-600 bg-amber-50', extra: profile?.coins ? `${profile.coins} 🪙` : null },
     { href: '/notifications', icon: MessageCircle, label: isRu ? 'Уведомления' : 'Билдирүүлөр', color: 'text-purple-600 bg-purple-50' },
+    {
+      href: '/my/telegram',
+      icon: Send,
+      label: isRu ? 'Telegram-уведомления' : 'Telegram билдирүүлөрү',
+      color: profile?.telegramChatId ? 'text-green-600 bg-green-50' : 'text-blue-600 bg-blue-50',
+      extra: profile?.telegramChatId ? '✓' : null,
+    },
   ];
 
   // Меню для поставщика

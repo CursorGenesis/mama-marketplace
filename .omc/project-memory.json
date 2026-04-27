@@ -162,20 +162,20 @@
   "hotPaths": [
     {
       "path": "src",
-      "accessCount": 59,
-      "lastAccessed": 1777281168225,
+      "accessCount": 60,
+      "lastAccessed": 1777281814562,
       "type": "directory"
     },
     {
       "path": "src\\lib\\firestore.js",
-      "accessCount": 46,
-      "lastAccessed": 1777281327138,
+      "accessCount": 57,
+      "lastAccessed": 1777281871919,
       "type": "file"
     },
     {
       "path": "src\\app\\cart\\page.js",
-      "accessCount": 41,
-      "lastAccessed": 1777281135906,
+      "accessCount": 46,
+      "lastAccessed": 1777281901712,
       "type": "directory"
     },
     {
@@ -209,21 +209,21 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\admin\\page.js",
+      "accessCount": 21,
+      "lastAccessed": 1777281788263,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\dashboard\\orders\\page.js",
       "accessCount": 19,
       "lastAccessed": 1777279753137,
       "type": "file"
     },
     {
-      "path": "src\\app\\admin\\page.js",
-      "accessCount": 17,
-      "lastAccessed": 1777279772621,
-      "type": "file"
-    },
-    {
       "path": "src\\context\\AuthContext.js",
-      "accessCount": 16,
-      "lastAccessed": 1777279763880,
+      "accessCount": 18,
+      "lastAccessed": 1777281657954,
       "type": "file"
     },
     {
@@ -236,6 +236,12 @@
       "path": "src\\app\\how-it-works\\page.js",
       "accessCount": 15,
       "lastAccessed": 1777007917189,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\my\\page.js",
+      "accessCount": 11,
+      "lastAccessed": 1777282022234,
       "type": "file"
     },
     {
@@ -254,12 +260,6 @@
       "path": "src\\app\\tour\\page.js",
       "accessCount": 8,
       "lastAccessed": 1776842073176,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\my\\page.js",
-      "accessCount": 8,
-      "lastAccessed": 1777036990393,
       "type": "file"
     },
     {

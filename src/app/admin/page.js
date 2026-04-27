@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [allOrders, setAllOrders] = useState([]);
   const [allSuppliers, setAllSuppliers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [firestoreErrors, setFirestoreErrors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,6 +58,11 @@ export default function AdminPage() {
     setAllOrders(orders);
     setAllSuppliers(suppliers);
     setAllUsers(users);
+    // Считываем ошибки Firestore которые трекер собрал во время загрузки —
+    // если что-то упало в getSuppliers/getProducts/getOrders, админ это увидит
+    if (typeof window !== 'undefined' && window.__firestoreErrors) {
+      setFirestoreErrors([...window.__firestoreErrors]);
+    }
     setLoading(false);
   };
 
@@ -127,6 +133,36 @@ export default function AdminPage() {
           </a>
         )}
       </div>
+
+      {/* Алерт об ошибках Firestore — раньше платформа тихо подменяла на DEMO-данные.
+          Теперь админ видит сразу что что-то не работает. */}
+      {firestoreErrors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={20} className="text-red-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-red-800 mb-1">
+                Firestore вернул ошибку — показаны DEMO-данные ({firestoreErrors.length})
+              </p>
+              <p className="text-sm text-red-700 mb-2">
+                Это значит реальные данные не загрузились. Возможные причины: превышена квота Firebase,
+                проблемы со связью, изменились правила безопасности.
+              </p>
+              <details className="text-xs text-red-700">
+                <summary className="cursor-pointer hover:underline">Подробности ({firestoreErrors.slice(-5).length} последних)</summary>
+                <ul className="mt-2 space-y-1 font-mono">
+                  {firestoreErrors.slice(-5).map((err, i) => (
+                    <li key={i} className="bg-white/60 px-2 py-1 rounded">
+                      <span className="font-bold">{err.operation}</span>
+                      {err.code && <span className="text-red-500"> [{err.code}]</span>}: {err.message}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Дашборд «3 колонки» */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
