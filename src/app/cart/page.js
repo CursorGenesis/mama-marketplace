@@ -250,7 +250,11 @@ export default function CartPage() {
       supplierChatId = result?.supplierChatId || null;
     } catch (e) {
       console.error('Order save error:', e);
-      toast.error(lang === 'kg' ? 'Заказ сакталган жок, кайра аракет кылыңыз' : 'Ошибка сохранения заказа, попробуйте ещё раз');
+      // Диагностический режим: показываем код+сообщение чтобы понять причину на iOS,
+      // где консоль недоступна без подключения к Mac. После починки — заменить
+      // обратно на дружелюбный текст.
+      const detail = e?.code ? `${e.code}: ${e.message || ''}` : (e?.message || String(e));
+      toast.error((lang === 'kg' ? 'Заказ сакталган жок: ' : 'Ошибка заказа: ') + detail, { duration: 10000 });
       setSubmitting(prev => ({ ...prev, [group.supplierId]: false }));
       return;
     }
@@ -353,6 +357,7 @@ export default function CartPage() {
     let buyerChatId = null;
     const succeeded = [];
     const failed = [];
+    let lastError = null;
     for (const group of supplierGroups) {
       try {
         const result = await createOrder({
@@ -378,13 +383,18 @@ export default function CartPage() {
         succeeded.push(group);
       } catch (e) {
         console.error('Order save error:', e);
+        lastError = e;
         failed.push(group);
       }
     }
 
-    // Всё упало — ничего не трогаем, корзина остаётся
+    // Всё упало — ничего не трогаем, корзина остаётся.
+    // Диагностический режим: показываем код+сообщение из последней ошибки.
     if (succeeded.length === 0) {
-      toast.error(lang === 'kg' ? 'Заказдар сакталган жок, кайра аракет кылыңыз' : 'Заказы не сохранились, попробуйте ещё раз');
+      const detail = lastError?.code
+        ? `${lastError.code}: ${lastError.message || ''}`
+        : (lastError?.message || 'unknown');
+      toast.error((lang === 'kg' ? 'Заказдар сакталган жок: ' : 'Заказы не сохранились: ') + detail, { duration: 10000 });
       setSubmitting({});
       return;
     }
