@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useLang } from '@/context/LangContext';
 
 export default function DashboardPage() {
-  const { user, profile, isSupplier, loading: authLoading } = useAuth();
+  const { user, profile, isSupplier, loading: authLoading, updateProfile } = useAuth();
   const { lang } = useLang();
   const isRu = lang === 'ru';
   const router = useRouter();
@@ -28,12 +28,22 @@ export default function DashboardPage() {
   }, [user, isSupplier, authLoading]);
 
   const loadDashboard = async () => {
-    // Находим поставщика по email
-    const q = query(collection(db, 'suppliers'), where('email', '==', user.email));
-    const snap = await getDocs(q);
-    if (snap.empty) { setLoading(false); return; }
-
-    const sup = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    // Поиск поставщика: сначала по supplierId из профиля (устойчиво к смене email),
+    // fallback — по email (для уже зарегистрированных до этого фикса). При успехе
+    // зашиваем supplierId в профиль, чтобы следующие заходы шли по id.
+    let sup = null;
+    if (profile?.supplierId) {
+      sup = await getSupplier(profile.supplierId);
+    }
+    if (!sup) {
+      const q = query(collection(db, 'suppliers'), where('email', '==', user.email));
+      const snap = await getDocs(q);
+      if (snap.empty) { setLoading(false); return; }
+      sup = { id: snap.docs[0].id, ...snap.docs[0].data() };
+      if (profile?.supplierId !== sup.id) {
+        updateProfile({ supplierId: sup.id }).catch(() => {});
+      }
+    }
     setSupplier(sup);
 
     const [products, orders] = await Promise.all([
