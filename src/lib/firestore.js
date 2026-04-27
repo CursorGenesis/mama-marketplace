@@ -169,7 +169,7 @@ export async function getSuppliers(filters = {}) {
       return result;
     }
   } catch (e) {
-    console.log('Firebase suppliers fallback to demo:', e.message);
+    console.warn('Firebase suppliers fallback to demo:', e.message);
   }
 
   let result = [...DEMO_SUPPLIERS];
@@ -185,7 +185,7 @@ export async function getSupplier(id) {
     const snap = await getDoc(doc(db, 'suppliers', id));
     if (snap.exists()) return { id: snap.id, ...snap.data() };
   } catch (e) {
-    console.log('Firebase getSupplier fallback to demo:', e.message);
+    console.warn('Firebase getSupplier fallback to demo:', e.message);
   }
   return DEMO_SUPPLIERS.find(s => s.id === id) || null;
 }
@@ -326,7 +326,7 @@ export async function getProducts(filters = {}) {
       return result;
     }
   } catch (e) {
-    console.log('Firebase products fallback to demo:', e.message);
+    console.warn('Firebase products fallback to demo:', e.message);
   }
 
   // Фоллбэк на демо-данные
@@ -348,7 +348,7 @@ export async function getProduct(id) {
     const snap = await getDoc(doc(db, 'products', id));
     if (snap.exists()) return { id: snap.id, ...snap.data() };
   } catch (e) {
-    console.log('Firebase getProduct fallback to demo:', e.message);
+    console.warn('Firebase getProduct fallback to demo:', e.message);
   }
   // Фоллбэк на демо
   return DEMO_PRODUCTS.find(p => p.id === id) || null;
@@ -392,7 +392,7 @@ export async function getPromotions(filters = {}) {
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(p => !p.endDate || new Date(p.endDate) >= now);
   } catch (e) {
-    console.log('Firebase promotions error:', e.message);
+    console.warn('Firebase promotions error:', e.message);
     return [];
   }
 }
@@ -554,7 +554,10 @@ export async function updateOrderStatus(id, status, agentId = null) {
   // ОТКАТ при отказе (not_received)
   // Важно: сначала делаем возвраты, потом меняем статус, чтобы при сбое статус НЕ изменился
   // =============================================
-  if (status === 'not_received') {
+  // ВКЛЮЧАЕМ И 'cancelled': раньше отменённый заказ оставлял списанную комиссию у поставщика,
+  // что было багом. Теперь возврат происходит и при cancelled, и при not_received.
+  // Защита от двойного возврата — проверка order.refunded.
+  if ((status === 'not_received' || status === 'cancelled') && !order.refunded) {
     // 1. Возврат комиссии поставщику — используем commission из заказа (а не пересчёт!)
     if (order.supplierId && order.commission && order.commission > 0) {
       try {
@@ -598,7 +601,8 @@ export async function updateOrderStatus(id, status, agentId = null) {
   const updateData = { status };
   if (agentId) updateData.agentId = agentId;
   if (status === 'received') updateData.coinsAwarded = true;
-  if (status === 'not_received') {
+  // Помечаем refunded и для not_received, и для cancelled — оба запускают возврат комиссии выше
+  if ((status === 'not_received' || status === 'cancelled') && !order.refunded) {
     updateData.refunded = true;
     updateData.refundedAt = new Date();
   }

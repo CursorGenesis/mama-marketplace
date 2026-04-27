@@ -85,7 +85,8 @@ export default function AdminAgentsPage() {
 
       agentSnap.docs.forEach(agentDoc => {
         const data = agentDoc.data();
-        const agentCode = 'AGT-' + agentDoc.id.slice(0, 4).toUpperCase();
+        // 8 символов вместо 4 — было >50% коллизия при 1500 агентах, теперь её нет
+        const agentCode = 'AGT-' + agentDoc.id.slice(0, 8).toUpperCase();
 
         // Находим магазины (покупатели) привязанные к этому агенту
         const linkedShops = allUsersSnap.docs

@@ -2,6 +2,11 @@ const BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.NEXT_PUBLIC_TELEGRAM_ADMIN_CHAT_ID;
 const GOOGLE_SHEET_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL;
 
+// Эскейп HTML — поскольку отправляем с parse_mode: 'HTML', любое имя/email
+// с символами < > & может быть интерпретировано как теги. Атакующий мог бы
+// через имя 'shop<a href="evil">click</a>' подсунуть админу фишинг-ссылку.
+const escHtml = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
+
 async function sendMessage(chatId, text) {
   if (!BOT_TOKEN || !chatId) return;
   try {
@@ -25,32 +30,32 @@ export async function sendTelegramNotification(type, data) {
   if (type === 'new_order') {
     const total = Number(data.total || data.totalPrice || 0);
     const itemsList = (data.items || [])
-      .map(i => `  ${i.name || '?'} x ${i.quantity || 0} = ${((i.price || 0) * (i.quantity || 0)).toLocaleString('ru-RU')} сом`)
+      .map(i => `  ${escHtml(i.name || '?')} x ${Number(i.quantity) || 0} = ${((Number(i.price) || 0) * (Number(i.quantity) || 0)).toLocaleString('ru-RU')} сом`)
       .join('\n');
 
     const commission = Math.ceil(total * 0.05);
 
     const agentDisplay = data.agentRef
-      ? `По реф. ссылке (${data.agentRef})`
+      ? `По реф. ссылке (${escHtml(data.agentRef)})`
       : 'Прямой клиент';
 
     // Сообщение для админа (вам)
     const adminMessage = `🛒 <b>Новый заказ!</b>\n\n` +
-      `📦 <b>Поставщик:</b> ${data.supplierName || 'Не указан'}\n` +
-      `🏪 <b>Магазин:</b> ${data.shopName || ''}\n` +
+      `📦 <b>Поставщик:</b> ${escHtml(data.supplierName || 'Не указан')}\n` +
+      `🏪 <b>Магазин:</b> ${escHtml(data.shopName || '')}\n` +
       `👤 <b>Агент:</b> ${agentDisplay}\n` +
-      `📱 <b>Телефон:</b> ${data.buyerPhone || ''}\n` +
-      (data.city ? `🏙 <b>Город:</b> ${data.city}\n` : '') +
+      `📱 <b>Телефон:</b> ${escHtml(data.buyerPhone || '')}\n` +
+      (data.city ? `🏙 <b>Город:</b> ${escHtml(data.city)}\n` : '') +
       `\n<b>Товары:</b>\n${itemsList}\n\n` +
       `💰 <b>Итого: ${total.toLocaleString('ru-RU')} сом</b>\n` +
       `💎 <b>Комиссия: ${commission} сом</b>`;
 
     // Сообщение для поставщика
     const supplierMessage = `🛒 <b>Новый заказ для вас!</b>\n\n` +
-      `🏪 <b>Магазин:</b> ${data.shopName || ''}\n` +
-      `👤 <b>Покупатель:</b> ${data.buyerName || ''}\n` +
-      `📱 <b>Телефон:</b> ${data.buyerPhone || ''}\n` +
-      `📍 <b>Адрес:</b> ${data.address || ''}\n\n` +
+      `🏪 <b>Магазин:</b> ${escHtml(data.shopName || '')}\n` +
+      `👤 <b>Покупатель:</b> ${escHtml(data.buyerName || '')}\n` +
+      `📱 <b>Телефон:</b> ${escHtml(data.buyerPhone || '')}\n` +
+      `📍 <b>Адрес:</b> ${escHtml(data.address || '')}\n\n` +
       `<b>Товары:</b>\n${itemsList}\n\n` +
       `💰 <b>Итого: ${total.toLocaleString('ru-RU')} сом</b>\n\n` +
       `📞 Свяжитесь с покупателем для подтверждения`;
@@ -68,8 +73,8 @@ export async function sendTelegramNotification(type, data) {
     // Сообщение покупателю — подтверждение приёма заказа
     if (data.buyerChatId) {
       const buyerMessage = `✅ <b>Ваш заказ принят!</b>\n\n` +
-        `📦 <b>Поставщик:</b> ${data.supplierName || ''}\n` +
-        (data.expectedDelivery ? `🚚 <b>Ожидаемая доставка:</b> ${data.expectedDelivery}\n` : '') +
+        `📦 <b>Поставщик:</b> ${escHtml(data.supplierName || '')}\n` +
+        (data.expectedDelivery ? `🚚 <b>Ожидаемая доставка:</b> ${escHtml(data.expectedDelivery)}\n` : '') +
         `\n<b>Товары:</b>\n${itemsList}\n\n` +
         `💰 <b>Итого: ${total.toLocaleString('ru-RU')} сом</b>\n\n` +
         `📲 Мы пришлём сообщение когда заказ будет собран и отправлен.`;
@@ -91,13 +96,13 @@ export async function sendTelegramNotification(type, data) {
 
   if (type === 'new_registration') {
     const message = `👤 <b>Новая регистрация!</b>\n\n` +
-      `📧 <b>Email:</b> ${data.email}\n` +
-      `👤 <b>Имя:</b> ${data.name}\n` +
-      `📱 <b>Телефон:</b> ${data.phone}\n` +
-      `🏷 <b>Роль:</b> ${data.role}` +
-      (data.companyName ? `\n🏢 <b>Компания:</b> ${data.companyName}` : '') +
-      (data.inn ? `\n📄 <b>ИНН:</b> ${data.inn}` : '') +
-      (data.refCode ? `\n🎁 <b>Реф. код:</b> ${data.refCode}` : '');
+      `📧 <b>Email:</b> ${escHtml(data.email)}\n` +
+      `👤 <b>Имя:</b> ${escHtml(data.name)}\n` +
+      `📱 <b>Телефон:</b> ${escHtml(data.phone)}\n` +
+      `🏷 <b>Роль:</b> ${escHtml(data.role)}` +
+      (data.companyName ? `\n🏢 <b>Компания:</b> ${escHtml(data.companyName)}` : '') +
+      (data.inn ? `\n📄 <b>ИНН:</b> ${escHtml(data.inn)}` : '') +
+      (data.refCode ? `\n🎁 <b>Реф. код:</b> ${escHtml(data.refCode)}` : '');
 
     if (ADMIN_CHAT_ID) {
       await sendMessage(ADMIN_CHAT_ID, message);
@@ -120,30 +125,30 @@ export async function sendTelegramNotification(type, data) {
 
     if (data.status === 'received') {
       message = `✅ <b>Клиент подтвердил доставку!</b>\n\n` +
-        `🏪 <b>Магазин:</b> ${data.shopName}\n` +
-        `📦 <b>Поставщик:</b> ${data.supplierName}\n` +
+        `🏪 <b>Магазин:</b> ${escHtml(data.shopName)}\n` +
+        `📦 <b>Поставщик:</b> ${escHtml(data.supplierName)}\n` +
         `💰 <b>Сумма:</b> ${Number(data.total || 0).toLocaleString('ru-RU')} сом\n\n` +
         `✅ Комиссия зафиксирована`;
     } else if (data.status === 'delivering') {
       message = `🚚 <b>Заказ отправлен!</b>\n\n` +
-        `📦 <b>Заказ:</b> №${data.orderId || ''}\n` +
-        `👤 <b>Покупатель:</b> ${data.buyerName || ''}\n` +
-        `🏢 <b>Поставщик:</b> ${data.supplierName || ''}\n` +
+        `📦 <b>Заказ:</b> №${escHtml(data.orderId || '')}\n` +
+        `👤 <b>Покупатель:</b> ${escHtml(data.buyerName || '')}\n` +
+        `🏢 <b>Поставщик:</b> ${escHtml(data.supplierName || '')}\n` +
         `💰 <b>Сумма:</b> ${Number(data.total || 0).toLocaleString('ru-RU')} сом\n\n` +
         `📍 Товар передан экспедитору`;
     } else if (data.status === 'not_received') {
       message = `❌ <b>Клиент НЕ получил заказ!</b>\n\n` +
-        `🏪 <b>Магазин:</b> ${data.shopName}\n` +
-        `📦 <b>Поставщик:</b> ${data.supplierName}\n` +
+        `🏪 <b>Магазин:</b> ${escHtml(data.shopName)}\n` +
+        `📦 <b>Поставщик:</b> ${escHtml(data.supplierName)}\n` +
         `💰 <b>Сумма:</b> ${Number(data.total || 0).toLocaleString('ru-RU')} сом\n` +
-        (data.reason ? `📝 <b>Причина:</b> ${data.reason}\n` : '') +
-        (data.buyerPhone ? `📱 <b>Телефон клиента:</b> ${data.buyerPhone}\n` : '') +
+        (data.reason ? `📝 <b>Причина:</b> ${escHtml(data.reason)}\n` : '') +
+        (data.buyerPhone ? `📱 <b>Телефон клиента:</b> ${escHtml(data.buyerPhone)}\n` : '') +
         `\n⚠️ <b>Разберитесь с ситуацией и решите — возвращать комиссию или нет</b>`;
     } else {
       message = `📋 <b>Статус заказа изменён</b>\n\n` +
-        `🏪 <b>Магазин:</b> ${data.shopName}\n` +
-        `📦 <b>Поставщик:</b> ${data.supplierName}\n` +
-        `🔄 <b>Статус:</b> ${statusMap[data.status] || data.status}\n` +
+        `🏪 <b>Магазин:</b> ${escHtml(data.shopName)}\n` +
+        `📦 <b>Поставщик:</b> ${escHtml(data.supplierName)}\n` +
+        `🔄 <b>Статус:</b> ${escHtml(statusMap[data.status] || data.status)}\n` +
         `💰 <b>Сумма:</b> ${Number(data.total || 0).toLocaleString('ru-RU')} сом`;
     }
 
@@ -153,21 +158,23 @@ export async function sendTelegramNotification(type, data) {
 
     // Сообщение покупателю — дружелюбные уведомления
     if (data.buyerChatId) {
+      const safeOrderId = escHtml(data.orderId || '');
+      const safeSupplier = escHtml(data.supplierName || '');
       const buyerMessages = {
         packed: `📦 <b>Ваш заказ собран!</b>\n\n` +
-          `Заказ №${data.orderId || ''} от ${data.supplierName || ''} готов к отправке.\n` +
+          `Заказ №${safeOrderId} от ${safeSupplier} готов к отправке.\n` +
           `Мы сообщим когда экспедитор выедет к вам.`,
         delivering: `🚚 <b>Экспедитор выехал с вашим заказом!</b>\n\n` +
-          `Заказ №${data.orderId || ''} от ${data.supplierName || ''}\n` +
-          (data.driverPhone ? `📞 Контакт экспедитора: ${data.driverPhone}\n` : '') +
+          `Заказ №${safeOrderId} от ${safeSupplier}\n` +
+          (data.driverPhone ? `📞 Контакт экспедитора: ${escHtml(data.driverPhone)}\n` : '') +
           `\nКогда получите — подтвердите в ответе на это сообщение: ✅ Получил / ❌ Не получил`,
         received: `✅ <b>Спасибо, что подтвердили получение!</b>\n\n` +
-          `Заказ №${data.orderId || ''} закрыт.\n` +
-          (data.coins ? `💎 Вам начислено ${data.coins} монеток.\n` : '') +
+          `Заказ №${safeOrderId} закрыт.\n` +
+          (data.coins ? `💎 Вам начислено ${Number(data.coins) || 0} монеток.\n` : '') +
           `Будем рады видеть вас снова!`,
         cancelled: `❌ <b>Заказ отменён</b>\n\n` +
-          `Заказ №${data.orderId || ''} был отменён.\n` +
-          (data.reason ? `Причина: ${data.reason}\n` : '') +
+          `Заказ №${safeOrderId} был отменён.\n` +
+          (data.reason ? `Причина: ${escHtml(data.reason)}\n` : '') +
           `Если у вас вопросы — свяжитесь с нами.`,
       };
       const buyerMessage = buyerMessages[data.status];

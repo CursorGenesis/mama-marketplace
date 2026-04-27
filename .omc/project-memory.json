@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776740462380,
+  "lastScanned": 1777181438951,
   "projectRoot": "c:\\Users\\vovas\\OneDrive\\Рабочий стол\\mama_project",
   "techStack": {
     "languages": [
@@ -68,6 +68,7 @@
     "isMonorepo": false,
     "workspaces": [],
     "mainDirectories": [
+      "docs",
       "public",
       "src"
     ],
@@ -78,11 +79,23 @@
   },
   "customNotes": [],
   "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 4,
+      "lastAccessed": 1777181438831,
+      "keyFiles": [
+        "cold-call-script-suppliers.md",
+        "google-sheets-agent-tracking.md",
+        "supplier-presentation-slide-crm.md",
+        "telegram-starter-posts.md"
+      ]
+    },
     "out": {
       "path": "out",
       "purpose": "Build output",
-      "fileCount": 37,
-      "lastAccessed": 1776740462322,
+      "fileCount": 41,
+      "lastAccessed": 1777181438832,
       "keyFiles": [
         "404.html",
         "about.html",
@@ -95,28 +108,28 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 0,
-      "lastAccessed": 1776740462323,
+      "lastAccessed": 1777181438876,
       "keyFiles": []
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 0,
-      "lastAccessed": 1776740462335,
+      "lastAccessed": 1777181438876,
       "keyFiles": []
     },
     "_next": {
       "path": "_next",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1776740462335,
+      "lastAccessed": 1777181438877,
       "keyFiles": []
     },
     "src\\app": {
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 4,
-      "lastAccessed": 1776740462337,
+      "lastAccessed": 1777181438878,
       "keyFiles": [
         "globals.css",
         "layout.js",
@@ -126,8 +139,8 @@
     "src\\components": {
       "path": "src\\components",
       "purpose": "UI components",
-      "fileCount": 16,
-      "lastAccessed": 1776740462337,
+      "fileCount": 17,
+      "lastAccessed": 1777181438879,
       "keyFiles": [
         "BottomNav.js",
         "CategoryIcon.js",
@@ -137,44 +150,224 @@
     "src\\lib": {
       "path": "src\\lib",
       "purpose": "Library code",
-      "fileCount": 6,
-      "lastAccessed": 1776740462338,
+      "fileCount": 7,
+      "lastAccessed": 1777181438879,
       "keyFiles": [
         "config.js",
-        "demoData.js",
-        "firebase.js"
+        "delivery.js",
+        "demoData.js"
       ]
     }
   },
   "hotPaths": [
     {
-      "path": "src\\app\\cart\\page.js",
-      "accessCount": 10,
-      "lastAccessed": 1776743132136,
-      "type": "directory"
-    },
-    {
-      "path": "src\\app\\dashboard\\settings\\page.js",
-      "accessCount": 6,
-      "lastAccessed": 1776741734935,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\demoData.js",
-      "accessCount": 4,
-      "lastAccessed": 1776741829896,
+      "path": "src",
+      "accessCount": 59,
+      "lastAccessed": 1777281168225,
       "type": "directory"
     },
     {
       "path": "src\\lib\\firestore.js",
-      "accessCount": 3,
-      "lastAccessed": 1776743163697,
+      "accessCount": 46,
+      "lastAccessed": 1777281327138,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\cart\\page.js",
+      "accessCount": 41,
+      "lastAccessed": 1777281135906,
+      "type": "directory"
+    },
+    {
+      "path": "src\\components\\Header.js",
+      "accessCount": 32,
+      "lastAccessed": 1777036991077,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\auth\\page.js",
+      "accessCount": 26,
+      "lastAccessed": 1777182436719,
       "type": "file"
     },
     {
       "path": "src\\app\\page.js",
+      "accessCount": 24,
+      "lastAccessed": 1777182195317,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\dashboard\\settings\\page.js",
+      "accessCount": 24,
+      "lastAccessed": 1777279750889,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\telegram.js",
+      "accessCount": 24,
+      "lastAccessed": 1777281109461,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\dashboard\\orders\\page.js",
+      "accessCount": 19,
+      "lastAccessed": 1777279753137,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\admin\\page.js",
+      "accessCount": 17,
+      "lastAccessed": 1777279772621,
+      "type": "file"
+    },
+    {
+      "path": "src\\context\\AuthContext.js",
+      "accessCount": 16,
+      "lastAccessed": 1777279763880,
+      "type": "file"
+    },
+    {
+      "path": "firestore.rules",
+      "accessCount": 16,
+      "lastAccessed": 1777280453604,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\how-it-works\\page.js",
+      "accessCount": 15,
+      "lastAccessed": 1777007917189,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\catalog\\page.js",
+      "accessCount": 10,
+      "lastAccessed": 1776860771280,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\product\\[id]\\ProductPageClient.js",
+      "accessCount": 10,
+      "lastAccessed": 1776861335897,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\tour\\page.js",
+      "accessCount": 8,
+      "lastAccessed": 1776842073176,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\my\\page.js",
+      "accessCount": 8,
+      "lastAccessed": 1777036990393,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ProductCard.js",
+      "accessCount": 8,
+      "lastAccessed": 1777036990727,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\admin\\subscriptions\\page.js",
+      "accessCount": 6,
+      "lastAccessed": 1776832105137,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\demoData.js",
+      "accessCount": 6,
+      "lastAccessed": 1776847428698,
+      "type": "directory"
+    },
+    {
+      "path": ".env.local",
+      "accessCount": 6,
+      "lastAccessed": 1777028799909,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\agent\\dashboard\\page.js",
+      "accessCount": 6,
+      "lastAccessed": 1777281202177,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\admin\\logistics\\page.js",
+      "accessCount": 5,
+      "lastAccessed": 1776832129929,
+      "type": "directory"
+    },
+    {
+      "path": "src\\components\\Footer.js",
+      "accessCount": 5,
+      "lastAccessed": 1776842357488,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\dashboard\\page.js",
+      "accessCount": 5,
+      "lastAccessed": 1777036977921,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\admin\\agents\\page.js",
+      "accessCount": 5,
+      "lastAccessed": 1777281221497,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\pricing\\page.js",
+      "accessCount": 4,
+      "lastAccessed": 1776907826160,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\agents\\page.js",
+      "accessCount": 4,
+      "lastAccessed": 1777006459902,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\admin",
+      "accessCount": 4,
+      "lastAccessed": 1777279772738,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\admin\\commissions\\page.js",
+      "accessCount": 4,
+      "lastAccessed": 1777279874239,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\layout.js",
       "accessCount": 3,
-      "lastAccessed": 1776744843410,
+      "lastAccessed": 1776846224954,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\RoleGuard.js",
+      "accessCount": 3,
+      "lastAccessed": 1777036994763,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\firebase.js",
+      "accessCount": 3,
+      "lastAccessed": 1777279729312,
+      "type": "file"
+    },
+    {
+      "path": "src\\context\\CartContext.js",
+      "accessCount": 3,
+      "lastAccessed": 1777279763447,
+      "type": "directory"
+    },
+    {
+      "path": "next.config.js",
+      "accessCount": 3,
+      "lastAccessed": 1777279874323,
       "type": "file"
     },
     {
@@ -184,75 +377,87 @@
       "type": "file"
     },
     {
-      "path": "src\\context\\AuthContext.js",
+      "path": "src\\components\\BottomNav.js",
       "accessCount": 2,
-      "lastAccessed": 1776743091318,
+      "lastAccessed": 1776846411042,
       "type": "file"
     },
     {
-      "path": "src\\app\\auth\\page.js",
+      "path": "src\\app\\agents\\layout.js",
       "accessCount": 2,
-      "lastAccessed": 1776743097735,
+      "lastAccessed": 1777006460980,
       "type": "file"
     },
     {
-      "path": "src\\app\\how-it-works\\page.js",
+      "path": "src\\app",
       "accessCount": 2,
-      "lastAccessed": 1776746439834,
+      "lastAccessed": 1777182429129,
+      "type": "directory"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1777279739186,
       "type": "file"
     },
     {
       "path": "src\\app\\orders\\page.js",
-      "accessCount": 1,
-      "lastAccessed": 1776742912903,
+      "accessCount": 2,
+      "lastAccessed": 1777279746632,
       "type": "file"
     },
     {
-      "path": "src\\app\\dashboard\\page.js",
-      "accessCount": 1,
-      "lastAccessed": 1776742913116,
+      "path": ".env.local.example",
+      "accessCount": 2,
+      "lastAccessed": 1777279750830,
       "type": "file"
     },
     {
-      "path": "src\\app\\my\\page.js",
+      "path": "src\\context\\LangContext.js",
       "accessCount": 1,
-      "lastAccessed": 1776742913315,
+      "lastAccessed": 1776842927703,
       "type": "file"
     },
     {
-      "path": "src\\app\\agent\\dashboard\\page.js",
+      "path": "src\\app\\globals.css",
       "accessCount": 1,
-      "lastAccessed": 1776742913764,
+      "lastAccessed": 1776846198387,
       "type": "file"
     },
     {
-      "path": "src\\components\\Header.js",
+      "path": "src\\components",
       "accessCount": 1,
-      "lastAccessed": 1776742913856,
-      "type": "file"
+      "lastAccessed": 1776846403796,
+      "type": "directory"
     },
     {
-      "path": "src\\components\\RoleGuard.js",
+      "path": "src\\app\\auth",
       "accessCount": 1,
-      "lastAccessed": 1776742917414,
-      "type": "file"
+      "lastAccessed": 1776847041339,
+      "type": "directory"
     },
     {
-      "path": "src\\components\\BottomNav.js",
+      "path": "src\\app\\dashboard\\logistics\\page.js",
       "accessCount": 1,
-      "lastAccessed": 1776742917703,
-      "type": "file"
+      "lastAccessed": 1776847048958,
+      "type": "directory"
     },
     {
-      "path": "src\\app\\dashboard\\orders\\page.js",
+      "path": "src\\app\\catalog",
       "accessCount": 1,
-      "lastAccessed": 1776742917945,
-      "type": "file"
+      "lastAccessed": 1776847202964,
+      "type": "directory"
     },
     {
-      "path": "src\\lib\\telegram.js",
+      "path": "src\\lib",
       "accessCount": 1,
-      "lastAccessed": 1776743071022,
+      "lastAccessed": 1776847208093,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\admin\\suppliers\\page.js",
+      "accessCount": 1,
+      "lastAccessed": 1776868574823,
       "type": "file"
     }
   ],

@@ -37,7 +37,9 @@ function AgentDashboardContent() {
   const isRu = lang === 'ru';
   const [copied, setCopied] = useState(false);
 
-  const agentCode = user ? 'AGT-' + (user.uid || '').slice(0, 4).toUpperCase() : 'AGT-DEMO';
+  // Реф-код агента — 8 символов из UID. Раньше было 4 (1.6 млн вариантов = коллизия
+  // >50% при 1500 агентах). С 8 символами пространство 2.8 трлн — коллизий на нашей шкале не будет.
+  const agentCode = user ? 'AGT-' + (user.uid || '').slice(0, 8).toUpperCase() : 'AGT-DEMO';
   const totalOrders = demoRecentOrders.length;
   const totalRevenue = demoRecentOrders.reduce((s, o) => s + o.total, 0);
   const earnings = Math.round(totalRevenue * 0.01);

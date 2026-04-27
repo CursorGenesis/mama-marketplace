@@ -225,7 +225,7 @@ export default function CartPage() {
 
     setSubmitting(prev => ({ ...prev, [group.supplierId]: true }));
 
-    const orderNumber = 'MKG-' + Date.now().toString(36).toUpperCase();
+    const orderNumber = 'MKG-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
     let supplierChatId = null;
     try {
@@ -320,7 +320,7 @@ export default function CartPage() {
 
     // Сохраняем данные для чека перед очисткой
     const receipt = {
-      orderNumber: 'MKG-' + Date.now().toString(36).toUpperCase(),
+      orderNumber: 'MKG-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
       date: new Date(),
       buyer: { name: form.name, shopName: form.shopName, phone: form.phone, address: form.address, comment: form.comment },
       suppliers: supplierGroups.map(g => ({
