@@ -9,7 +9,6 @@ import {
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
-  OAuthProvider,
   signOut,
 } from 'firebase/auth';
 import { getUserProfile, createUserProfile, updateUserProfile } from '@/lib/firestore';
@@ -109,25 +108,6 @@ export function AuthProvider({ children }) {
     return cred;
   };
 
-  const loginWithApple = async () => {
-    const provider = new OAuthProvider('apple.com');
-    provider.addScope('email');
-    provider.addScope('name');
-    const cred = await signInWithPopup(auth, provider);
-    const existing = await getUserProfile(cred.user.uid);
-    if (!existing) {
-      await createUserProfile(cred.user.uid, {
-        email: cred.user.email || '',
-        name: cred.user.displayName || '',
-        phone: '',
-        role: 'buyer',
-      });
-    }
-    const p = await getUserProfile(cred.user.uid);
-    setProfile(p);
-    return cred;
-  };
-
   const logout = () => signOut(auth);
 
   const updateProfile = async (data) => {
@@ -151,7 +131,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, loading, login, register, logout, loginWithGoogle, loginWithApple, updateProfile, isAdmin, isSupplier
+      user, profile, loading, login, register, logout, loginWithGoogle, updateProfile, isAdmin, isSupplier
     }}>
       {children}
     </AuthContext.Provider>

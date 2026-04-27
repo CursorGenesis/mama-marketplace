@@ -191,7 +191,7 @@ export default function Header() {
                         </div>
 
                         {/* Ссылки для клиента */}
-                        {(!isAdmin && !isSupplier && !isAgent && !isDriver || !user) && (
+                        {((!isAdmin && !isSupplier && !isAgent && !isDriver) || !user) && (
                           <>
                             <Link href="/my" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors">
                               <UserCircle size={18} className="text-gray-400" /> {lang === 'kg' ? 'Менин кабинетим' : 'Мой кабинет'}
@@ -267,7 +267,7 @@ export default function Header() {
 
                         {/* Выйти */}
                         <div className="border-t border-gray-100 mt-1 pt-1">
-                          <button onClick={() => { logout(); setProfileOpen(false); window.location.href = '/mama-marketplace/'; }}
+                          <button onClick={() => { logout(); setProfileOpen(false); router.push('/'); }}
                             className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
                             <LogOut size={18} /> {t('logout')}
                           </button>

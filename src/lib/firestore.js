@@ -684,10 +684,13 @@ export async function addReview(supplierId, data) {
     createdAt: serverTimestamp(),
   });
 
-  // Пересчитываем средний рейтинг
+  // Пересчитываем средний рейтинг.
+  // Защита от пустого массива (NaN от деления на 0) и от отзывов без rating.
   const reviewsSnap = await getDocs(collection(db, 'suppliers', supplierId, 'reviews'));
   const reviews = reviewsSnap.docs.map(d => d.data());
-  const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const avg = reviews.length
+    ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length
+    : 0;
   await updateDoc(doc(db, 'suppliers', supplierId), {
     rating: Math.round(avg * 10) / 10,
     reviewCount: reviews.length,

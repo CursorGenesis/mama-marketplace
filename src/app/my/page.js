@@ -2,6 +2,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useLang } from '@/context/LangContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   User, ShoppingBag, Settings, LogOut, ChevronRight,
   Store, Package, TrendingUp, Users, Award, MapPin, FileText,
@@ -9,6 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function MyPage() {
+  const router = useRouter();
   const { user, profile, isAdmin, isSupplier, logout } = useAuth();
   const { lang } = useLang();
   const isRu = lang === 'ru';
@@ -23,7 +25,7 @@ export default function MyPage() {
           <User size={40} className="text-slate-400" />
         </div>
         <h2 className="text-xl font-bold text-gray-800 mb-2">{isRu ? 'Войдите в аккаунт' : 'Аккаунтка кириңиз'}</h2>
-        <p className="text-gray-500 text-sm mb-6">{isRu ? 'Чтобы видеть заказы, избранное и управлять профилем' : 'Заказдарды, тандалмаларды көрүү жана профилди башкаруу үчүн'}</p>
+        <p className="text-gray-500 text-sm mb-6">{isRu ? 'Чтобы видеть заказы и управлять профилем' : 'Заказдарды көрүү жана профилди башкаруу үчүн'}</p>
         <Link href="/auth" className="inline-block px-8 py-3 bg-slate-800 text-white rounded-xl font-semibold hover:bg-slate-700 transition-colors">
           {isRu ? 'Войти / Зарегистрироваться' : 'Кирүү / Катталуу'}
         </Link>
@@ -126,7 +128,7 @@ export default function MyPage() {
       {renderLinks(generalLinks, isRu ? 'Информация' : 'Маалымат')}
 
       {/* Выход */}
-      <button onClick={() => { logout(); window.location.href = '/mama-marketplace/'; }}
+      <button onClick={() => { logout(); router.push('/'); }}
         className="w-full flex items-center justify-center gap-2 py-3.5 bg-white rounded-2xl shadow-sm text-red-500 hover:bg-red-50 transition-colors font-medium">
         <LogOut size={18} />
         {isRu ? 'Выйти из аккаунта' : 'Аккаунттан чыгуу'}
