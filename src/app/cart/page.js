@@ -8,6 +8,7 @@ import { getSmartRecommendations, saveOrderToHistory, seedDemoHistory } from '@/
 import { createOrder } from '@/lib/firestore';
 import { sendTelegramNotification } from '@/lib/telegram';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useRef } from 'react';
@@ -27,6 +28,7 @@ const DeliveryMap = dynamic(() => import('@/components/DeliveryMap'), {
 
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, addItem, removeItem, updateQuantity, clearCart, totalPrice, totalItems } = useCart();
   const { user, profile, updateProfile } = useAuth();
   const { t, lang } = useLang();
@@ -130,6 +132,18 @@ export default function CartPage() {
   const BLACKLIST_KEY = 'marketkg_blacklist';
 
   function validateOrder() {
+    // 0. Авторизация — Firestore Rules требуют buyerId == auth.uid при создании
+    // заказа. Без логина пользователь получит permission-denied. Перехватываем
+    // здесь и направляем на вход (актуально для iOS PWA, где сессия Firebase
+    // может слететь после долгого неиспользования).
+    if (!user) {
+      toast.error(lang === 'kg'
+        ? 'Заказ берүү үчүн аккаунтуңузга кириңиз'
+        : 'Войдите в аккаунт чтобы оформить заказ');
+      router.push('/auth');
+      return false;
+    }
+
     // 1. Проверка обязательных полей
     if (!form.name || !form.phone) {
       toast.error(t('fillNamePhone'));
