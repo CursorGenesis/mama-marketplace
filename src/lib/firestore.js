@@ -478,6 +478,10 @@ export async function createOrder(data) {
     buyerId: data.buyerId || null,
     buyerName: data.buyerName || '',
     buyerPhone: data.buyerPhone || '',
+    // Сохраняем buyerChatId на заказе чтобы при смене статуса (поставщиком/админом)
+    // можно было отправить покупателю Telegram-уведомление, не читая его профиль
+    // (поставщику Firestore Rules не дадут читать users/{buyerId}).
+    buyerChatId: buyerChatId || null,
     shopName: data.shopName || '',
     address: data.address || '',
     comment: data.comment || '',

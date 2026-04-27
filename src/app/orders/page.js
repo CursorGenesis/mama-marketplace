@@ -46,12 +46,15 @@ export default function OrdersPage() {
     try {
       await updateOrderStatus(order.id, 'received');
 
-      // Уведомление админу
+      // Уведомление админу + покупателю (если у него подключён Telegram)
       sendTelegramNotification('order_status', {
+        orderId: order.id ? order.id.slice(0, 8).toUpperCase() : '',
         shopName: order.shopName || profile?.shopName || '',
         supplierName: order.supplierName || 'Поставщик',
         status: 'received',
         total: order.totalPrice || order.total || 0,
+        buyerChatId: order.buyerChatId || profile?.telegramChatId || null,
+        coins: Math.floor((order.totalPrice || order.total || 0) / 500),
       }).catch(() => {});
 
       toast.success(isRu ? 'Спасибо! Заказ подтверждён' : 'Рахмат! Заказ ырасталды');
@@ -74,14 +77,16 @@ export default function OrdersPage() {
     try {
       await updateOrderStatus(order.id, 'not_received');
 
-      // Уведомление админу с причиной
+      // Уведомление админу с причиной + покупателю если у него Telegram подключён
       sendTelegramNotification('order_status', {
+        orderId: order.id ? order.id.slice(0, 8).toUpperCase() : '',
         shopName: order.shopName || profile?.shopName || '',
         supplierName: order.supplierName || 'Поставщик',
         status: 'not_received',
         total: order.totalPrice || order.total || 0,
         reason,
         buyerPhone: order.buyerPhone || profile?.phone || '',
+        buyerChatId: order.buyerChatId || profile?.telegramChatId || null,
       }).catch(() => {});
 
       toast.success(isRu ? 'Заявка на возврат отправлена' : 'Кайтаруу өтүнүчү жөнөтүлдү');

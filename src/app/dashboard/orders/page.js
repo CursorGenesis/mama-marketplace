@@ -39,16 +39,18 @@ export default function SupplierOrdersPage() {
     try {
       await updateOrderStatus(orderId, newStatus);
 
-      // Уведомление покупателю при смене на "В доставке"
-      if (newStatus === 'delivering' && order.buyerPhone) {
-        sendTelegramNotification('order_status', {
-          orderId: orderId.slice(0, 8).toUpperCase(),
-          status: 'delivering',
-          buyerName: order.buyerName || '',
-          supplierName: profile?.companyName || profile?.name || '',
-          total: order.total || 0,
-        }).catch(() => {});
-      }
+      // Уведомление при смене статуса. buyerChatId берём из заказа —
+      // он сохраняется при createOrder из профиля покупателя.
+      sendTelegramNotification('order_status', {
+        orderId: orderId.slice(0, 8).toUpperCase(),
+        status: newStatus,
+        buyerName: order.buyerName || '',
+        shopName: order.shopName || '',
+        supplierName: profile?.companyName || profile?.name || '',
+        total: order.total || 0,
+        buyerChatId: order.buyerChatId || null,
+        coins: newStatus === 'received' ? Math.floor((order.total || 0) / 500) : 0,
+      }).catch(() => {});
 
       const statusLabels = {
         packed: isRu ? 'Собран' : 'Чогултулду',

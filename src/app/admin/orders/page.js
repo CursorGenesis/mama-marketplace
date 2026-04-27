@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getOrders, updateOrderStatus } from '@/lib/firestore';
+import { sendTelegramNotification } from '@/lib/telegram';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
@@ -29,9 +30,23 @@ export default function AdminOrdersPage() {
     setLoading(false);
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus, order = null) => {
     try {
       await updateOrderStatus(orderId, newStatus);
+      // Уведомление покупателю в Telegram (если у него подключён) о смене статуса
+      if (order) {
+        sendTelegramNotification('order_status', {
+          orderId: orderId.slice(0, 8).toUpperCase(),
+          status: newStatus,
+          shopName: order.shopName || '',
+          supplierName: order.supplierName || '',
+          buyerName: order.buyerName || '',
+          buyerPhone: order.buyerPhone || '',
+          total: order.total || order.totalPrice || 0,
+          buyerChatId: order.buyerChatId || null,
+          coins: newStatus === 'received' ? Math.floor((order.total || order.totalPrice || 0) / 500) : 0,
+        }).catch(() => {});
+      }
       toast.success('Статус обновлён');
       loadOrders();
     } catch (e) {
@@ -169,19 +184,19 @@ export default function AdminOrdersPage() {
                     <td className="px-5 py-4">
                       <div className="flex flex-wrap gap-1">
                         {o.status === 'new' && (
-                          <button onClick={() => handleStatusChange(o.id, 'packed')}
+                          <button onClick={() => handleStatusChange(o.id, 'packed', o)}
                             className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
                             Собрано
                           </button>
                         )}
                         {o.status === 'packed' && (
-                          <button onClick={() => handleStatusChange(o.id, 'delivering')}
+                          <button onClick={() => handleStatusChange(o.id, 'delivering', o)}
                             className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs hover:bg-yellow-200">
                             В доставке
                           </button>
                         )}
                         {o.status === 'delivering' && (
-                          <button onClick={() => handleStatusChange(o.id, 'received')}
+                          <button onClick={() => handleStatusChange(o.id, 'received', o)}
                             className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200">
                             Получено
                           </button>
@@ -189,7 +204,7 @@ export default function AdminOrdersPage() {
                         {o.status !== 'cancelled' && o.status !== 'received' && o.status !== 'not_received' && (
                           <button onClick={() => {
                             if (!confirm('Отменить заказ? Комиссия поставщику будет возвращена автоматически.')) return;
-                            handleStatusChange(o.id, 'not_received');
+                            handleStatusChange(o.id, 'not_received', o);
                           }}
                             className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200">
                             Отмена
