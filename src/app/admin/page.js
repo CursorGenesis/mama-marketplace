@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getOrders, getSuppliers, getProducts } from '@/lib/firestore';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
 import { useRouter } from 'next/navigation';
-import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award, CheckCircle2, AlertTriangle, XOctagon, FileSpreadsheet } from 'lucide-react';
+import { Users, Package, ShoppingCart, TrendingUp, AlertCircle, BarChart3, MessageSquare, DollarSign, Award, CheckCircle2, AlertTriangle, XOctagon, FileSpreadsheet, Wallet, Activity, Coins, UserPlus } from 'lucide-react';
 
 const ADMIN_SHEET_URL = process.env.NEXT_PUBLIC_ADMIN_SHEET_URL;
 
@@ -26,6 +28,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState({ suppliers: 0, products: 0, orders: 0, newOrders: 0 });
   const [recentOrders, setRecentOrders] = useState([]);
   const [allOrders, setAllOrders] = useState([]);
+  const [allSuppliers, setAllSuppliers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,11 +39,13 @@ export default function AdminPage() {
   }, [isAdmin, authLoading]);
 
   const loadStats = async () => {
-    const [suppliers, products, orders] = await Promise.all([
+    const [suppliers, products, orders, usersSnap] = await Promise.all([
       getSuppliers(),
       getProducts(),
       getOrders(),
+      getDocs(collection(db, 'users')).catch(() => ({ docs: [] })),
     ]);
+    const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     setStats({
       suppliers: suppliers.length,
@@ -49,6 +55,8 @@ export default function AdminPage() {
     });
     setRecentOrders(orders.slice(0, 10));
     setAllOrders(orders);
+    setAllSuppliers(suppliers);
+    setAllUsers(users);
     setLoading(false);
   };
 
@@ -65,6 +73,42 @@ export default function AdminPage() {
   const notReceived = allOrders.filter(o => o.status === 'not_received');
   const stuckDelivering = allOrders.filter(o => o.status === 'delivering' && now - getCreatedMs(o) > 3 * DAY);
   const urgentCount = notReceived.length + stuckDelivering.length;
+
+  // Новые сегодня
+  const ordersToday = allOrders.filter(o => now - getCreatedMs(o) < DAY);
+  const newUsersToday = allUsers.filter(u => u.createdAt && now - getCreatedMs(u) < DAY);
+
+  // Низкий баланс у поставщиков (< 3000 сом)
+  const suppliersLowBalance = allSuppliers
+    .filter(s => (Number(s.balance) || 0) < 3000)
+    .sort((a, b) => (Number(a.balance) || 0) - (Number(b.balance) || 0))
+    .slice(0, 10);
+
+  // Топ по коинам — для контроля накруток
+  const topCoinUsers = allUsers
+    .filter(u => (Number(u.coins) || 0) > 20)
+    .sort((a, b) => (Number(b.coins) || 0) - (Number(a.coins) || 0))
+    .slice(0, 5);
+
+  // График за последние 7 дней
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const daysAgo = 6 - i;
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    dayStart.setDate(dayStart.getDate() - daysAgo);
+    const dayEnd = dayStart.getTime() + DAY;
+    const count = allOrders.filter(o => {
+      const ms = getCreatedMs(o);
+      return ms >= dayStart.getTime() && ms < dayEnd;
+    }).length;
+    return {
+      label: dayStart.toLocaleDateString('ru-RU', { weekday: 'short' }),
+      date: dayStart.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }),
+      count,
+      isToday: daysAgo === 0,
+    };
+  });
+  const maxDayCount = Math.max(...last7Days.map(d => d.count), 1);
 
   if (authLoading || loading) return <div className="text-center py-20 text-gray-400">Загрузка...</div>;
   if (!isAdmin) return null;
@@ -159,6 +203,122 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* Активность за 7 дней + сегодня */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        {/* Мини-график за 7 дней */}
+        <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity size={20} className="text-primary-600" />
+              <h2 className="font-bold text-lg">Заказы за 7 дней</h2>
+            </div>
+            <span className="text-sm text-gray-500">всего: <b className="text-gray-800">{last7Days.reduce((s, d) => s + d.count, 0)}</b></span>
+          </div>
+          <div className="flex items-end gap-2 h-36">
+            {last7Days.map((day, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1 group cursor-default">
+                <div className="text-xs font-bold text-gray-700">{day.count || ''}</div>
+                <div className="w-full bg-gray-100 rounded-t flex items-end" style={{ height: '100%' }}>
+                  <div
+                    className={`w-full rounded-t transition-all ${day.isToday ? 'bg-primary-600' : 'bg-primary-300 group-hover:bg-primary-400'}`}
+                    style={{ height: day.count > 0 ? `${(day.count / maxDayCount) * 100}%` : '0%', minHeight: day.count > 0 ? '4px' : '0' }}
+                    title={`${day.date}: ${day.count} зак.`}
+                  />
+                </div>
+                <div className={`text-xs ${day.isToday ? 'font-bold text-primary-700' : 'text-gray-500'}`}>{day.label}</div>
+                <div className="text-[10px] text-gray-400">{day.date}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Сегодня */}
+        <div className="bg-white rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <UserPlus size={20} className="text-indigo-600" />
+            <h2 className="font-bold text-lg">Сегодня</h2>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm text-gray-600">Заказов</span>
+              <span className="text-2xl font-black text-indigo-700">{ordersToday.length}</span>
+            </div>
+            <div className="flex items-baseline justify-between pt-3 border-t">
+              <span className="text-sm text-gray-600">Новых регистраций</span>
+              <span className="text-2xl font-black text-indigo-700">{newUsersToday.length}</span>
+            </div>
+            <div className="flex items-baseline justify-between pt-3 border-t">
+              <span className="text-sm text-gray-600">Всего пользователей</span>
+              <span className="text-xl font-bold text-gray-700">{allUsers.length}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Контроль: низкие балансы + подозрительная активность */}
+      {(suppliersLowBalance.length > 0 || topCoinUsers.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          {/* Низкие балансы поставщиков */}
+          {suppliersLowBalance.length > 0 && (
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-amber-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Wallet size={20} className="text-amber-600" />
+                  <h2 className="font-bold text-lg">Низкие балансы</h2>
+                </div>
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-semibold">{suppliersLowBalance.length}</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">&lt; 3 000 сом — позвонить, напомнить пополнить. Иначе не смогут принимать заказы.</p>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {suppliersLowBalance.map(s => (
+                  <Link key={s.id} href={`/admin/suppliers`} className="flex items-center justify-between p-2 rounded-lg hover:bg-amber-50 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm truncate">{s.name || s.companyName || s.email}</div>
+                      <div className="text-xs text-gray-400 truncate">{s.phone || s.email}</div>
+                    </div>
+                    <div className={`text-sm font-bold tabular-nums ${(Number(s.balance) || 0) <= 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                      {(Number(s.balance) || 0).toLocaleString('ru-RU')} сом
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Топ по коинам — контроль накруток */}
+          {topCoinUsers.length > 0 && (
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-blue-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Coins size={20} className="text-blue-600" />
+                  <h2 className="font-bold text-lg">Контроль коинов</h2>
+                </div>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">топ-{topCoinUsers.length}</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">Пользователи с максимальным количеством коинов. Если кто-то выделяется неестественно — проверить его заказы (не накрутка ли).</p>
+              <div className="space-y-2">
+                {topCoinUsers.map((u, idx) => (
+                  <div key={u.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs font-bold text-gray-400 w-4">{idx + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm truncate">{u.name || u.email || 'Без имени'}</div>
+                        <div className="text-xs text-gray-400 truncate">
+                          {u.role || 'buyer'} · {u.totalOrders || 0} зак.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm font-bold text-blue-600 tabular-nums">
+                      {(Number(u.coins) || 0).toLocaleString('ru-RU')} <Coins size={12} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Статистика */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
