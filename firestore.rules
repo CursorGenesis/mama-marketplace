@@ -31,16 +31,17 @@ service cloud.firestore {
                        && request.resource.data.role in ['buyer', 'supplier', 'agent', 'driver'];
       // Правила update:
       //  1. Админ — может всё.
-      //  2. Сам пользователь — свой профиль, но НЕ может менять роль.
-      //  3. Любой авторизованный — ТОЛЬКО финансовые поля (coins/earnings) и ТОЛЬКО с лимитом:
-      //     +/- 500 coins за раз (= один крупный заказ на 250 000 сом), +/- 100 000 сом earnings.
-      //     Это временное ослабление для клиентской логики updateOrderStatus.
-      //     Атака всё ещё возможна циклом, но замедлена в сотни раз и отследима в логах Firebase.
-      //     Полное решение — перенос в Cloud Functions (см. техдолг).
+      //  2. Сам пользователь — свой профиль, КРОМЕ роли и финансовых полей.
+      //  3. ТОЛЬКО САМ ПОЛЬЗОВАТЕЛЬ — свои финансовые поля (coins/earnings/totalOrders/coinStatus)
+      //     с лимитом: ±500 coins, ±100 000 сом earnings за один запрос.
+      //     Раньше (24.04) третья ветка пускала ЛЮБОГО авторизованного — это позволяло
+      //     накручивать чужие коины циклом. Теперь только владелец может менять СВОИ финансы.
+      //     Self-инфляция всё ещё возможна, но это видно в Firebase Audit Log
+      //     и не угрожает другим пользователям. Полное решение — перенос в Cloud Functions.
       allow update: if isAdmin()
         || (request.auth != null && request.auth.uid == userId
-            && !changedKeys().hasAny(['role']))
-        || (request.auth != null
+            && !changedKeys().hasAny(['role', 'coins', 'earnings', 'coinStatus', 'totalOrders']))
+        || (request.auth != null && request.auth.uid == userId
             && changedKeys().hasOnly(['coins', 'earnings', 'totalOrders', 'coinStatus'])
             && request.resource.data.get('coins', 0) - resource.data.get('coins', 0) >= -500
             && request.resource.data.get('coins', 0) - resource.data.get('coins', 0) <= 500
@@ -115,12 +116,21 @@ service cloud.firestore {
         || isSupplierOwner(resource.data.supplierId)
         || isAdmin()
       );
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && (
-        resource.data.buyerId == request.auth.uid
-        || isSupplierOwner(resource.data.supplierId)
-        || isAdmin()
-      );
+      // Создание — buyerId должен совпадать с авторизованным юзером (запрет на impersonation),
+      // и нельзя сразу выставлять coinsAwarded/refunded (атака с моментальным начислением коинов
+      // или фейковым возвратом).
+      allow create: if request.auth != null
+        && request.resource.data.buyerId == request.auth.uid
+        && !('coinsAwarded' in request.resource.data || 'refunded' in request.resource.data);
+      // Обновление:
+      //  - Админ — может всё
+      //  - Участник (покупатель/поставщик) — только статус и связанные с ним служебные поля.
+      //    НЕЛЬЗЯ менять totalPrice, commission, buyerId, supplierId, items, агента —
+      //    раньше можно было подделать commission и получить ложный возврат при not_received.
+      allow update: if isAdmin()
+        || ((resource.data.buyerId == request.auth.uid
+             || isSupplierOwner(resource.data.supplierId))
+            && changedKeys().hasOnly(['status', 'coinsAwarded', 'refunded', 'refundedAt']));
     }
 
     // =========================

@@ -10,7 +10,7 @@ import { sendTelegramNotification } from '@/lib/telegram';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getNextDeliveryDate, formatDeliveryDate } from '@/lib/delivery';
 
 const DeliveryMap = dynamic(() => import('@/components/DeliveryMap'), {
@@ -31,6 +31,9 @@ export default function CartPage() {
   const { user, profile, updateProfile } = useAuth();
   const { t, lang } = useLang();
   const [submitting, setSubmitting] = useState({});
+  // Синхронный лок против двойного клика — useState не успевает обновиться между двумя
+  // быстрыми нажатиями, и без этого создаются дубли заказов с одинаковым orderNumber.
+  const submitLockRef = useRef(false);
   const [sentSuppliers, setSentSuppliers] = useState([]);
   const [expandedSupplier, setExpandedSupplier] = useState(null);
 
@@ -295,8 +298,14 @@ export default function CartPage() {
 
   // Отправить всем поставщикам сразу
   const handleSubmitAll = async () => {
+    // Синхронный лок против двойного клика. setSubmitting state обновляется асинхронно,
+    // поэтому два быстрых нажатия раньше создавали ДУБЛИКАТЫ заказов с одним orderNumber.
+    if (submitLockRef.current) return;
     if (!validateOrder()) return;
+    submitLockRef.current = true;
+    setSubmitting({ all: true });
 
+    try {
     // Сохраняем данные в профиль если не заполнены
     if (user && updateProfile) {
       const updates = {};
@@ -308,8 +317,6 @@ export default function CartPage() {
         updateProfile(updates);
       }
     }
-
-    setSubmitting({ all: true });
 
     // Сохраняем данные для чека перед очисткой
     const receipt = {
@@ -431,6 +438,12 @@ export default function CartPage() {
     setSentSuppliers(succeeded.map(g => g.supplierName));
     setSubmitting({});
     toast.success(`${lang === 'kg' ? 'Заявкалар жиберилди' : 'Заявки отправлены'}: ${succeeded.length}`);
+    } finally {
+      // Снимаем лок и индикатор отправки даже если что-то упало —
+      // иначе клиент окажется заблокирован навсегда без возможности повторить.
+      submitLockRef.current = false;
+      setSubmitting(prev => ({ ...prev, all: false }));
+    }
   };
 
   // Экран чека после отправки

@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getOrders, updateOrderStatus } from '@/lib/firestore';
+import { db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -28,9 +30,14 @@ export default function AdminOrdersPage() {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
-    await updateOrderStatus(orderId, newStatus);
-    toast.success('Статус обновлён');
-    loadOrders();
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      toast.success('Статус обновлён');
+      loadOrders();
+    } catch (e) {
+      toast.error('Не удалось обновить статус: ' + (e.message || ''));
+      console.warn('Status change failed:', e);
+    }
   };
 
   const handleAssignAgent = async (orderId) => {
@@ -38,9 +45,16 @@ export default function AdminOrdersPage() {
     if (!raw) return;
     const agentName = raw.replace(/[<>"'&]/g, '').trim();
     if (!agentName) return;
-    await updateOrderStatus(orderId, undefined, agentName);
-    toast.success('Агент назначен');
-    loadOrders();
+    try {
+      // Назначаем агента БЕЗ смены статуса — раньше передавали status: undefined,
+      // что писало в Firestore мусор и ломало запись.
+      await updateDoc(doc(db, 'orders', orderId), { agentId: agentName });
+      toast.success('Агент назначен');
+      loadOrders();
+    } catch (e) {
+      toast.error('Не удалось назначить агента');
+      console.warn('Assign agent failed:', e);
+    }
   };
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
@@ -55,14 +69,16 @@ export default function AdminOrdersPage() {
 
       <h1 className="text-2xl font-bold mb-6">Все заказы ({orders.length})</h1>
 
-      {/* Статистика комиссий */}
+      {/* Статистика комиссий — берём реальную комиссию заказа (o.commission), а не хардкод 5% */}
       {(() => {
-        const COMMISSION_PERCENT = 5;
-        const completedOrders = orders.filter(o => o.status === 'completed');
-        const totalRevenue = orders.reduce((s, o) => s + (o.total || 0), 0);
-        const completedRevenue = completedOrders.reduce((s, o) => s + (o.total || 0), 0);
-        const totalCommission = Math.round(totalRevenue * COMMISSION_PERCENT / 100);
-        const earnedCommission = Math.round(completedRevenue * COMMISSION_PERCENT / 100);
+        const receivedOrders = orders.filter(o => o.status === 'received');
+        const totalRevenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
+        const receivedRevenue = receivedOrders.reduce((s, o) => s + (Number(o.total) || 0), 0);
+        // Комиссия — суммируем реальные значения из заказов; для не-received остаётся в подвешенном состоянии
+        const earnedCommission = receivedOrders.reduce((s, o) => s + (Number(o.commission) || 0), 0);
+        const totalCommission = orders
+          .filter(o => o.status !== 'cancelled' && o.status !== 'not_received')
+          .reduce((s, o) => s + (Number(o.commission) || 0), 0);
         const pendingCommission = totalCommission - earnedCommission;
         return (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -71,28 +87,30 @@ export default function AdminOrdersPage() {
               <div className="text-xl font-bold text-gray-800">{totalRevenue.toLocaleString('ru-RU')} <span className="text-sm font-normal text-gray-400">сом</span></div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="text-xs text-gray-400 mb-1">Комиссия ({COMMISSION_PERCENT}%)</div>
+              <div className="text-xs text-gray-400 mb-1">Комиссия начислена</div>
               <div className="text-xl font-bold text-primary-600">{totalCommission.toLocaleString('ru-RU')} <span className="text-sm font-normal text-gray-400">сом</span></div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="text-xs text-gray-400 mb-1">Получено (завершённые)</div>
+              <div className="text-xs text-gray-400 mb-1">Получено (доставлено клиенту)</div>
               <div className="text-xl font-bold text-green-600">{earnedCommission.toLocaleString('ru-RU')} <span className="text-sm font-normal text-gray-400">сом</span></div>
             </div>
             <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="text-xs text-gray-400 mb-1">Ожидает оплаты</div>
+              <div className="text-xs text-gray-400 mb-1">В пути (ожидают доставки)</div>
               <div className="text-xl font-bold text-orange-500">{pendingCommission.toLocaleString('ru-RU')} <span className="text-sm font-normal text-gray-400">сом</span></div>
             </div>
           </div>
         );
       })()}
 
-      {/* Фильтры */}
+      {/* Фильтры — статусы должны соответствовать реальной системе (см. updateOrderStatus) */}
       <div className="flex gap-2 mb-6 overflow-x-auto">
         {[
           { value: 'all', label: `Все (${orders.length})` },
           { value: 'new', label: `Новые (${orders.filter(o => o.status === 'new').length})` },
-          { value: 'in_progress', label: `В работе (${orders.filter(o => o.status === 'in_progress').length})` },
-          { value: 'completed', label: `Завершённые (${orders.filter(o => o.status === 'completed').length})` },
+          { value: 'packed', label: `Собраны (${orders.filter(o => o.status === 'packed').length})` },
+          { value: 'delivering', label: `В доставке (${orders.filter(o => o.status === 'delivering').length})` },
+          { value: 'received', label: `Получены (${orders.filter(o => o.status === 'received').length})` },
+          { value: 'not_received', label: `Не получены (${orders.filter(o => o.status === 'not_received').length})` },
           { value: 'cancelled', label: `Отменённые (${orders.filter(o => o.status === 'cancelled').length})` },
         ].map(f => (
           <button key={f.value} onClick={() => setFilter(f.value)}
@@ -115,7 +133,7 @@ export default function AdminOrdersPage() {
                   <th className="px-5 py-3 font-medium">Поставщик</th>
                   <th className="px-5 py-3 font-medium">Товары</th>
                   <th className="px-5 py-3 font-medium">Сумма</th>
-                  <th className="px-5 py-3 font-medium">Комиссия 5%</th>
+                  <th className="px-5 py-3 font-medium">Комиссия</th>
                   <th className="px-5 py-3 font-medium">Статус</th>
                   <th className="px-5 py-3 font-medium">Агент</th>
                   <th className="px-5 py-3 font-medium">Действия</th>
@@ -139,7 +157,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-5 py-4 font-bold">{o.total?.toLocaleString('ru-RU')} сом</td>
                     <td className="px-5 py-4">
-                      <span className="font-semibold text-green-600">{Math.round((o.total || 0) * 0.05).toLocaleString('ru-RU')} сом</span>
+                      <span className="font-semibold text-green-600">{(Number(o.commission) || 0).toLocaleString('ru-RU')} сом</span>
                     </td>
                     <td className="px-5 py-4"><OrderStatusBadge status={o.status} /></td>
                     <td className="px-5 py-4">
@@ -149,21 +167,30 @@ export default function AdminOrdersPage() {
                       </button>
                     </td>
                     <td className="px-5 py-4">
-                      <div className="flex gap-1">
+                      <div className="flex flex-wrap gap-1">
                         {o.status === 'new' && (
-                          <button onClick={() => handleStatusChange(o.id, 'in_progress')}
+                          <button onClick={() => handleStatusChange(o.id, 'packed')}
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
+                            Собрано
+                          </button>
+                        )}
+                        {o.status === 'packed' && (
+                          <button onClick={() => handleStatusChange(o.id, 'delivering')}
                             className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs hover:bg-yellow-200">
-                            В работу
+                            В доставке
                           </button>
                         )}
-                        {o.status === 'in_progress' && (
-                          <button onClick={() => handleStatusChange(o.id, 'completed')}
+                        {o.status === 'delivering' && (
+                          <button onClick={() => handleStatusChange(o.id, 'received')}
                             className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200">
-                            Завершить
+                            Получено
                           </button>
                         )}
-                        {o.status !== 'cancelled' && o.status !== 'completed' && (
-                          <button onClick={() => handleStatusChange(o.id, 'cancelled')}
+                        {o.status !== 'cancelled' && o.status !== 'received' && o.status !== 'not_received' && (
+                          <button onClick={() => {
+                            if (!confirm('Отменить заказ? Комиссия поставщику будет возвращена автоматически.')) return;
+                            handleStatusChange(o.id, 'not_received');
+                          }}
                             className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200">
                             Отмена
                           </button>
