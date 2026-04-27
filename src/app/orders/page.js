@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle, XCircle, Clock, Truck } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import PromptModal from '@/components/PromptModal';
 
 const STATUS_CONFIG = {
   new: { label: 'Ожидает', labelKg: 'Күтүүдө', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
@@ -25,6 +26,9 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [updating, setUpdating] = useState(null);
+  // Модалка для запроса причины «не получено» — заменяет нативный prompt(),
+  // который не работает в iOS PWA и выглядит как чужеродное окно
+  const [reasonModal, setReasonModal] = useState({ open: false, order: null });
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -65,19 +69,23 @@ export default function OrdersPage() {
     setUpdating(null);
   };
 
-  const handleNotReceived = async (order) => {
-    const raw = prompt(isRu
-      ? 'Укажите причину (не доехал, брак, не тот товар):'
-      : 'Себебин жазыңыз:');
-    if (!raw) return;
-    const reason = raw.replace(/[<>"'&]/g, '').trim();
+  // Открывает модалку для ввода причины. Сама обработка — ниже в submitNotReceived.
+  const handleNotReceived = (order) => {
+    setReasonModal({ open: true, order });
+  };
+
+  const submitNotReceived = async (rawReason) => {
+    const order = reasonModal.order;
+    setReasonModal({ open: false, order: null });
+    if (!order) return;
+
+    const reason = String(rawReason).replace(/[<>"'&]/g, '').trim();
     if (!reason) return;
 
     setUpdating(order.id);
     try {
       await updateOrderStatus(order.id, 'not_received');
 
-      // Уведомление админу с причиной + покупателю если у него Telegram подключён
       sendTelegramNotification('order_status', {
         orderId: order.id ? order.id.slice(0, 8).toUpperCase() : '',
         shopName: order.shopName || profile?.shopName || '',
@@ -244,6 +252,18 @@ export default function OrdersPage() {
           );
         })}
       </div>
+
+      <PromptModal
+        open={reasonModal.open}
+        title={isRu ? 'Не получили заказ?' : 'Заказ алган жоксузбу?'}
+        description={isRu ? 'Опишите коротко: товар не приехал, брак, не тот товар и т.п.' : 'Кыскача жазыңыз: товар келген жок, брак, башка товар ж.б.'}
+        placeholder={isRu ? 'Например: не доехал' : 'Мисалы: келген жок'}
+        confirmText={isRu ? 'Отправить заявку' : 'Өтүнүч жөнөтүү'}
+        cancelText={isRu ? 'Отмена' : 'Жокко чыгаруу'}
+        multiline
+        onConfirm={submitNotReceived}
+        onCancel={() => setReasonModal({ open: false, order: null })}
+      />
     </div>
   );
 }

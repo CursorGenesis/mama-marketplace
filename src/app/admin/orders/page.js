@@ -6,6 +6,7 @@ import { sendTelegramNotification } from '@/lib/telegram';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import OrderStatusBadge from '@/components/OrderStatusBadge';
+import PromptModal from '@/components/PromptModal';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -17,6 +18,8 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  // Модалка для ввода имени агента — заменяет prompt() который не работает в iOS PWA
+  const [agentModal, setAgentModal] = useState({ open: false, orderId: null });
 
   useEffect(() => {
     if (authLoading) return;
@@ -55,14 +58,19 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleAssignAgent = async (orderId) => {
-    const raw = prompt('Имя агента:');
-    if (!raw) return;
-    const agentName = raw.replace(/[<>"'&]/g, '').trim();
+  // Открывает модалку. Сама запись — в submitAssignAgent.
+  const handleAssignAgent = (orderId) => {
+    setAgentModal({ open: true, orderId });
+  };
+
+  const submitAssignAgent = async (rawName) => {
+    const orderId = agentModal.orderId;
+    setAgentModal({ open: false, orderId: null });
+    if (!orderId) return;
+
+    const agentName = String(rawName).replace(/[<>"'&]/g, '').trim();
     if (!agentName) return;
     try {
-      // Назначаем агента БЕЗ смены статуса — раньше передавали status: undefined,
-      // что писало в Firestore мусор и ломало запись.
       await updateDoc(doc(db, 'orders', orderId), { agentId: agentName });
       toast.success('Агент назначен');
       loadOrders();
@@ -228,6 +236,16 @@ export default function AdminOrdersPage() {
       ) : (
         <div className="text-center py-16 text-gray-400 bg-white rounded-xl">Заказов не найдено</div>
       )}
+
+      <PromptModal
+        open={agentModal.open}
+        title="Назначить агента"
+        description="Введите имя агента, который привёл этого магазина. Его реф-код учтётся при выплате комиссии."
+        placeholder="Например: Айбек Кадыров"
+        confirmText="Назначить"
+        onConfirm={submitAssignAgent}
+        onCancel={() => setAgentModal({ open: false, orderId: null })}
+      />
     </div>
   );
 }

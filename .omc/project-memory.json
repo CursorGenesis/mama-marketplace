@@ -162,8 +162,8 @@
   "hotPaths": [
     {
       "path": "src",
-      "accessCount": 61,
-      "lastAccessed": 1777282378306,
+      "accessCount": 62,
+      "lastAccessed": 1777282837915,
       "type": "directory"
     },
     {
@@ -245,6 +245,12 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\orders\\page.js",
+      "accessCount": 11,
+      "lastAccessed": 1777282951173,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\catalog\\page.js",
       "accessCount": 10,
       "lastAccessed": 1776860771280,
@@ -314,12 +320,6 @@
       "path": "src\\app\\admin\\agents\\page.js",
       "accessCount": 5,
       "lastAccessed": 1777281221497,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\orders\\page.js",
-      "accessCount": 5,
-      "lastAccessed": 1777282478156,
       "type": "file"
     },
     {
